@@ -81,7 +81,13 @@ export default function Footer() {
         {/* Copyright */}
         <div className="flex justify-between items-center text-[10px] text-muted-foreground">
           <p>© {new Date().getFullYear()} gltz.de</p>
-          <p>Made with love for families</p>
+          <Link 
+            to="/admin" 
+            className="hover:text-foreground transition-colors"
+            data-testid="footer-admin-link"
+          >
+            Admin
+          </Link>
         </div>
       </div>
     </footer>
