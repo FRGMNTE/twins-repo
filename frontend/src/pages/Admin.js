@@ -920,11 +920,11 @@ export default function Admin() {
 
       {/* New Image Modal */}
       <Dialog open={showNewImageModal} onOpenChange={setShowNewImageModal}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Bild hinzufügen</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-4 py-4">
             <div>
               <Label className="text-xs">Bild-URL</Label>
               <Input value={newImageUrl} onChange={(e) => setNewImageUrl(e.target.value)} className="mt-1" placeholder="https://..." />
@@ -938,9 +938,9 @@ export default function Admin() {
               <Input value={newImageTags} onChange={(e) => setNewImageTags(e.target.value)} className="mt-1" placeholder="Baby-Art, Abstrakt" />
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowNewImageModal(false)}>Abbrechen</Button>
-            <Button onClick={handleAddImage} disabled={!newImageUrl}>Hinzufügen</Button>
+          <DialogFooter className="gap-2">
+            <Button type="button" variant="outline" onClick={() => setShowNewImageModal(false)}>Abbrechen</Button>
+            <Button type="button" onClick={handleAddImage} disabled={!newImageUrl}>Hinzufügen</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

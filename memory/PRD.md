@@ -1,76 +1,74 @@
 # gltz.de - Familienseite PRD
 
 ## Original Problem Statement
-Erweitere die importierte Bolt.new-Seite zu einer vollständigen, produktiven gltz.de-Familienseite mit Apple.com-Style minimalistischem Design, Admin-Bereich mit Customization-Optionen, Kontaktformular, Twins-Art Galerie mit PayPal-Unterstützungs-Button.
+Erweitere die importierte Bolt.new-Seite zu einer vollständigen, produktiven gltz.de-Familienseite mit Apple.com-Style minimalistischem Design und professionellem Admin-Bereich mit vollständigem CMS.
 
 ## User Personas
 1. **Junge Zwillingseltern** - Suchen praktische Tipps und Erfahrungsaustausch
 2. **Schwangere mit Zwillingen** - Brauchen Vorbereitung und emotionale Unterstützung
 3. **Unterstützer/Fans** - Möchten das Familienprojekt finanziell unterstützen
+4. **Admin** - Verwaltet Inhalte, Galerie, Kontakte und Einstellungen
 
 ## Core Requirements
 - Apple.com-Style minimalistisches Design
-- Celestial Switch: Sonne (hell) / Mond (dunkel)
-- Admin-Bereich mit Customization (Farben, Schriften, Hintergründe, Überschriften)
-- Responsive Mobile-First Layout
-- DSGVO-konform (Cookie-Banner, Datenschutz, Impressum)
-- Kontaktformular mit Backend-Speicherung
+- Professioneller passwortgeschützter Admin-Bereich
+- Vollständiges CMS (Seiten, Blog, Galerie)
+- Kontakt-Management mit CSV-Export
+- DSGVO-konform
 
 ## What's Been Implemented (Dezember 2025)
 
-### Phase 1 - MVP Complete ✅
-**Design - Apple-Style Minimal:**
-- Inter Font (SF Pro Display Style)
-- Saubere schwarze/weiße Farbpalette
-- Celestial Switch mit Sonne (gelb) und Mond (weiß)
-- Berge bei Sonnenaufgang (hell) / Wald bei Nacht (dunkel)
-- Minimaler Whitespace, cleane Typografie
+### Admin-Bereich - Vollständig ✅
+**Login & Sicherheit:**
+- Passwort-geschützter Zugang (Standard: gltz2025)
+- 30-Minuten Session-Timeout
+- Logout-Button
 
-**Admin Customization Panel:**
-- Logo Text ändern
-- Hero Überschrift, Untertitel, Beschreibung ändern
-- Schriftart wählen (Inter, Manrope, Playfair Display, SF Pro)
-- Primärfarbe mit Color Picker
-- Hell-Modus Hintergrund (4 Presets + Custom URL)
-- Dunkel-Modus Hintergrund (4 Presets + Custom URL)
-- Settings werden in MongoDB gespeichert
+**Dashboard:**
+- Quick-Stats (Kontakte, Seiten, Galerie, Spenden)
+- Neueste Anfragen Timeline
+- Quick-Action Buttons
 
-**Backend (FastAPI + MongoDB):**
-- `/api/settings` - GET/POST Site-Einstellungen
-- `/api/contact` - Kontaktformular Speicherung
-- `/api/admin/request-code` - Admin-Login Code-Anforderung
-- `/api/admin/verify-code` - Code-Verifizierung
-- `/api/blog` - Blog-Posts CRUD
-- `/api/gallery` - Galerie-Bilder
+**Seiten-Management (CRUD):**
+- Neue Seite erstellen (Titel, URL-Slug, Inhalt, Status)
+- Bearbeiten mit Hero-Bild
+- Löschen mit Bestätigung
+- Duplizieren
 
-**Frontend (React + Tailwind):**
-- Home mit minimalistischem Hero
+**Galerie-Management:**
+- Bild hinzufügen per URL
+- Titel, Alt-Text, Tags bearbeiten
+- Featured-Bild markieren
+- Löschen
+
+**Kontakte:**
+- Alle Anfragen mit Status (neu/gelesen/beantwortet)
+- Filter und Suche
+- CSV-Export
+- Status ändern
+- Direkt antworten per Email-Link
+
+**Blog-Posts:**
+- Erstellen (Titel, Excerpt, Inhalt, Kategorie, Bild)
+- Status (Entwurf/Live)
+- Bearbeiten und Löschen
+
+**Einstellungen:**
+- Website: Titel, Logo, Hero-Texte
+- Design: Schriftart, Theme, Hintergründe
+- Spenden: PayPal-Link, Button-Text, Disclaimer
+- SEO: Meta-Description, GA4-Tag
+- Auto-Save alle 30 Sekunden
+
+### Frontend - Apple-Style ✅
+- Minimalistisches Design
+- Dark/Light Mode mit Celestial Switch
+- Responsive Navigation
+- Home mit Hero, Teaser-Cards, Blog-Preview
 - Twins-Art Galerie mit Lightbox
-- Funktionales Kontaktformular
-- Admin-Bereich mit Tabs (Einstellungen, Kontakte)
-- Dark/Light Mode Toggle
-- Cookie-Banner (Opt-in)
+- Kontaktformular
 - Impressum, Datenschutz
-
-**Social Media:**
-- Facebook: https://www.facebook.com/people/เมาน์เทิน-โอเชิ่น/61584716588683/
-
-## Prioritized Backlog
-
-### P0 - Critical (Next)
-- [ ] Gmail/Sheets Integration für Kontaktformular
-- [ ] Email-Versand für Admin-Codes
-- [ ] Custom Domain Setup (gltz.de)
-
-### P1 - Important
-- [ ] Blog-Beiträge Admin-Editor
-- [ ] Galerie-Upload im Admin
-- [ ] Google Analytics 4 Integration
-
-### P2 - Nice to Have
-- [ ] Newsletter-Anmeldung
-- [ ] Kommentar-Funktion für Blog
-- [ ] PWA Support
+- Cookie-Banner
 
 ## Tech Stack
 - **Frontend:** React 19, Tailwind CSS, Framer Motion, Shadcn/UI
@@ -79,12 +77,37 @@ Erweitere die importierte Bolt.new-Seite zu einer vollständigen, produktiven gl
 - **Hosting:** Emergent Platform
 
 ## Admin Access
-- Email: gltz.de@gmail.com
-- URL: /admin
-- Features: Settings (Texte, Farben, Schriften, Hintergründe), Kontakte
+- **URL:** /admin
+- **Passwort:** gltz2025 (änderbar)
+- **Session:** 30 Minuten
+
+## API Endpoints
+- POST /api/admin/login - Login
+- GET /api/admin/stats - Dashboard-Statistiken
+- GET/POST/PUT/DELETE /api/admin/pages - Seiten CRUD
+- GET/POST/PUT/DELETE /api/admin/gallery - Galerie CRUD
+- GET/PUT /api/admin/contacts - Kontakte verwalten
+- GET /api/admin/contacts/export - CSV Export
+- GET/POST/PUT/DELETE /api/admin/posts - Blog CRUD
+- GET/POST /api/settings - Website-Einstellungen
+
+## Prioritized Backlog
+
+### P0 - Critical (Next)
+- [ ] Gmail/Sheets Integration für Kontaktformular
+- [ ] Custom Domain Setup (gltz.de)
+
+### P1 - Important
+- [ ] Drag&Drop Bild-Upload
+- [ ] Rich-Text-Editor für Inhalte
+- [ ] Backup-Download als ZIP
+
+### P2 - Nice to Have
+- [ ] Google Analytics Integration
+- [ ] Newsletter
+- [ ] PWA Support
 
 ## Kontakt
 - John D. Gold
 - Schützenstraße 38, 47829 Krefeld
-- Tel: 01575 731 2560
 - Email: gltz.de@gmail.com
