@@ -1,12 +1,17 @@
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Shield, Mail, LogOut, Users, FileText, Image, Settings, Palette, Type, ImageIcon, Save, Check } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Lock, LogOut, LayoutDashboard, FileText, Image, Mail, Settings, 
+  Users, Eye, Plus, Pencil, Trash2, Copy, Download, Check, X,
+  ChevronRight, Search, Filter, Star, ExternalLink, Save, RefreshCw,
+  Palette, Type, Globe, Shield, Database, Clock
+} from 'lucide-react';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
-import { InputOTP, InputOTPGroup, InputOTPSlot } from '../components/ui/input-otp';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import { Textarea } from '../components/ui/textarea';
 import { Label } from '../components/ui/label';
+import { Badge } from '../components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -14,492 +19,953 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
-import { useSiteSettings } from '../context/SiteSettingsContext';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '../components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '../components/ui/alert-dialog';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-const FONT_OPTIONS = [
-  { value: 'Inter', label: 'Inter (Modern)' },
-  { value: 'Manrope', label: 'Manrope (Clean)' },
-  { value: 'Playfair Display', label: 'Playfair Display (Elegant)' },
-  { value: 'SF Pro Display', label: 'SF Pro Display (Apple)' },
-];
-
-const BACKGROUND_PRESETS = {
-  light: [
-    { url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920', label: 'Berge Schweiz' },
-    { url: 'https://images.unsplash.com/photo-1758205563637-4bd20dc1badb?w=1920', label: 'Norwegen Fjord' },
-    { url: 'https://images.unsplash.com/photo-1618220628839-0d71d7e4fdf2?w=1920', label: 'Neuseeland' },
-    { url: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1920', label: 'Wald & Berge' },
-  ],
-  dark: [
-    { url: 'https://images.unsplash.com/photo-1516572704891-60b47497c7b5?w=1920', label: 'See Nacht' },
-    { url: 'https://images.unsplash.com/photo-1588357952484-0ed2bc9a3b5a?w=1920', label: 'Sternennacht' },
-    { url: 'https://images.unsplash.com/photo-1507400492013-162706c8c05e?w=1920', label: 'Nordlichter' },
-    { url: 'https://images.unsplash.com/photo-1475274047050-1d0c0975c63e?w=1920', label: 'Nacht Himmel' },
-  ],
-};
+const CATEGORIES = ['Schlaf', 'Füttern', 'Tipps', 'Alltag', 'Gesundheit'];
+const TAGS = ['Baby-Art', 'Abstrakt', 'Familie', 'Neu', 'Featured'];
 
 export default function Admin() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [step, setStep] = useState('email');
-  const [email, setEmail] = useState('');
-  const [code, setCode] = useState('');
+  const [password, setPassword] = useState('');
+  const [token, setToken] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [contacts, setContacts] = useState([]);
-  const [adminHint, setAdminHint] = useState('');
-  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [saveStatus, setSaveStatus] = useState('');
   
-  const { settings, updateSettings, refetch } = useSiteSettings();
-  const [localSettings, setLocalSettings] = useState(settings);
+  // Data states
+  const [stats, setStats] = useState({ total_contacts: 0, unread_contacts: 0, total_pages: 0, total_gallery: 0, total_posts: 0, donations_count: 0 });
+  const [pages, setPages] = useState([]);
+  const [gallery, setGallery] = useState([]);
+  const [contacts, setContacts] = useState([]);
+  const [posts, setPosts] = useState([]);
+  const [settings, setSettings] = useState({});
+  
+  // Modal states
+  const [editingPage, setEditingPage] = useState(null);
+  const [editingPost, setEditingPost] = useState(null);
+  const [editingImage, setEditingImage] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [showNewImageModal, setShowNewImageModal] = useState(false);
+  const [newImageUrl, setNewImageUrl] = useState('');
+  const [newImageTitle, setNewImageTitle] = useState('');
+  const [newImageTags, setNewImageTags] = useState('');
+  
+  // Filter states
+  const [contactFilter, setContactFilter] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
+  // Check session on load
   useEffect(() => {
-    setLocalSettings(settings);
-  }, [settings]);
-
-  useEffect(() => {
-    const token = localStorage.getItem('admin_token');
-    if (token) {
-      verifySession(token);
+    const savedToken = localStorage.getItem('admin_token');
+    if (savedToken) {
+      verifyToken(savedToken);
     }
   }, []);
 
-  const verifySession = async (token) => {
+  // Auto-save settings
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (isAuthenticated && activeTab === 'settings') {
+        handleSaveSettings(true);
+      }
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [isAuthenticated, activeTab, settings]);
+
+  const verifyToken = async (t) => {
     try {
-      await axios.get(`${API}/admin/verify-session?token=${token}`);
+      await axios.get(`${API}/admin/verify?token=${t}`);
+      setToken(t);
       setIsAuthenticated(true);
-      fetchContacts();
+      fetchAllData(t);
     } catch {
       localStorage.removeItem('admin_token');
     }
   };
 
-  const fetchContacts = async () => {
+  const fetchAllData = async (t) => {
     try {
-      const response = await axios.get(`${API}/contact`);
-      setContacts(response.data);
-    } catch (error) {
-      console.error('Error fetching contacts:', error);
+      const [statsRes, pagesRes, galleryRes, contactsRes, postsRes, settingsRes] = await Promise.all([
+        axios.get(`${API}/admin/stats?token=${t}`),
+        axios.get(`${API}/admin/pages?token=${t}`),
+        axios.get(`${API}/admin/gallery?token=${t}`),
+        axios.get(`${API}/admin/contacts?token=${t}`),
+        axios.get(`${API}/admin/posts?token=${t}`),
+        axios.get(`${API}/settings`)
+      ]);
+      setStats(statsRes.data);
+      setPages(pagesRes.data);
+      setGallery(galleryRes.data);
+      setContacts(contactsRes.data);
+      setPosts(postsRes.data);
+      setSettings(settingsRes.data);
+    } catch (err) {
+      console.error('Error fetching data:', err);
     }
   };
 
-  const handleRequestCode = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
-    setAdminHint('');
-
     try {
-      const response = await axios.post(`${API}/admin/request-code`, { email });
-      setStep('code');
-      if (response.data.hint) {
-        setAdminHint(response.data.message);
-      }
-    } catch (error) {
-      setError(error.response?.data?.detail || 'Fehler beim Senden des Codes');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleVerifyCode = async () => {
-    if (code.length !== 6) return;
-    
-    setLoading(true);
-    setError('');
-
-    try {
-      const response = await axios.post(`${API}/admin/verify-code`, { email, code });
-      localStorage.setItem('admin_token', response.data.token);
+      const res = await axios.post(`${API}/admin/login`, { password });
+      localStorage.setItem('admin_token', res.data.token);
+      setToken(res.data.token);
       setIsAuthenticated(true);
-      fetchContacts();
-    } catch (error) {
-      setError(error.response?.data?.detail || 'Ungültiger Code');
+      fetchAllData(res.data.token);
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Login fehlgeschlagen');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await axios.post(`${API}/admin/logout?token=${token}`);
     localStorage.removeItem('admin_token');
     setIsAuthenticated(false);
-    setStep('email');
-    setEmail('');
-    setCode('');
+    setToken('');
   };
 
-  const handleSaveSettings = async () => {
-    setLoading(true);
-    const success = await updateSettings(localSettings);
-    setLoading(false);
-    if (success) {
-      setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 2000);
-      refetch();
+  const handleSaveSettings = async (silent = false) => {
+    try {
+      await axios.post(`${API}/settings?token=${token}`, settings);
+      if (!silent) {
+        setSaveStatus('saved');
+        setTimeout(() => setSaveStatus(''), 2000);
+      }
+    } catch (err) {
+      console.error('Error saving settings:', err);
     }
   };
 
-  const updateLocalSetting = (key, value) => {
-    setLocalSettings(prev => ({ ...prev, [key]: value }));
+  const handleSavePage = async () => {
+    try {
+      if (editingPage.id) {
+        await axios.put(`${API}/admin/pages/${editingPage.id}?token=${token}`, editingPage);
+      } else {
+        await axios.post(`${API}/admin/pages?token=${token}`, editingPage);
+      }
+      setEditingPage(null);
+      fetchAllData(token);
+    } catch (err) {
+      console.error('Error saving page:', err);
+    }
   };
+
+  const handleDeletePage = async (id) => {
+    await axios.delete(`${API}/admin/pages/${id}?token=${token}`);
+    setDeleteConfirm(null);
+    fetchAllData(token);
+  };
+
+  const handleDuplicatePage = async (id) => {
+    await axios.post(`${API}/admin/pages/${id}/duplicate?token=${token}`);
+    fetchAllData(token);
+  };
+
+  const handleSavePost = async () => {
+    try {
+      if (editingPost.id) {
+        await axios.put(`${API}/admin/posts/${editingPost.id}?token=${token}`, editingPost);
+      } else {
+        await axios.post(`${API}/admin/posts?token=${token}`, editingPost);
+      }
+      setEditingPost(null);
+      fetchAllData(token);
+    } catch (err) {
+      console.error('Error saving post:', err);
+    }
+  };
+
+  const handleDeletePost = async (id) => {
+    await axios.delete(`${API}/admin/posts/${id}?token=${token}`);
+    setDeleteConfirm(null);
+    fetchAllData(token);
+  };
+
+  const handleAddImage = async () => {
+    await axios.post(`${API}/admin/gallery?token=${token}&url=${encodeURIComponent(newImageUrl)}&title=${encodeURIComponent(newImageTitle)}&tags=${encodeURIComponent(newImageTags)}`);
+    setShowNewImageModal(false);
+    setNewImageUrl('');
+    setNewImageTitle('');
+    setNewImageTags('');
+    fetchAllData(token);
+  };
+
+  const handleUpdateImage = async () => {
+    await axios.put(`${API}/admin/gallery/${editingImage.id}?token=${token}&title=${encodeURIComponent(editingImage.title)}&alt=${encodeURIComponent(editingImage.alt)}&caption=${encodeURIComponent(editingImage.caption || '')}&tags=${encodeURIComponent((editingImage.tags || []).join(','))}&featured=${editingImage.featured}`);
+    setEditingImage(null);
+    fetchAllData(token);
+  };
+
+  const handleDeleteImage = async (id) => {
+    await axios.delete(`${API}/admin/gallery/${id}?token=${token}`);
+    setDeleteConfirm(null);
+    fetchAllData(token);
+  };
+
+  const handleUpdateContactStatus = async (id, status) => {
+    await axios.put(`${API}/admin/contacts/${id}/status?token=${token}&status=${status}`);
+    fetchAllData(token);
+  };
+
+  const handleExportContacts = async () => {
+    const res = await axios.get(`${API}/admin/contacts/export?token=${token}`);
+    const blob = new Blob([res.data.csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `kontakte_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+  };
+
+  const handleIncrementDonations = async () => {
+    await axios.post(`${API}/admin/donations/increment?token=${token}`);
+    fetchAllData(token);
+  };
+
+  const filteredContacts = contacts.filter(c => {
+    if (contactFilter !== 'all' && c.status !== contactFilter) return false;
+    if (searchQuery && !c.email.toLowerCase().includes(searchQuery.toLowerCase()) && !c.nachricht.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    return true;
+  });
 
   // Login Screen
   if (!isAuthenticated) {
     return (
-      <main id="main-content" className="pt-14">
-        <section className="section-padding min-h-[80vh] flex items-center">
-          <div className="container-width">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="max-w-sm mx-auto"
-            >
-              <div className="text-center mb-8">
-                <Shield className="w-12 h-12 text-foreground mx-auto mb-4" />
-                <h1 className="text-2xl font-semibold text-foreground mb-2">Admin</h1>
-                <p className="text-sm text-muted-foreground">
-                  Melde dich mit deiner E-Mail an.
-                </p>
-              </div>
-
-              {step === 'email' ? (
-                <form onSubmit={handleRequestCode} className="space-y-4" data-testid="admin-email-form">
-                  <div>
-                    <Label className="text-xs">E-Mail-Adresse</Label>
-                    <Input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="admin@gltz.de"
-                      className="mt-1"
-                      required
-                      data-testid="admin-email-input"
-                    />
-                  </div>
-
-                  {error && <p className="text-xs text-destructive">{error}</p>}
-
-                  <Button
-                    type="submit"
-                    disabled={loading || !email}
-                    className="w-full"
-                    data-testid="admin-request-code"
-                  >
-                    {loading ? 'Wird gesendet...' : 'Code anfordern'}
-                  </Button>
-                </form>
-              ) : (
-                <div className="space-y-4" data-testid="admin-code-form">
-                  <div>
-                    <Label className="text-xs">Bestätigungscode</Label>
-                    <div className="flex justify-center mt-2">
-                      <InputOTP
-                        value={code}
-                        onChange={setCode}
-                        maxLength={6}
-                        data-testid="admin-code-input"
-                      >
-                        <InputOTPGroup>
-                          <InputOTPSlot index={0} />
-                          <InputOTPSlot index={1} />
-                          <InputOTPSlot index={2} />
-                          <InputOTPSlot index={3} />
-                          <InputOTPSlot index={4} />
-                          <InputOTPSlot index={5} />
-                        </InputOTPGroup>
-                      </InputOTP>
-                    </div>
-                  </div>
-
-                  {adminHint && (
-                    <p className="text-xs text-muted-foreground bg-secondary p-2 rounded">{adminHint}</p>
-                  )}
-                  {error && <p className="text-xs text-destructive">{error}</p>}
-
-                  <Button
-                    onClick={handleVerifyCode}
-                    disabled={loading || code.length !== 6}
-                    className="w-full"
-                    data-testid="admin-verify-code"
-                  >
-                    {loading ? 'Wird geprüft...' : 'Anmelden'}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    onClick={() => { setStep('email'); setCode(''); setError(''); }}
-                    className="w-full text-xs"
-                  >
-                    Zurück
-                  </Button>
-                </div>
-              )}
-            </motion.div>
+      <main id="main-content" className="min-h-screen bg-background flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-sm"
+        >
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 bg-foreground rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Lock className="w-8 h-8 text-background" />
+            </div>
+            <h1 className="text-2xl font-semibold text-foreground">gltz.de Admin</h1>
+            <p className="text-sm text-muted-foreground mt-1">Melde dich an, um fortzufahren</p>
           </div>
-        </section>
+
+          <form onSubmit={handleLogin} className="space-y-4" data-testid="admin-login-form">
+            <div>
+              <Label className="text-xs">Passwort</Label>
+              <Input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="mt-1"
+                required
+                data-testid="admin-password-input"
+              />
+            </div>
+            {error && <p className="text-xs text-destructive">{error}</p>}
+            <Button type="submit" disabled={loading} className="w-full" data-testid="admin-login-btn">
+              {loading ? 'Wird geprüft...' : 'Einloggen'}
+            </Button>
+            <p className="text-[10px] text-muted-foreground text-center">
+              Standard-Passwort: gltz2025
+            </p>
+          </form>
+        </motion.div>
       </main>
     );
   }
 
   // Admin Dashboard
   return (
-    <main id="main-content" className="pt-14">
-      <section className="section-padding" data-testid="admin-dashboard">
-        <div className="container-width">
-          {/* Header */}
-          <div className="flex justify-between items-center mb-8">
-            <div>
-              <h1 className="text-2xl font-semibold text-foreground">Admin</h1>
-              <p className="text-sm text-muted-foreground">Verwalte deine Website</p>
+    <main id="main-content" className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-foreground rounded-lg flex items-center justify-center">
+              <Lock className="w-4 h-4 text-background" />
             </div>
-            <Button variant="ghost" onClick={handleLogout} className="text-xs" data-testid="admin-logout">
-              <LogOut className="w-4 h-4 mr-1" /> Abmelden
+            <span className="font-semibold text-foreground">gltz.de Admin</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground hidden sm:block">
+              <Clock className="w-3 h-3 inline mr-1" />
+              Session: 30 Min
+            </span>
+            <Button variant="ghost" size="sm" onClick={handleLogout} data-testid="admin-logout-btn">
+              <LogOut className="w-4 h-4" />
             </Button>
           </div>
+        </div>
+      </header>
 
-          {/* Tabs */}
-          <Tabs defaultValue="settings" className="w-full">
-            <TabsList className="mb-8">
-              <TabsTrigger value="settings" className="text-xs">
-                <Settings className="w-4 h-4 mr-1" /> Einstellungen
-              </TabsTrigger>
-              <TabsTrigger value="contacts" className="text-xs">
-                <Users className="w-4 h-4 mr-1" /> Kontakte ({contacts.length})
-              </TabsTrigger>
-            </TabsList>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Sidebar */}
+          <nav className="lg:w-56 flex-shrink-0">
+            <div className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0">
+              {[
+                { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+                { id: 'pages', icon: FileText, label: 'Seiten' },
+                { id: 'gallery', icon: Image, label: 'Galerie' },
+                { id: 'contacts', icon: Mail, label: 'Kontakte', badge: stats.unread_contacts },
+                { id: 'posts', icon: FileText, label: 'Blog' },
+                { id: 'settings', icon: Settings, label: 'Einstellungen' },
+              ].map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id)}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+                    activeTab === item.id
+                      ? 'bg-foreground text-background'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                  }`}
+                  data-testid={`nav-${item.id}`}
+                >
+                  <item.icon className="w-4 h-4" />
+                  {item.label}
+                  {item.badge > 0 && (
+                    <Badge variant="destructive" className="ml-auto text-[10px] px-1.5">
+                      {item.badge}
+                    </Badge>
+                  )}
+                </button>
+              ))}
+            </div>
+          </nav>
 
-            {/* Settings Tab */}
-            <TabsContent value="settings">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Texte & Überschriften */}
-                <div className="space-y-6">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Type className="w-5 h-5 text-foreground" />
-                    <h2 className="text-lg font-semibold">Texte & Überschriften</h2>
+          {/* Main Content */}
+          <div className="flex-1 min-w-0">
+            <AnimatePresence mode="wait">
+              {/* Dashboard Tab */}
+              {activeTab === 'dashboard' && (
+                <motion.div
+                  key="dashboard"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="space-y-6"
+                >
+                  <h1 className="text-2xl font-semibold">Dashboard</h1>
+                  
+                  {/* Stats Grid */}
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    {[
+                      { label: 'Kontakte', value: stats.total_contacts, sub: `${stats.unread_contacts} ungelesen`, icon: Mail },
+                      { label: 'Seiten', value: stats.total_pages, icon: FileText },
+                      { label: 'Galerie', value: stats.total_gallery, icon: Image },
+                      { label: 'Spenden', value: stats.donations_count, icon: Users, action: handleIncrementDonations },
+                    ].map((stat) => (
+                      <div key={stat.label} className="p-4 rounded-xl border border-border bg-card">
+                        <div className="flex items-center justify-between mb-2">
+                          <stat.icon className="w-5 h-5 text-muted-foreground" />
+                          {stat.action && (
+                            <button onClick={stat.action} className="text-xs text-primary hover:underline">+1</button>
+                          )}
+                        </div>
+                        <p className="text-2xl font-semibold">{stat.value}</p>
+                        <p className="text-xs text-muted-foreground">{stat.sub || stat.label}</p>
+                      </div>
+                    ))}
                   </div>
 
+                  {/* Quick Actions */}
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                    {[
+                      { label: 'Neue Seite', icon: Plus, action: () => { setActiveTab('pages'); setEditingPage({ title: '', slug: '', content: '', status: 'draft' }); }},
+                      { label: 'Galerie', icon: Image, action: () => setActiveTab('gallery') },
+                      { label: 'Inhalte', icon: FileText, action: () => setActiveTab('posts') },
+                      { label: 'Einstellungen', icon: Settings, action: () => setActiveTab('settings') },
+                    ].map((btn) => (
+                      <Button key={btn.label} variant="outline" className="h-auto py-4 flex-col gap-2" onClick={btn.action}>
+                        <btn.icon className="w-5 h-5" />
+                        <span className="text-xs">{btn.label}</span>
+                      </Button>
+                    ))}
+                  </div>
+
+                  {/* Recent Contacts */}
                   <div>
-                    <Label className="text-xs">Logo Text</Label>
-                    <Input
-                      value={localSettings.logoText || ''}
-                      onChange={(e) => updateLocalSetting('logoText', e.target.value)}
-                      placeholder="gltz.de"
-                      className="mt-1"
-                      data-testid="settings-logo-text"
-                    />
+                    <div className="flex items-center justify-between mb-3">
+                      <h2 className="font-semibold">Neueste Anfragen</h2>
+                      <Button variant="ghost" size="sm" onClick={() => setActiveTab('contacts')}>
+                        Alle <ChevronRight className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    <div className="space-y-2">
+                      {contacts.slice(0, 3).map((c) => (
+                        <div key={c.id} className="p-3 rounded-lg border border-border flex items-center justify-between">
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium truncate">{c.email}</p>
+                            <p className="text-xs text-muted-foreground truncate">{c.nachricht.slice(0, 50)}...</p>
+                          </div>
+                          <Badge variant={c.status === 'neu' ? 'default' : 'secondary'} className="text-[10px]">
+                            {c.status}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Pages Tab */}
+              {activeTab === 'pages' && (
+                <motion.div
+                  key="pages"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="space-y-4"
+                >
+                  <div className="flex items-center justify-between">
+                    <h1 className="text-2xl font-semibold">Seiten</h1>
+                    <Button onClick={() => setEditingPage({ title: '', slug: '', content: '', status: 'draft' })} data-testid="new-page-btn">
+                      <Plus className="w-4 h-4 mr-1" /> Neue Seite
+                    </Button>
                   </div>
 
-                  <div>
-                    <Label className="text-xs">Hero Überschrift</Label>
-                    <Input
-                      value={localSettings.heroTitle || ''}
-                      onChange={(e) => updateLocalSetting('heroTitle', e.target.value)}
-                      placeholder="gltz.de"
-                      className="mt-1"
-                      data-testid="settings-hero-title"
-                    />
+                  <div className="border rounded-xl overflow-hidden">
+                    <table className="w-full text-sm">
+                      <thead className="bg-secondary">
+                        <tr>
+                          <th className="px-4 py-3 text-left font-medium">Titel</th>
+                          <th className="px-4 py-3 text-left font-medium hidden sm:table-cell">URL</th>
+                          <th className="px-4 py-3 text-left font-medium">Status</th>
+                          <th className="px-4 py-3 text-right font-medium">Aktionen</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border">
+                        {pages.map((page) => (
+                          <tr key={page.id} className="hover:bg-secondary/50">
+                            <td className="px-4 py-3 font-medium">{page.title}</td>
+                            <td className="px-4 py-3 text-muted-foreground hidden sm:table-cell">/{page.slug}</td>
+                            <td className="px-4 py-3">
+                              <Badge variant={page.status === 'live' ? 'default' : 'secondary'}>{page.status}</Badge>
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="flex justify-end gap-1">
+                                <Button variant="ghost" size="sm" onClick={() => setEditingPage(page)}><Pencil className="w-4 h-4" /></Button>
+                                <Button variant="ghost" size="sm" onClick={() => handleDuplicatePage(page.id)}><Copy className="w-4 h-4" /></Button>
+                                <Button variant="ghost" size="sm" onClick={() => setDeleteConfirm({ type: 'page', id: page.id, title: page.title })}><Trash2 className="w-4 h-4" /></Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Gallery Tab */}
+              {activeTab === 'gallery' && (
+                <motion.div
+                  key="gallery"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="space-y-4"
+                >
+                  <div className="flex items-center justify-between">
+                    <h1 className="text-2xl font-semibold">Galerie</h1>
+                    <Button onClick={() => setShowNewImageModal(true)} data-testid="new-image-btn">
+                      <Plus className="w-4 h-4 mr-1" /> Bild hinzufügen
+                    </Button>
                   </div>
 
-                  <div>
-                    <Label className="text-xs">Hero Untertitel</Label>
-                    <Input
-                      value={localSettings.heroSubtitle || ''}
-                      onChange={(e) => updateLocalSetting('heroSubtitle', e.target.value)}
-                      placeholder="Unsere Reise mit Zwillingen"
-                      className="mt-1"
-                      data-testid="settings-hero-subtitle"
-                    />
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {gallery.map((img) => (
+                      <div key={img.id} className="group relative rounded-xl overflow-hidden border border-border">
+                        <div className="aspect-square">
+                          <img src={img.url} alt={img.alt} className="w-full h-full object-cover" />
+                        </div>
+                        {img.featured && (
+                          <div className="absolute top-2 left-2">
+                            <Badge className="bg-yellow-500"><Star className="w-3 h-3" /></Badge>
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                          <Button size="sm" variant="secondary" onClick={() => setEditingImage(img)}><Pencil className="w-4 h-4" /></Button>
+                          <Button size="sm" variant="destructive" onClick={() => setDeleteConfirm({ type: 'image', id: img.id, title: img.title })}><Trash2 className="w-4 h-4" /></Button>
+                        </div>
+                        <div className="p-2">
+                          <p className="text-xs font-medium truncate">{img.title || 'Unbenannt'}</p>
+                          <div className="flex gap-1 mt-1 flex-wrap">
+                            {(img.tags || []).slice(0, 2).map(tag => (
+                              <Badge key={tag} variant="secondary" className="text-[10px]">{tag}</Badge>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Contacts Tab */}
+              {activeTab === 'contacts' && (
+                <motion.div
+                  key="contacts"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="space-y-4"
+                >
+                  <div className="flex items-center justify-between flex-wrap gap-4">
+                    <h1 className="text-2xl font-semibold">Kontakte</h1>
+                    <Button variant="outline" onClick={handleExportContacts}>
+                      <Download className="w-4 h-4 mr-1" /> CSV Export
+                    </Button>
                   </div>
 
-                  <div>
-                    <Label className="text-xs">Hero Beschreibung</Label>
-                    <Input
-                      value={localSettings.heroDescription || ''}
-                      onChange={(e) => updateLocalSetting('heroDescription', e.target.value)}
-                      placeholder="Anonyme Tipps für junge Familien"
-                      className="mt-1"
-                      data-testid="settings-hero-description"
-                    />
-                  </div>
-                </div>
-
-                {/* Schriftart & Farben */}
-                <div className="space-y-6">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Palette className="w-5 h-5 text-foreground" />
-                    <h2 className="text-lg font-semibold">Schriftart & Farben</h2>
-                  </div>
-
-                  <div>
-                    <Label className="text-xs">Schriftart</Label>
-                    <Select
-                      value={localSettings.fontFamily || 'Inter'}
-                      onValueChange={(v) => updateLocalSetting('fontFamily', v)}
-                    >
-                      <SelectTrigger className="mt-1" data-testid="settings-font-family">
+                  <div className="flex flex-wrap gap-2">
+                    <div className="relative flex-1 min-w-[200px]">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Suchen..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-9"
+                      />
+                    </div>
+                    <Select value={contactFilter} onValueChange={setContactFilter}>
+                      <SelectTrigger className="w-[140px]">
+                        <Filter className="w-4 h-4 mr-2" />
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {FONT_OPTIONS.map(font => (
-                          <SelectItem key={font.value} value={font.value}>
-                            <span style={{ fontFamily: font.value }}>{font.label}</span>
-                          </SelectItem>
-                        ))}
+                        <SelectItem value="all">Alle</SelectItem>
+                        <SelectItem value="neu">Ungelesen</SelectItem>
+                        <SelectItem value="gelesen">Gelesen</SelectItem>
+                        <SelectItem value="beantwortet">Beantwortet</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
-                  <div>
-                    <Label className="text-xs">Primärfarbe</Label>
-                    <div className="flex gap-2 mt-1">
-                      <input
-                        type="color"
-                        value={localSettings.primaryColor || '#1d1d1f'}
-                        onChange={(e) => updateLocalSetting('primaryColor', e.target.value)}
-                        className="w-10 h-10 rounded border cursor-pointer"
-                        data-testid="settings-primary-color"
-                      />
-                      <Input
-                        value={localSettings.primaryColor || '#1d1d1f'}
-                        onChange={(e) => updateLocalSetting('primaryColor', e.target.value)}
-                        placeholder="#1d1d1f"
-                        className="flex-1"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Hintergründe */}
-                <div className="lg:col-span-2 space-y-6">
-                  <div className="flex items-center gap-2 mb-4">
-                    <ImageIcon className="w-5 h-5 text-foreground" />
-                    <h2 className="text-lg font-semibold">Hintergründe</h2>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Light Background */}
-                    <div>
-                      <Label className="text-xs mb-2 block">Hell-Modus Hintergrund</Label>
-                      <div className="grid grid-cols-2 gap-2 mb-2">
-                        {BACKGROUND_PRESETS.light.map((bg) => (
-                          <button
-                            key={bg.url}
-                            onClick={() => updateLocalSetting('lightBackground', bg.url)}
-                            className={`relative aspect-video rounded-lg overflow-hidden border-2 transition-all ${
-                              localSettings.lightBackground === bg.url 
-                                ? 'border-foreground' 
-                                : 'border-transparent hover:border-muted-foreground'
-                            }`}
-                          >
-                            <img src={bg.url} alt={bg.label} className="w-full h-full object-cover" />
-                            <span className="absolute bottom-1 left-1 text-[10px] text-white bg-black/50 px-1 rounded">
-                              {bg.label}
-                            </span>
-                          </button>
-                        ))}
+                  <div className="space-y-2">
+                    {filteredContacts.map((c) => (
+                      <div key={c.id} className="p-4 rounded-xl border border-border">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 mb-1 flex-wrap">
+                              <Badge variant={c.status === 'neu' ? 'default' : 'secondary'} className="text-[10px]">{c.status}</Badge>
+                              <span className="text-xs text-muted-foreground">{c.thema}</span>
+                              <span className="text-xs text-muted-foreground">
+                                {new Date(c.timestamp).toLocaleDateString('de-DE')}
+                              </span>
+                            </div>
+                            <p className="font-medium text-sm">{c.name || 'Anonym'} – {c.email}</p>
+                            <p className="text-sm text-muted-foreground mt-1">{c.nachricht}</p>
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <Select value={c.status} onValueChange={(v) => handleUpdateContactStatus(c.id, v)}>
+                              <SelectTrigger className="w-[120px] h-8 text-xs">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="neu">Neu</SelectItem>
+                                <SelectItem value="gelesen">Gelesen</SelectItem>
+                                <SelectItem value="beantwortet">Beantwortet</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <a href={`mailto:${c.email}`} className="text-xs text-primary hover:underline text-center">
+                              Antworten
+                            </a>
+                          </div>
+                        </div>
                       </div>
-                      <Input
-                        value={localSettings.lightBackground || ''}
-                        onChange={(e) => updateLocalSetting('lightBackground', e.target.value)}
-                        placeholder="URL zum Bild"
-                        className="text-xs"
-                        data-testid="settings-light-bg"
-                      />
-                    </div>
-
-                    {/* Dark Background */}
-                    <div>
-                      <Label className="text-xs mb-2 block">Dunkel-Modus Hintergrund</Label>
-                      <div className="grid grid-cols-2 gap-2 mb-2">
-                        {BACKGROUND_PRESETS.dark.map((bg) => (
-                          <button
-                            key={bg.url}
-                            onClick={() => updateLocalSetting('darkBackground', bg.url)}
-                            className={`relative aspect-video rounded-lg overflow-hidden border-2 transition-all ${
-                              localSettings.darkBackground === bg.url 
-                                ? 'border-foreground' 
-                                : 'border-transparent hover:border-muted-foreground'
-                            }`}
-                          >
-                            <img src={bg.url} alt={bg.label} className="w-full h-full object-cover" />
-                            <span className="absolute bottom-1 left-1 text-[10px] text-white bg-black/50 px-1 rounded">
-                              {bg.label}
-                            </span>
-                          </button>
-                        ))}
-                      </div>
-                      <Input
-                        value={localSettings.darkBackground || ''}
-                        onChange={(e) => updateLocalSetting('darkBackground', e.target.value)}
-                        placeholder="URL zum Bild"
-                        className="text-xs"
-                        data-testid="settings-dark-bg"
-                      />
-                    </div>
+                    ))}
                   </div>
-                </div>
+                </motion.div>
+              )}
 
-                {/* Save Button */}
-                <div className="lg:col-span-2 pt-4 border-t">
-                  <Button
-                    onClick={handleSaveSettings}
-                    disabled={loading}
-                    className="w-full sm:w-auto"
-                    data-testid="save-settings"
-                  >
-                    {saveSuccess ? (
-                      <><Check className="w-4 h-4 mr-1" /> Gespeichert</>
-                    ) : (
-                      <><Save className="w-4 h-4 mr-1" /> Einstellungen speichern</>
-                    )}
-                  </Button>
-                </div>
-              </div>
-            </TabsContent>
+              {/* Posts Tab */}
+              {activeTab === 'posts' && (
+                <motion.div
+                  key="posts"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="space-y-4"
+                >
+                  <div className="flex items-center justify-between">
+                    <h1 className="text-2xl font-semibold">Blog-Beiträge</h1>
+                    <Button onClick={() => setEditingPost({ title: '', excerpt: '', content: '', category: 'Tipps', status: 'draft' })} data-testid="new-post-btn">
+                      <Plus className="w-4 h-4 mr-1" /> Neuer Beitrag
+                    </Button>
+                  </div>
 
-            {/* Contacts Tab */}
-            <TabsContent value="contacts">
-              {contacts.length === 0 ? (
-                <div className="text-center py-12">
-                  <Mail className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground">Noch keine Anfragen</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {contacts.map((contact) => (
-                    <div key={contact.id} className="p-4 border rounded-lg hover:bg-secondary/30 transition-colors">
-                      <div className="flex justify-between items-start gap-4">
+                  <div className="grid gap-4">
+                    {posts.map((post) => (
+                      <div key={post.id} className="p-4 rounded-xl border border-border flex items-center gap-4">
+                        {post.image_url && (
+                          <img src={post.image_url} alt="" className="w-20 h-20 rounded-lg object-cover hidden sm:block" />
+                        )}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="text-xs px-2 py-0.5 bg-secondary rounded-full capitalize">
-                              {contact.thema}
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              {new Date(contact.timestamp).toLocaleDateString('de-DE')}
-                            </span>
+                            <Badge variant={post.status === 'live' ? 'default' : 'secondary'}>{post.status}</Badge>
+                            <span className="text-xs text-muted-foreground">{post.category}</span>
                           </div>
-                          <p className="text-sm font-medium text-foreground">
-                            {contact.name || 'Anonym'} – {contact.email}
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                            {contact.nachricht}
-                          </p>
+                          <p className="font-medium">{post.title}</p>
+                          <p className="text-sm text-muted-foreground truncate">{post.excerpt}</p>
                         </div>
-                        <a
-                          href={`mailto:${contact.email}`}
-                          className="text-xs text-foreground hover:underline flex-shrink-0"
-                        >
-                          Antworten
-                        </a>
+                        <div className="flex gap-1">
+                          <Button variant="ghost" size="sm" onClick={() => setEditingPost(post)}><Pencil className="w-4 h-4" /></Button>
+                          <Button variant="ghost" size="sm" onClick={() => setDeleteConfirm({ type: 'post', id: post.id, title: post.title })}><Trash2 className="w-4 h-4" /></Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Settings Tab */}
+              {activeTab === 'settings' && (
+                <motion.div
+                  key="settings"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="space-y-6"
+                >
+                  <div className="flex items-center justify-between">
+                    <h1 className="text-2xl font-semibold">Einstellungen</h1>
+                    <Button onClick={() => handleSaveSettings(false)} data-testid="save-settings-btn">
+                      {saveStatus === 'saved' ? <><Check className="w-4 h-4 mr-1" /> Gespeichert</> : <><Save className="w-4 h-4 mr-1" /> Speichern</>}
+                    </Button>
+                  </div>
+
+                  <div className="grid gap-6">
+                    {/* Website */}
+                    <div className="p-4 rounded-xl border border-border space-y-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Globe className="w-5 h-5" />
+                        <h2 className="font-semibold">Website</h2>
+                      </div>
+                      <div className="grid sm:grid-cols-2 gap-4">
+                        <div>
+                          <Label className="text-xs">Seiten-Titel</Label>
+                          <Input value={settings.siteTitle || ''} onChange={(e) => setSettings({...settings, siteTitle: e.target.value})} className="mt-1" />
+                        </div>
+                        <div>
+                          <Label className="text-xs">Logo-Text</Label>
+                          <Input value={settings.logoText || ''} onChange={(e) => setSettings({...settings, logoText: e.target.value})} className="mt-1" />
+                        </div>
+                        <div>
+                          <Label className="text-xs">Hero-Titel</Label>
+                          <Input value={settings.heroTitle || ''} onChange={(e) => setSettings({...settings, heroTitle: e.target.value})} className="mt-1" />
+                        </div>
+                        <div>
+                          <Label className="text-xs">Hero-Untertitel</Label>
+                          <Input value={settings.heroSubtitle || ''} onChange={(e) => setSettings({...settings, heroSubtitle: e.target.value})} className="mt-1" />
+                        </div>
+                        <div className="sm:col-span-2">
+                          <Label className="text-xs">Hero-Beschreibung</Label>
+                          <Textarea value={settings.heroDescription || ''} onChange={(e) => setSettings({...settings, heroDescription: e.target.value})} className="mt-1" rows={2} />
+                        </div>
                       </div>
                     </div>
-                  ))}
-                </div>
+
+                    {/* Design */}
+                    <div className="p-4 rounded-xl border border-border space-y-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Palette className="w-5 h-5" />
+                        <h2 className="font-semibold">Design</h2>
+                      </div>
+                      <div className="grid sm:grid-cols-2 gap-4">
+                        <div>
+                          <Label className="text-xs">Schriftart</Label>
+                          <Select value={settings.fontFamily || 'Inter'} onValueChange={(v) => setSettings({...settings, fontFamily: v})}>
+                            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Inter">Inter</SelectItem>
+                              <SelectItem value="Manrope">Manrope</SelectItem>
+                              <SelectItem value="Playfair Display">Playfair Display</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label className="text-xs">Standard-Theme</Label>
+                          <Select value={settings.defaultTheme || 'light'} onValueChange={(v) => setSettings({...settings, defaultTheme: v})}>
+                            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="light">Hell</SelectItem>
+                              <SelectItem value="dark">Dunkel</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label className="text-xs">Hell-Hintergrund URL</Label>
+                          <Input value={settings.lightBackground || ''} onChange={(e) => setSettings({...settings, lightBackground: e.target.value})} className="mt-1" />
+                        </div>
+                        <div>
+                          <Label className="text-xs">Dunkel-Hintergrund URL</Label>
+                          <Input value={settings.darkBackground || ''} onChange={(e) => setSettings({...settings, darkBackground: e.target.value})} className="mt-1" />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* PayPal */}
+                    <div className="p-4 rounded-xl border border-border space-y-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Users className="w-5 h-5" />
+                        <h2 className="font-semibold">Spenden</h2>
+                      </div>
+                      <div className="grid sm:grid-cols-2 gap-4">
+                        <div>
+                          <Label className="text-xs">PayPal.me Link</Label>
+                          <Input value={settings.paypalLink || ''} onChange={(e) => setSettings({...settings, paypalLink: e.target.value})} className="mt-1" />
+                        </div>
+                        <div>
+                          <Label className="text-xs">Button-Text</Label>
+                          <Input value={settings.donationText || ''} onChange={(e) => setSettings({...settings, donationText: e.target.value})} className="mt-1" />
+                        </div>
+                        <div className="sm:col-span-2">
+                          <Label className="text-xs">Rechtshinweis</Label>
+                          <Textarea value={settings.donationDisclaimer || ''} onChange={(e) => setSettings({...settings, donationDisclaimer: e.target.value})} className="mt-1" rows={2} />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* SEO */}
+                    <div className="p-4 rounded-xl border border-border space-y-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Search className="w-5 h-5" />
+                        <h2 className="font-semibold">SEO & Analytics</h2>
+                      </div>
+                      <div className="grid sm:grid-cols-2 gap-4">
+                        <div className="sm:col-span-2">
+                          <Label className="text-xs">Meta-Beschreibung</Label>
+                          <Textarea value={settings.metaDescription || ''} onChange={(e) => setSettings({...settings, metaDescription: e.target.value})} className="mt-1" rows={2} />
+                        </div>
+                        <div className="sm:col-span-2">
+                          <Label className="text-xs">Google Analytics 4 Tag (z.B. G-XXXXXXXXXX)</Label>
+                          <Input value={settings.ga4Tag || ''} onChange={(e) => setSettings({...settings, ga4Tag: e.target.value})} className="mt-1" placeholder="G-XXXXXXXXXX" />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Security */}
+                    <div className="p-4 rounded-xl border border-border space-y-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Shield className="w-5 h-5" />
+                        <h2 className="font-semibold">Sicherheit</h2>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Passwort kann über die API geändert werden: POST /api/admin/change-password
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
               )}
-            </TabsContent>
-          </Tabs>
+            </AnimatePresence>
+          </div>
         </div>
-      </section>
+      </div>
+
+      {/* Page Edit Modal */}
+      <Dialog open={!!editingPage} onOpenChange={() => setEditingPage(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{editingPage?.id ? 'Seite bearbeiten' : 'Neue Seite'}</DialogTitle>
+          </DialogHeader>
+          {editingPage && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-xs">Titel</Label>
+                  <Input value={editingPage.title} onChange={(e) => setEditingPage({...editingPage, title: e.target.value})} className="mt-1" />
+                </div>
+                <div>
+                  <Label className="text-xs">URL-Slug</Label>
+                  <Input value={editingPage.slug} onChange={(e) => setEditingPage({...editingPage, slug: e.target.value})} className="mt-1" />
+                </div>
+              </div>
+              <div>
+                <Label className="text-xs">Inhalt</Label>
+                <Textarea value={editingPage.content} onChange={(e) => setEditingPage({...editingPage, content: e.target.value})} className="mt-1" rows={8} />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-xs">Status</Label>
+                  <Select value={editingPage.status} onValueChange={(v) => setEditingPage({...editingPage, status: v})}>
+                    <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="draft">Entwurf</SelectItem>
+                      <SelectItem value="live">Live</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs">Hero-Bild URL</Label>
+                  <Input value={editingPage.heroImage || ''} onChange={(e) => setEditingPage({...editingPage, heroImage: e.target.value})} className="mt-1" />
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingPage(null)}>Abbrechen</Button>
+            <Button onClick={handleSavePage}>Speichern</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Post Edit Modal */}
+      <Dialog open={!!editingPost} onOpenChange={() => setEditingPost(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{editingPost?.id ? 'Beitrag bearbeiten' : 'Neuer Beitrag'}</DialogTitle>
+          </DialogHeader>
+          {editingPost && (
+            <div className="space-y-4">
+              <div>
+                <Label className="text-xs">Titel</Label>
+                <Input value={editingPost.title} onChange={(e) => setEditingPost({...editingPost, title: e.target.value})} className="mt-1" />
+              </div>
+              <div>
+                <Label className="text-xs">Kurzbeschreibung</Label>
+                <Input value={editingPost.excerpt} onChange={(e) => setEditingPost({...editingPost, excerpt: e.target.value})} className="mt-1" />
+              </div>
+              <div>
+                <Label className="text-xs">Inhalt</Label>
+                <Textarea value={editingPost.content} onChange={(e) => setEditingPost({...editingPost, content: e.target.value})} className="mt-1" rows={8} />
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <Label className="text-xs">Kategorie</Label>
+                  <Select value={editingPost.category} onValueChange={(v) => setEditingPost({...editingPost, category: v})}>
+                    <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs">Status</Label>
+                  <Select value={editingPost.status} onValueChange={(v) => setEditingPost({...editingPost, status: v})}>
+                    <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="draft">Entwurf</SelectItem>
+                      <SelectItem value="live">Live</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs">Bild-URL</Label>
+                  <Input value={editingPost.image_url || ''} onChange={(e) => setEditingPost({...editingPost, image_url: e.target.value})} className="mt-1" />
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingPost(null)}>Abbrechen</Button>
+            <Button onClick={handleSavePost}>Speichern</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Image Edit Modal */}
+      <Dialog open={!!editingImage} onOpenChange={() => setEditingImage(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Bild bearbeiten</DialogTitle>
+          </DialogHeader>
+          {editingImage && (
+            <div className="space-y-4">
+              <img src={editingImage.url} alt="" className="w-full h-40 object-cover rounded-lg" />
+              <div>
+                <Label className="text-xs">Titel</Label>
+                <Input value={editingImage.title} onChange={(e) => setEditingImage({...editingImage, title: e.target.value})} className="mt-1" />
+              </div>
+              <div>
+                <Label className="text-xs">Alt-Text</Label>
+                <Input value={editingImage.alt} onChange={(e) => setEditingImage({...editingImage, alt: e.target.value})} className="mt-1" />
+              </div>
+              <div>
+                <Label className="text-xs">Tags (kommagetrennt)</Label>
+                <Input value={(editingImage.tags || []).join(', ')} onChange={(e) => setEditingImage({...editingImage, tags: e.target.value.split(',').map(t => t.trim())})} className="mt-1" />
+              </div>
+              <div className="flex items-center gap-2">
+                <input type="checkbox" checked={editingImage.featured} onChange={(e) => setEditingImage({...editingImage, featured: e.target.checked})} />
+                <Label className="text-xs">Als Featured markieren</Label>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingImage(null)}>Abbrechen</Button>
+            <Button onClick={handleUpdateImage}>Speichern</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* New Image Modal */}
+      <Dialog open={showNewImageModal} onOpenChange={setShowNewImageModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Bild hinzufügen</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label className="text-xs">Bild-URL</Label>
+              <Input value={newImageUrl} onChange={(e) => setNewImageUrl(e.target.value)} className="mt-1" placeholder="https://..." />
+            </div>
+            <div>
+              <Label className="text-xs">Titel</Label>
+              <Input value={newImageTitle} onChange={(e) => setNewImageTitle(e.target.value)} className="mt-1" />
+            </div>
+            <div>
+              <Label className="text-xs">Tags (kommagetrennt)</Label>
+              <Input value={newImageTags} onChange={(e) => setNewImageTags(e.target.value)} className="mt-1" placeholder="Baby-Art, Abstrakt" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowNewImageModal(false)}>Abbrechen</Button>
+            <Button onClick={handleAddImage} disabled={!newImageUrl}>Hinzufügen</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Löschen bestätigen</AlertDialogTitle>
+            <AlertDialogDescription>
+              Möchtest du "{deleteConfirm?.title}" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+            <AlertDialogAction onClick={() => {
+              if (deleteConfirm.type === 'page') handleDeletePage(deleteConfirm.id);
+              if (deleteConfirm.type === 'post') handleDeletePost(deleteConfirm.id);
+              if (deleteConfirm.type === 'image') handleDeleteImage(deleteConfirm.id);
+            }}>
+              Löschen
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </main>
   );
 }
