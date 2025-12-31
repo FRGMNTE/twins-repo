@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence, Reorder } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Lock, LogOut, LayoutDashboard, FileText, Image, Mail, Settings, 
   Users, Plus, Pencil, Trash2, Copy, Download, Check, X,
-  ChevronRight, Search, Filter, Star, Save,
+  ChevronRight, ChevronDown, Search, Filter, Star, Save,
   Palette, Type, Globe, Shield, Menu, Home, GripVertical,
-  ExternalLink, Facebook, AtSign, Layout, Layers
+  ExternalLink, Facebook, Instagram, Youtube, AtSign, Layout, Layers,
+  RotateCcw, Calendar, ImageIcon, Link2, Twitter
 } from 'lucide-react';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
@@ -44,23 +45,39 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '../components/ui/accordion';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '../components/ui/tabs';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-const CATEGORIES = ['Schlaf', 'Füttern', 'Tipps', 'Alltag', 'Gesundheit'];
+const CATEGORIES = ['Schlaf', 'Füttern', 'Tipps', 'Alltag', 'Gesundheit', 'Reisen'];
+
+const SOCIAL_PLATFORMS = [
+  { id: 'facebook', label: 'Facebook', icon: Facebook },
+  { id: 'instagram', label: 'Instagram', icon: Instagram },
+  { id: 'youtube', label: 'YouTube', icon: Youtube },
+  { id: 'tiktok', label: 'TikTok', icon: () => <span className="text-sm font-bold">TT</span> },
+  { id: 'twitter', label: 'X (Twitter)', icon: Twitter },
+];
 
 const DEFAULT_NAV_ITEMS = [
-  { id: '1', label: 'Home', path: '/', enabled: true },
-  { id: '2', label: 'Über uns', path: '/ueber-uns', enabled: true },
-  { id: '3', label: 'Schwangerschaft', path: '/schwangerschaft', enabled: true },
-  { id: '4', label: 'Baby-Alltag', path: '/baby-alltag', enabled: true },
-  { id: '5', label: 'Tipps', path: '/tipps', enabled: true },
-  { id: '6', label: 'Reisen', path: '/reisen', enabled: true },
-  { id: '7', label: 'Blog', path: '/blog', enabled: true },
-  { id: '8', label: 'Suchen', path: '/suchen', enabled: true },
-  { id: '9', label: 'M&O Portfolio', path: '/twins-art', enabled: true },
-  { id: '10', label: 'Spende', path: '/spende', enabled: true },
-  { id: '11', label: 'Kontakt', path: '/kontakt', enabled: true },
+  { id: '1', label: 'Home', path: '/', enabled: true, children: [] },
+  { id: '2', label: 'Über uns', path: '/ueber-uns', enabled: true, children: [] },
+  { id: '3', label: 'Schwangerschaft', path: '/schwangerschaft', enabled: true, children: [] },
+  { id: '4', label: 'Baby-Alltag', path: '/baby-alltag', enabled: true, children: [] },
+  { id: '5', label: 'Tipps', path: '/tipps', enabled: true, children: [] },
+  { id: '6', label: 'Reisen', path: '/reisen', enabled: true, children: [] },
+  { id: '7', label: 'Blog', path: '/blog', enabled: true, children: [] },
+  { id: '8', label: 'Suchen', path: '/suchen', enabled: true, children: [] },
+  { id: '9', label: 'M&O Portfolio', path: '/mo-portfolio', enabled: true, children: [
+    { id: '9-1', label: 'Twins-Art', path: '/twins-art', enabled: true }
+  ]},
+  { id: '10', label: 'Spende', path: '/spende', enabled: true, children: [] },
+  { id: '11', label: 'Kontakt', path: '/kontakt', enabled: true, children: [] },
 ];
 
 const DEFAULT_FOOTER_LINKS = [
@@ -68,10 +85,12 @@ const DEFAULT_FOOTER_LINKS = [
   { id: '2', label: 'Datenschutz', path: '/datenschutz', enabled: true },
 ];
 
-const DEFAULT_TEASER_CARDS = [
-  { id: '1', title: 'Schwangerschaft', description: 'Vorbereitung auf Zwillinge', link: '/schwangerschaft', enabled: true },
-  { id: '2', title: 'Baby-Alltag', description: 'Routinen & Tipps', link: '/baby-alltag', enabled: true },
-  { id: '3', title: 'Twins-Art', description: 'Familienkunst', link: '/twins-art', enabled: true },
+const DEFAULT_SOCIAL_LINKS = [
+  { id: '1', platform: 'facebook', url: '', enabled: true },
+  { id: '2', platform: 'instagram', url: '', enabled: false },
+  { id: '3', platform: 'youtube', url: '', enabled: false },
+  { id: '4', platform: 'tiktok', url: '', enabled: false },
+  { id: '5', platform: 'twitter', url: '', enabled: false },
 ];
 
 export default function Admin() {
@@ -86,13 +105,18 @@ export default function Admin() {
   // Data states
   const [stats, setStats] = useState({ total_contacts: 0, unread_contacts: 0, total_pages: 0, total_gallery: 0, total_posts: 0, donations_count: 0 });
   const [pages, setPages] = useState([]);
+  const [trashedPages, setTrashedPages] = useState([]);
   const [gallery, setGallery] = useState([]);
   const [contacts, setContacts] = useState([]);
   const [posts, setPosts] = useState([]);
+  const [trashedPosts, setTrashedPosts] = useState([]);
   const [settings, setSettings] = useState({
     navItems: DEFAULT_NAV_ITEMS,
     footerLinks: DEFAULT_FOOTER_LINKS,
-    teaserCards: DEFAULT_TEASER_CARDS,
+    socialLinks: DEFAULT_SOCIAL_LINKS,
+    footerEmail: '',
+    logoText: 'gltz.de',
+    logoImage: '',
   });
   
   // Modal states
@@ -105,11 +129,15 @@ export default function Admin() {
   const [newImageTitle, setNewImageTitle] = useState('');
   const [newImageTags, setNewImageTags] = useState('');
   
+  // View state
+  const [pagesView, setPagesView] = useState('active'); // active, trash
+  const [postsView, setPostsView] = useState('active'); // active, trash
+  const [expandedNavItem, setExpandedNavItem] = useState(null);
+  
   // Filter states
   const [contactFilter, setContactFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Check session on load
   useEffect(() => {
     const savedToken = localStorage.getItem('admin_token');
     if (savedToken) {
@@ -117,10 +145,9 @@ export default function Admin() {
     }
   }, []);
 
-  // Auto-save
   useEffect(() => {
     const interval = setInterval(() => {
-      if (isAuthenticated && (activeTab === 'settings' || activeTab === 'landing' || activeTab === 'navigation')) {
+      if (isAuthenticated && ['settings', 'landing', 'navigation'].includes(activeTab)) {
         handleSaveSettings(true);
       }
     }, 30000);
@@ -149,18 +176,22 @@ export default function Admin() {
         axios.get(`${API}/settings`)
       ]);
       setStats(statsRes.data);
-      setPages(pagesRes.data);
+      setPages(pagesRes.data.filter(p => p.status !== 'deleted'));
+      setTrashedPages(pagesRes.data.filter(p => p.status === 'deleted'));
       setGallery(galleryRes.data);
       setContacts(contactsRes.data);
-      setPosts(postsRes.data);
+      setPosts(postsRes.data.filter(p => p.status !== 'deleted'));
+      setTrashedPosts(postsRes.data.filter(p => p.status === 'deleted'));
       
-      // Merge settings with defaults
       const fetchedSettings = settingsRes.data;
       setSettings({
         ...fetchedSettings,
         navItems: fetchedSettings.navItems?.length > 0 ? fetchedSettings.navItems : DEFAULT_NAV_ITEMS,
         footerLinks: fetchedSettings.footerLinks?.length > 0 ? fetchedSettings.footerLinks : DEFAULT_FOOTER_LINKS,
-        teaserCards: fetchedSettings.teaserCards?.length > 0 ? fetchedSettings.teaserCards : DEFAULT_TEASER_CARDS,
+        socialLinks: fetchedSettings.socialLinks?.length > 0 ? fetchedSettings.socialLinks : DEFAULT_SOCIAL_LINKS,
+        footerEmail: fetchedSettings.footerEmail || fetchedSettings.socialEmail || '',
+        logoText: fetchedSettings.logoText || 'gltz.de',
+        logoImage: fetchedSettings.logoImage || '',
       });
     } catch (err) {
       console.error('Error fetching data:', err);
@@ -203,9 +234,10 @@ export default function Admin() {
     }
   };
 
+  // Page handlers
   const handleSavePage = async () => {
     try {
-      if (editingPage.id) {
+      if (editingPage.id && pages.find(p => p.id === editingPage.id)) {
         await axios.put(`${API}/admin/pages/${editingPage.id}?token=${token}`, editingPage);
       } else {
         await axios.post(`${API}/admin/pages?token=${token}`, editingPage);
@@ -217,9 +249,14 @@ export default function Admin() {
     }
   };
 
-  const handleDeletePage = async (id) => {
-    await axios.delete(`${API}/admin/pages/${id}?token=${token}`);
+  const handleDeletePage = async (id, permanent = false) => {
+    await axios.delete(`${API}/admin/pages/${id}?token=${token}&permanent=${permanent}`);
     setDeleteConfirm(null);
+    fetchAllData(token);
+  };
+
+  const handleRestorePage = async (id) => {
+    await axios.post(`${API}/admin/pages/${id}/restore?token=${token}`);
     fetchAllData(token);
   };
 
@@ -228,12 +265,17 @@ export default function Admin() {
     fetchAllData(token);
   };
 
+  // Post handlers
   const handleSavePost = async () => {
     try {
-      if (editingPost.id) {
-        await axios.put(`${API}/admin/posts/${editingPost.id}?token=${token}`, editingPost);
+      const postData = {
+        ...editingPost,
+        publish_date: editingPost.publish_date ? new Date(editingPost.publish_date).toISOString() : null
+      };
+      if (editingPost.id && posts.find(p => p.id === editingPost.id)) {
+        await axios.put(`${API}/admin/posts/${editingPost.id}?token=${token}`, postData);
       } else {
-        await axios.post(`${API}/admin/posts?token=${token}`, editingPost);
+        await axios.post(`${API}/admin/posts?token=${token}`, postData);
       }
       setEditingPost(null);
       fetchAllData(token);
@@ -242,12 +284,18 @@ export default function Admin() {
     }
   };
 
-  const handleDeletePost = async (id) => {
-    await axios.delete(`${API}/admin/posts/${id}?token=${token}`);
+  const handleDeletePost = async (id, permanent = false) => {
+    await axios.delete(`${API}/admin/posts/${id}?token=${token}&permanent=${permanent}`);
     setDeleteConfirm(null);
     fetchAllData(token);
   };
 
+  const handleRestorePost = async (id) => {
+    await axios.post(`${API}/admin/posts/${id}/restore?token=${token}`);
+    fetchAllData(token);
+  };
+
+  // Gallery handlers
   const handleAddImage = async () => {
     await axios.post(`${API}/admin/gallery?token=${token}&url=${encodeURIComponent(newImageUrl)}&title=${encodeURIComponent(newImageTitle)}&tags=${encodeURIComponent(newImageTags)}`);
     setShowNewImageModal(false);
@@ -269,6 +317,7 @@ export default function Admin() {
     fetchAllData(token);
   };
 
+  // Contact handlers
   const handleUpdateContactStatus = async (id, status) => {
     await axios.put(`${API}/admin/contacts/${id}/status?token=${token}&status=${status}`);
     fetchAllData(token);
@@ -284,29 +333,63 @@ export default function Admin() {
     a.click();
   };
 
-  const handleIncrementDonations = async () => {
-    await axios.post(`${API}/admin/donations/increment?token=${token}`);
+  // Trash handlers
+  const handleEmptyTrash = async (type = 'all') => {
+    await axios.post(`${API}/admin/trash/empty?token=${token}&type=${type}`);
     fetchAllData(token);
   };
 
   // Navigation helpers
-  const addNavItem = () => {
-    const newItem = { id: Date.now().toString(), label: 'Neue Seite', path: '/', enabled: true };
-    setSettings({ ...settings, navItems: [...(settings.navItems || []), newItem] });
+  const addNavItem = (parentId = null) => {
+    const newItem = { id: Date.now().toString(), label: 'Neue Seite', path: '/', enabled: true, children: [] };
+    if (parentId) {
+      setSettings({
+        ...settings,
+        navItems: settings.navItems.map(item => 
+          item.id === parentId 
+            ? { ...item, children: [...(item.children || []), { ...newItem, id: `${parentId}-${Date.now()}` }] }
+            : item
+        )
+      });
+    } else {
+      setSettings({ ...settings, navItems: [...(settings.navItems || []), newItem] });
+    }
   };
 
-  const updateNavItem = (id, field, value) => {
-    setSettings({
-      ...settings,
-      navItems: (settings.navItems || []).map(item => item.id === id ? { ...item, [field]: value } : item)
-    });
+  const updateNavItem = (id, field, value, parentId = null) => {
+    if (parentId) {
+      setSettings({
+        ...settings,
+        navItems: settings.navItems.map(item => 
+          item.id === parentId 
+            ? { ...item, children: (item.children || []).map(child => child.id === id ? { ...child, [field]: value } : child) }
+            : item
+        )
+      });
+    } else {
+      setSettings({
+        ...settings,
+        navItems: (settings.navItems || []).map(item => item.id === id ? { ...item, [field]: value } : item)
+      });
+    }
   };
 
-  const removeNavItem = (id) => {
-    setSettings({
-      ...settings,
-      navItems: (settings.navItems || []).filter(item => item.id !== id)
-    });
+  const removeNavItem = (id, parentId = null) => {
+    if (parentId) {
+      setSettings({
+        ...settings,
+        navItems: settings.navItems.map(item => 
+          item.id === parentId 
+            ? { ...item, children: (item.children || []).filter(child => child.id !== id) }
+            : item
+        )
+      });
+    } else {
+      setSettings({
+        ...settings,
+        navItems: (settings.navItems || []).filter(item => item.id !== id)
+      });
+    }
   };
 
   // Footer helpers
@@ -329,23 +412,23 @@ export default function Admin() {
     });
   };
 
-  // Teaser Card helpers
-  const addTeaserCard = () => {
-    const newCard = { id: Date.now().toString(), title: 'Neue Karte', description: 'Beschreibung', link: '/', enabled: true };
-    setSettings({ ...settings, teaserCards: [...(settings.teaserCards || []), newCard] });
+  // Social helpers
+  const addSocialLink = () => {
+    const newLink = { id: Date.now().toString(), platform: 'facebook', url: '', enabled: true };
+    setSettings({ ...settings, socialLinks: [...(settings.socialLinks || []), newLink] });
   };
 
-  const updateTeaserCard = (id, field, value) => {
+  const updateSocialLink = (id, field, value) => {
     setSettings({
       ...settings,
-      teaserCards: (settings.teaserCards || []).map(card => card.id === id ? { ...card, [field]: value } : card)
+      socialLinks: (settings.socialLinks || []).map(link => link.id === id ? { ...link, [field]: value } : link)
     });
   };
 
-  const removeTeaserCard = (id) => {
+  const removeSocialLink = (id) => {
     setSettings({
       ...settings,
-      teaserCards: (settings.teaserCards || []).filter(card => card.id !== id)
+      socialLinks: (settings.socialLinks || []).filter(link => link.id !== id)
     });
   };
 
@@ -367,16 +450,15 @@ export default function Admin() {
             <h1 className="text-2xl font-semibold text-foreground">gltz.de Admin</h1>
             <p className="text-sm text-muted-foreground mt-1">Melde dich an, um fortzufahren</p>
           </div>
-          <form onSubmit={handleLogin} className="space-y-4" data-testid="admin-login-form">
+          <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <Label className="text-xs">Passwort</Label>
-              <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className="mt-1" required data-testid="admin-password-input" />
+              <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className="mt-1" required />
             </div>
             {error && <p className="text-xs text-destructive">{error}</p>}
-            <Button type="submit" disabled={loading} className="w-full" data-testid="admin-login-btn">
+            <Button type="submit" disabled={loading} className="w-full">
               {loading ? 'Wird geprüft...' : 'Einloggen'}
             </Button>
-            <p className="text-[10px] text-muted-foreground text-center">Standard-Passwort: gltz2025</p>
           </form>
         </motion.div>
       </main>
@@ -395,7 +477,7 @@ export default function Admin() {
             </div>
             <span className="font-semibold text-foreground">gltz.de Admin</span>
           </div>
-          <Button variant="ghost" size="sm" onClick={handleLogout} data-testid="admin-logout-btn">
+          <Button variant="ghost" size="sm" onClick={handleLogout}>
             <LogOut className="w-4 h-4" />
           </Button>
         </div>
@@ -422,7 +504,6 @@ export default function Admin() {
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
                     activeTab === item.id ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
                   }`}
-                  data-testid={`nav-${item.id}`}
                 >
                   <item.icon className="w-4 h-4" />
                   {item.label}
@@ -443,14 +524,13 @@ export default function Admin() {
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     {[
                       { label: 'Kontakte', value: stats.total_contacts, sub: `${stats.unread_contacts} ungelesen`, icon: Mail },
-                      { label: 'Seiten', value: stats.total_pages, icon: FileText },
+                      { label: 'Seiten', value: pages.length, sub: `${trashedPages.length} im Papierkorb`, icon: FileText },
                       { label: 'Galerie', value: stats.total_gallery, icon: Image },
-                      { label: 'Spenden', value: stats.donations_count, icon: Users, action: handleIncrementDonations },
+                      { label: 'Blog', value: posts.length, sub: `${trashedPosts.length} im Papierkorb`, icon: Layers },
                     ].map((stat) => (
                       <div key={stat.label} className="p-4 rounded-xl border border-border bg-card">
                         <div className="flex items-center justify-between mb-2">
                           <stat.icon className="w-5 h-5 text-muted-foreground" />
-                          {stat.action && <button onClick={stat.action} className="text-xs text-primary hover:underline">+1</button>}
                         </div>
                         <p className="text-2xl font-semibold">{stat.value}</p>
                         <p className="text-xs text-muted-foreground">{stat.sub || stat.label}</p>
@@ -460,9 +540,9 @@ export default function Admin() {
 
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                     {[
-                      { label: 'Landing Page', icon: Home, action: () => setActiveTab('landing') },
+                      { label: 'Neue Seite', icon: FileText, action: () => { setEditingPage({ title: '', slug: '', content: '', status: 'draft' }); setActiveTab('pages'); }},
+                      { label: 'Neuer Beitrag', icon: Layers, action: () => { setEditingPost({ title: '', excerpt: '', content: '', category: 'Tipps', status: 'draft', publish_date: new Date().toISOString().split('T')[0] }); setActiveTab('posts'); }},
                       { label: 'Navigation', icon: Menu, action: () => setActiveTab('navigation') },
-                      { label: 'Galerie', icon: Image, action: () => setActiveTab('gallery') },
                       { label: 'Einstellungen', icon: Settings, action: () => setActiveTab('settings') },
                     ].map((btn) => (
                       <Button key={btn.label} variant="outline" className="h-auto py-4 flex-col gap-2" onClick={btn.action}>
@@ -470,24 +550,6 @@ export default function Admin() {
                         <span className="text-xs">{btn.label}</span>
                       </Button>
                     ))}
-                  </div>
-
-                  <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <h2 className="font-semibold">Neueste Anfragen</h2>
-                      <Button variant="ghost" size="sm" onClick={() => setActiveTab('contacts')}>Alle <ChevronRight className="w-4 h-4" /></Button>
-                    </div>
-                    <div className="space-y-2">
-                      {contacts.slice(0, 3).map((c) => (
-                        <div key={c.id} className="p-3 rounded-lg border border-border flex items-center justify-between">
-                          <div className="min-w-0">
-                            <p className="text-sm font-medium truncate">{c.email}</p>
-                            <p className="text-xs text-muted-foreground truncate">{c.nachricht.slice(0, 50)}...</p>
-                          </div>
-                          <Badge variant={c.status === 'neu' ? 'default' : 'secondary'} className="text-[10px]">{c.status}</Badge>
-                        </div>
-                      ))}
-                    </div>
                   </div>
                 </motion.div>
               )}
@@ -497,13 +559,12 @@ export default function Admin() {
                 <motion.div key="landing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6">
                   <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-semibold">Landing Page</h1>
-                    <Button onClick={() => handleSaveSettings(false)} data-testid="save-landing-btn">
+                    <Button onClick={() => handleSaveSettings(false)}>
                       {saveStatus === 'saved' ? <><Check className="w-4 h-4 mr-1" /> Gespeichert</> : <><Save className="w-4 h-4 mr-1" /> Speichern</>}
                     </Button>
                   </div>
 
-                  <Accordion type="multiple" defaultValue={['hero', 'teaser', 'cta']} className="space-y-4">
-                    {/* Hero Section */}
+                  <Accordion type="multiple" defaultValue={['hero']} className="space-y-4">
                     <AccordionItem value="hero" className="border rounded-xl px-4">
                       <AccordionTrigger className="py-4">
                         <div className="flex items-center gap-2">
@@ -530,57 +591,15 @@ export default function Admin() {
                           <div>
                             <Label className="text-xs">Hintergrund (Hell)</Label>
                             <Input value={settings.lightBackground || ''} onChange={(e) => setSettings({...settings, lightBackground: e.target.value})} className="mt-1" placeholder="https://..." />
-                            {settings.lightBackground && <img src={settings.lightBackground} alt="Preview" className="mt-2 h-20 w-full object-cover rounded" />}
                           </div>
                           <div>
                             <Label className="text-xs">Hintergrund (Dunkel)</Label>
                             <Input value={settings.darkBackground || ''} onChange={(e) => setSettings({...settings, darkBackground: e.target.value})} className="mt-1" placeholder="https://..." />
-                            {settings.darkBackground && <img src={settings.darkBackground} alt="Preview" className="mt-2 h-20 w-full object-cover rounded" />}
                           </div>
                         </div>
                       </AccordionContent>
                     </AccordionItem>
 
-                    {/* Teaser Cards */}
-                    <AccordionItem value="teaser" className="border rounded-xl px-4">
-                      <AccordionTrigger className="py-4">
-                        <div className="flex items-center gap-2">
-                          <Layers className="w-5 h-5" />
-                          <span className="font-semibold">Teaser-Karten</span>
-                          <Badge variant="secondary" className="ml-2">{(settings.teaserCards || []).length}</Badge>
-                        </div>
-                      </AccordionTrigger>
-                      <AccordionContent className="pb-4 space-y-3">
-                        {(settings.teaserCards || []).map((card, index) => (
-                          <div key={card.id} className="p-3 border rounded-lg space-y-3">
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm font-medium">Karte {index + 1}</span>
-                              <div className="flex items-center gap-2">
-                                <Switch checked={card.enabled} onCheckedChange={(v) => updateTeaserCard(card.id, 'enabled', v)} />
-                                <Button variant="ghost" size="sm" onClick={() => removeTeaserCard(card.id)}><Trash2 className="w-4 h-4" /></Button>
-                              </div>
-                            </div>
-                            <div className="grid sm:grid-cols-3 gap-3">
-                              <div>
-                                <Label className="text-xs">Titel</Label>
-                                <Input value={card.title} onChange={(e) => updateTeaserCard(card.id, 'title', e.target.value)} className="mt-1" />
-                              </div>
-                              <div>
-                                <Label className="text-xs">Beschreibung</Label>
-                                <Input value={card.description} onChange={(e) => updateTeaserCard(card.id, 'description', e.target.value)} className="mt-1" />
-                              </div>
-                              <div>
-                                <Label className="text-xs">Link</Label>
-                                <Input value={card.link} onChange={(e) => updateTeaserCard(card.id, 'link', e.target.value)} className="mt-1" />
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                        <Button variant="outline" onClick={addTeaserCard} className="w-full"><Plus className="w-4 h-4 mr-1" /> Karte hinzufügen</Button>
-                      </AccordionContent>
-                    </AccordionItem>
-
-                    {/* CTA Section */}
                     <AccordionItem value="cta" className="border rounded-xl px-4">
                       <AccordionTrigger className="py-4">
                         <div className="flex items-center gap-2">
@@ -598,10 +617,6 @@ export default function Admin() {
                             <Label className="text-xs">Button-Text</Label>
                             <Input value={settings.ctaButtonText || ''} onChange={(e) => setSettings({...settings, ctaButtonText: e.target.value})} className="mt-1" />
                           </div>
-                        </div>
-                        <div>
-                          <Label className="text-xs">Beschreibung</Label>
-                          <Textarea value={settings.ctaDescription || ''} onChange={(e) => setSettings({...settings, ctaDescription: e.target.value})} className="mt-1" rows={2} />
                         </div>
                         <div>
                           <Label className="text-xs">PayPal.me Link</Label>
@@ -623,29 +638,54 @@ export default function Admin() {
                     </Button>
                   </div>
 
-                  {/* Header Navigation */}
+                  {/* Header Navigation with Submenus */}
                   <div className="p-4 rounded-xl border border-border space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Menu className="w-5 h-5" />
-                        <h2 className="font-semibold">Header-Menü (Primärnavigation)</h2>
+                        <h2 className="font-semibold">Primäre Navigation (mit Untermenüs)</h2>
                       </div>
-                      <Button variant="outline" size="sm" onClick={addNavItem}><Plus className="w-4 h-4 mr-1" /> Hinzufügen</Button>
+                      <Button variant="outline" size="sm" onClick={() => addNavItem()}><Plus className="w-4 h-4 mr-1" /> Hinzufügen</Button>
                     </div>
                     
                     <div className="space-y-2">
-                      {(settings.navItems || []).map((item, index) => (
-                        <div key={item.id} className="flex items-center gap-3 p-3 border rounded-lg bg-card">
-                          <GripVertical className="w-4 h-4 text-muted-foreground cursor-move" />
-                          <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-3">
-                            <Input value={item.label} onChange={(e) => updateNavItem(item.id, 'label', e.target.value)} placeholder="Label" className="h-9" />
-                            <Input value={item.path} onChange={(e) => updateNavItem(item.id, 'path', e.target.value)} placeholder="/pfad" className="h-9" />
-                            <div className="flex items-center gap-2">
-                              <Switch checked={item.enabled} onCheckedChange={(v) => updateNavItem(item.id, 'enabled', v)} />
-                              <span className="text-xs text-muted-foreground">{item.enabled ? 'Aktiv' : 'Inaktiv'}</span>
+                      {(settings.navItems || []).map((item) => (
+                        <div key={item.id} className="border rounded-lg bg-card">
+                          <div className="flex items-center gap-3 p-3">
+                            <GripVertical className="w-4 h-4 text-muted-foreground cursor-move" />
+                            <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-3">
+                              <Input value={item.label} onChange={(e) => updateNavItem(item.id, 'label', e.target.value)} placeholder="Label" className="h-9" />
+                              <Input value={item.path} onChange={(e) => updateNavItem(item.id, 'path', e.target.value)} placeholder="/pfad" className="h-9" />
+                              <div className="flex items-center gap-2">
+                                <Switch checked={item.enabled} onCheckedChange={(v) => updateNavItem(item.id, 'enabled', v)} />
+                                <span className="text-xs text-muted-foreground">{item.enabled ? 'Aktiv' : 'Inaktiv'}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Button variant="ghost" size="sm" onClick={() => setExpandedNavItem(expandedNavItem === item.id ? null : item.id)}>
+                                  <ChevronDown className={`w-4 h-4 transition-transform ${expandedNavItem === item.id ? 'rotate-180' : ''}`} />
+                                </Button>
+                                <Button variant="ghost" size="sm" onClick={() => removeNavItem(item.id)}><Trash2 className="w-4 h-4" /></Button>
+                              </div>
                             </div>
-                            <Button variant="ghost" size="sm" onClick={() => removeNavItem(item.id)} className="justify-self-end"><Trash2 className="w-4 h-4" /></Button>
                           </div>
+                          
+                          {/* Children/Submenus */}
+                          {expandedNavItem === item.id && (
+                            <div className="px-3 pb-3 pt-0 ml-8 border-t border-dashed space-y-2">
+                              <p className="text-xs text-muted-foreground pt-2">Untermenü-Einträge:</p>
+                              {(item.children || []).map((child) => (
+                                <div key={child.id} className="flex items-center gap-3 p-2 bg-secondary/50 rounded">
+                                  <Input value={child.label} onChange={(e) => updateNavItem(child.id, 'label', e.target.value, item.id)} placeholder="Label" className="h-8 text-sm" />
+                                  <Input value={child.path} onChange={(e) => updateNavItem(child.id, 'path', e.target.value, item.id)} placeholder="/pfad" className="h-8 text-sm" />
+                                  <Switch checked={child.enabled} onCheckedChange={(v) => updateNavItem(child.id, 'enabled', v, item.id)} />
+                                  <Button variant="ghost" size="sm" onClick={() => removeNavItem(child.id, item.id)}><Trash2 className="w-3 h-3" /></Button>
+                                </div>
+                              ))}
+                              <Button variant="outline" size="sm" onClick={() => addNavItem(item.id)} className="w-full mt-2">
+                                <Plus className="w-3 h-3 mr-1" /> Untermenü hinzufügen
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -677,70 +717,95 @@ export default function Admin() {
                       ))}
                     </div>
                   </div>
-
-                  {/* Footer Settings */}
-                  <div className="p-4 rounded-xl border border-border space-y-4">
-                    <div className="flex items-center gap-2">
-                      <Globe className="w-5 h-5" />
-                      <h2 className="font-semibold">Footer-Einstellungen</h2>
-                    </div>
-                    
-                    <div>
-                      <Label className="text-xs">Footer-Text</Label>
-                      <Textarea value={settings.footerText || ''} onChange={(e) => setSettings({...settings, footerText: e.target.value})} className="mt-1" rows={2} />
-                    </div>
-                    
-                    <div className="grid sm:grid-cols-2 gap-4">
-                      <div>
-                        <Label className="text-xs flex items-center gap-1"><Facebook className="w-3 h-3" /> Facebook-Link</Label>
-                        <Input value={settings.socialFacebook || ''} onChange={(e) => setSettings({...settings, socialFacebook: e.target.value})} className="mt-1" />
-                      </div>
-                      <div>
-                        <Label className="text-xs flex items-center gap-1"><AtSign className="w-3 h-3" /> E-Mail</Label>
-                        <Input value={settings.socialEmail || ''} onChange={(e) => setSettings({...settings, socialEmail: e.target.value})} className="mt-1" />
-                      </div>
-                    </div>
-                  </div>
                 </motion.div>
               )}
 
               {/* Pages Tab */}
               {activeTab === 'pages' && (
                 <motion.div key="pages" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between flex-wrap gap-4">
                     <h1 className="text-2xl font-semibold">Seiten</h1>
-                    <Button onClick={() => setEditingPage({ title: '', slug: '', content: '', status: 'draft' })} data-testid="new-page-btn">
-                      <Plus className="w-4 h-4 mr-1" /> Neue Seite
-                    </Button>
+                    <div className="flex gap-2">
+                      <Tabs value={pagesView} onValueChange={setPagesView}>
+                        <TabsList>
+                          <TabsTrigger value="active">Aktiv ({pages.length})</TabsTrigger>
+                          <TabsTrigger value="trash">Papierkorb ({trashedPages.length})</TabsTrigger>
+                        </TabsList>
+                      </Tabs>
+                      <Button onClick={() => setEditingPage({ title: '', slug: '', content: '', status: 'draft' })}>
+                        <Plus className="w-4 h-4 mr-1" /> Neue Seite
+                      </Button>
+                    </div>
                   </div>
-                  <div className="border rounded-xl overflow-hidden">
-                    <table className="w-full text-sm">
-                      <thead className="bg-secondary">
-                        <tr>
-                          <th className="px-4 py-3 text-left font-medium">Titel</th>
-                          <th className="px-4 py-3 text-left font-medium hidden sm:table-cell">URL</th>
-                          <th className="px-4 py-3 text-left font-medium">Status</th>
-                          <th className="px-4 py-3 text-right font-medium">Aktionen</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-border">
-                        {pages.map((page) => (
-                          <tr key={page.id} className="hover:bg-secondary/50">
-                            <td className="px-4 py-3 font-medium">{page.title}</td>
-                            <td className="px-4 py-3 text-muted-foreground hidden sm:table-cell">/{page.slug}</td>
-                            <td className="px-4 py-3"><Badge variant={page.status === 'live' ? 'default' : 'secondary'}>{page.status}</Badge></td>
-                            <td className="px-4 py-3">
-                              <div className="flex justify-end gap-1">
-                                <Button variant="ghost" size="sm" onClick={() => setEditingPage(page)}><Pencil className="w-4 h-4" /></Button>
-                                <Button variant="ghost" size="sm" onClick={() => handleDuplicatePage(page.id)}><Copy className="w-4 h-4" /></Button>
-                                <Button variant="ghost" size="sm" onClick={() => setDeleteConfirm({ type: 'page', id: page.id, title: page.title })}><Trash2 className="w-4 h-4" /></Button>
-                              </div>
-                            </td>
+
+                  {pagesView === 'active' ? (
+                    <div className="border rounded-xl overflow-hidden">
+                      <table className="w-full text-sm">
+                        <thead className="bg-secondary">
+                          <tr>
+                            <th className="px-4 py-3 text-left font-medium">Titel</th>
+                            <th className="px-4 py-3 text-left font-medium hidden sm:table-cell">URL</th>
+                            <th className="px-4 py-3 text-left font-medium">Status</th>
+                            <th className="px-4 py-3 text-right font-medium">Aktionen</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                        </thead>
+                        <tbody className="divide-y divide-border">
+                          {pages.map((page) => (
+                            <tr key={page.id} className="hover:bg-secondary/50">
+                              <td className="px-4 py-3 font-medium">{page.title}</td>
+                              <td className="px-4 py-3 text-muted-foreground hidden sm:table-cell">/{page.slug}</td>
+                              <td className="px-4 py-3"><Badge variant={page.status === 'live' ? 'default' : 'secondary'}>{page.status}</Badge></td>
+                              <td className="px-4 py-3">
+                                <div className="flex justify-end gap-1">
+                                  <Button variant="ghost" size="sm" onClick={() => setEditingPage(page)}><Pencil className="w-4 h-4" /></Button>
+                                  <Button variant="ghost" size="sm" onClick={() => handleDuplicatePage(page.id)}><Copy className="w-4 h-4" /></Button>
+                                  <Button variant="ghost" size="sm" onClick={() => setDeleteConfirm({ type: 'page', id: page.id, title: page.title })}><Trash2 className="w-4 h-4" /></Button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {trashedPages.length > 0 && (
+                        <div className="flex justify-end">
+                          <Button variant="destructive" size="sm" onClick={() => handleEmptyTrash('pages')}>
+                            <Trash2 className="w-4 h-4 mr-1" /> Papierkorb leeren
+                          </Button>
+                        </div>
+                      )}
+                      <div className="border rounded-xl overflow-hidden">
+                        <table className="w-full text-sm">
+                          <thead className="bg-secondary">
+                            <tr>
+                              <th className="px-4 py-3 text-left font-medium">Titel</th>
+                              <th className="px-4 py-3 text-left font-medium hidden sm:table-cell">Gelöscht am</th>
+                              <th className="px-4 py-3 text-right font-medium">Aktionen</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-border">
+                            {trashedPages.map((page) => (
+                              <tr key={page.id} className="hover:bg-secondary/50">
+                                <td className="px-4 py-3 font-medium">{page.title}</td>
+                                <td className="px-4 py-3 text-muted-foreground hidden sm:table-cell">
+                                  {page.deleted_at ? new Date(page.deleted_at).toLocaleDateString('de-DE') : '-'}
+                                </td>
+                                <td className="px-4 py-3">
+                                  <div className="flex justify-end gap-1">
+                                    <Button variant="ghost" size="sm" onClick={() => handleRestorePage(page.id)}><RotateCcw className="w-4 h-4" /></Button>
+                                    <Button variant="ghost" size="sm" onClick={() => setDeleteConfirm({ type: 'page-permanent', id: page.id, title: page.title })}><X className="w-4 h-4 text-destructive" /></Button>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      <p className="text-xs text-muted-foreground text-center">Einträge werden nach 30 Tagen automatisch gelöscht</p>
+                    </div>
+                  )}
                 </motion.div>
               )}
 
@@ -749,7 +814,7 @@ export default function Admin() {
                 <motion.div key="gallery" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-semibold">Galerie</h1>
-                    <Button onClick={() => setShowNewImageModal(true)} data-testid="new-image-btn"><Plus className="w-4 h-4 mr-1" /> Bild hinzufügen</Button>
+                    <Button onClick={() => setShowNewImageModal(true)}><Plus className="w-4 h-4 mr-1" /> Bild hinzufügen</Button>
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {gallery.map((img) => (
@@ -762,9 +827,6 @@ export default function Admin() {
                         </div>
                         <div className="p-2">
                           <p className="text-xs font-medium truncate">{img.title || 'Unbenannt'}</p>
-                          <div className="flex gap-1 mt-1 flex-wrap">
-                            {(img.tags || []).slice(0, 2).map(tag => <Badge key={tag} variant="secondary" className="text-[10px]">{tag}</Badge>)}
-                          </div>
                         </div>
                       </div>
                     ))}
@@ -816,7 +878,6 @@ export default function Admin() {
                                 <SelectItem value="beantwortet">Beantwortet</SelectItem>
                               </SelectContent>
                             </Select>
-                            <a href={`mailto:${c.email}`} className="text-xs text-primary hover:underline text-center">Antworten</a>
                           </div>
                         </div>
                       </div>
@@ -828,29 +889,71 @@ export default function Admin() {
               {/* Posts Tab */}
               {activeTab === 'posts' && (
                 <motion.div key="posts" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between flex-wrap gap-4">
                     <h1 className="text-2xl font-semibold">Blog-Beiträge</h1>
-                    <Button onClick={() => setEditingPost({ title: '', excerpt: '', content: '', category: 'Tipps', status: 'draft' })} data-testid="new-post-btn"><Plus className="w-4 h-4 mr-1" /> Neuer Beitrag</Button>
+                    <div className="flex gap-2">
+                      <Tabs value={postsView} onValueChange={setPostsView}>
+                        <TabsList>
+                          <TabsTrigger value="active">Aktiv ({posts.length})</TabsTrigger>
+                          <TabsTrigger value="trash">Papierkorb ({trashedPosts.length})</TabsTrigger>
+                        </TabsList>
+                      </Tabs>
+                      <Button onClick={() => setEditingPost({ title: '', excerpt: '', content: '', category: 'Tipps', status: 'draft', publish_date: new Date().toISOString().split('T')[0] })}>
+                        <Plus className="w-4 h-4 mr-1" /> Neuer Beitrag
+                      </Button>
+                    </div>
                   </div>
-                  <div className="grid gap-4">
-                    {posts.map((post) => (
-                      <div key={post.id} className="p-4 rounded-xl border border-border flex items-center gap-4">
-                        {post.image_url && <img src={post.image_url} alt="" className="w-20 h-20 rounded-lg object-cover hidden sm:block" />}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <Badge variant={post.status === 'live' ? 'default' : 'secondary'}>{post.status}</Badge>
-                            <span className="text-xs text-muted-foreground">{post.category}</span>
+
+                  {postsView === 'active' ? (
+                    <div className="grid gap-4">
+                      {posts.map((post) => (
+                        <div key={post.id} className="p-4 rounded-xl border border-border flex items-center gap-4">
+                          {post.image_url && <img src={post.image_url} alt="" className="w-20 h-20 rounded-lg object-cover hidden sm:block" />}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Badge variant={post.status === 'live' ? 'default' : 'secondary'}>{post.status}</Badge>
+                              <span className="text-xs text-muted-foreground">{post.category}</span>
+                              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                <Calendar className="w-3 h-3" />
+                                {post.publish_date ? new Date(post.publish_date).toLocaleDateString('de-DE') : '-'}
+                              </span>
+                            </div>
+                            <p className="font-medium">{post.title}</p>
+                            <p className="text-sm text-muted-foreground truncate">{post.excerpt}</p>
                           </div>
-                          <p className="font-medium">{post.title}</p>
-                          <p className="text-sm text-muted-foreground truncate">{post.excerpt}</p>
+                          <div className="flex gap-1">
+                            <Button variant="ghost" size="sm" onClick={() => setEditingPost({...post, publish_date: post.publish_date ? new Date(post.publish_date).toISOString().split('T')[0] : ''})}><Pencil className="w-4 h-4" /></Button>
+                            <Button variant="ghost" size="sm" onClick={() => setDeleteConfirm({ type: 'post', id: post.id, title: post.title })}><Trash2 className="w-4 h-4" /></Button>
+                          </div>
                         </div>
-                        <div className="flex gap-1">
-                          <Button variant="ghost" size="sm" onClick={() => setEditingPost(post)}><Pencil className="w-4 h-4" /></Button>
-                          <Button variant="ghost" size="sm" onClick={() => setDeleteConfirm({ type: 'post', id: post.id, title: post.title })}><Trash2 className="w-4 h-4" /></Button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {trashedPosts.length > 0 && (
+                        <div className="flex justify-end">
+                          <Button variant="destructive" size="sm" onClick={() => handleEmptyTrash('posts')}>
+                            <Trash2 className="w-4 h-4 mr-1" /> Papierkorb leeren
+                          </Button>
                         </div>
+                      )}
+                      <div className="grid gap-4">
+                        {trashedPosts.map((post) => (
+                          <div key={post.id} className="p-4 rounded-xl border border-border flex items-center gap-4 opacity-60">
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium">{post.title}</p>
+                              <p className="text-xs text-muted-foreground">Gelöscht am: {post.deleted_at ? new Date(post.deleted_at).toLocaleDateString('de-DE') : '-'}</p>
+                            </div>
+                            <div className="flex gap-1">
+                              <Button variant="ghost" size="sm" onClick={() => handleRestorePost(post.id)}><RotateCcw className="w-4 h-4" /></Button>
+                              <Button variant="ghost" size="sm" onClick={() => setDeleteConfirm({ type: 'post-permanent', id: post.id, title: post.title })}><X className="w-4 h-4 text-destructive" /></Button>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
+                      <p className="text-xs text-muted-foreground text-center">Einträge werden nach 30 Tagen automatisch gelöscht</p>
+                    </div>
+                  )}
                 </motion.div>
               )}
 
@@ -859,20 +962,85 @@ export default function Admin() {
                 <motion.div key="settings" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6">
                   <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-semibold">Einstellungen</h1>
-                    <Button onClick={() => handleSaveSettings(false)} data-testid="save-settings-btn">
+                    <Button onClick={() => handleSaveSettings(false)}>
                       {saveStatus === 'saved' ? <><Check className="w-4 h-4 mr-1" /> Gespeichert</> : <><Save className="w-4 h-4 mr-1" /> Speichern</>}
                     </Button>
                   </div>
 
                   <div className="grid gap-6">
+                    {/* General Settings */}
                     <div className="p-4 rounded-xl border border-border space-y-4">
                       <div className="flex items-center gap-2 mb-2"><Globe className="w-5 h-5" /><h2 className="font-semibold">Allgemein</h2></div>
                       <div className="grid sm:grid-cols-2 gap-4">
-                        <div><Label className="text-xs">Seiten-Titel</Label><Input value={settings.siteTitle || ''} onChange={(e) => setSettings({...settings, siteTitle: e.target.value})} className="mt-1" /></div>
-                        <div><Label className="text-xs">Logo-Text</Label><Input value={settings.logoText || ''} onChange={(e) => setSettings({...settings, logoText: e.target.value})} className="mt-1" /></div>
+                        <div>
+                          <Label className="text-xs">Seiten-Titel</Label>
+                          <Input value={settings.siteTitle || ''} onChange={(e) => setSettings({...settings, siteTitle: e.target.value})} className="mt-1" />
+                        </div>
+                        <div>
+                          <Label className="text-xs">Logo-Text</Label>
+                          <Input value={settings.logoText || ''} onChange={(e) => setSettings({...settings, logoText: e.target.value})} className="mt-1" />
+                        </div>
+                      </div>
+                      <div>
+                        <Label className="text-xs flex items-center gap-1"><ImageIcon className="w-3 h-3" /> Logo-Bild URL (optional, ersetzt Logo-Text)</Label>
+                        <Input value={settings.logoImage || ''} onChange={(e) => setSettings({...settings, logoImage: e.target.value})} className="mt-1" placeholder="https://..." />
+                        {settings.logoImage && <img src={settings.logoImage} alt="Logo Preview" className="mt-2 h-10 object-contain" />}
                       </div>
                     </div>
 
+                    {/* Footer Settings */}
+                    <div className="p-4 rounded-xl border border-border space-y-4">
+                      <div className="flex items-center gap-2 mb-2"><FileText className="w-5 h-5" /><h2 className="font-semibold">Footer-Einstellungen</h2></div>
+                      <div>
+                        <Label className="text-xs">Footer-Text</Label>
+                        <Textarea value={settings.footerText || ''} onChange={(e) => setSettings({...settings, footerText: e.target.value})} className="mt-1" rows={2} />
+                      </div>
+                      <div>
+                        <Label className="text-xs flex items-center gap-1"><AtSign className="w-3 h-3" /> Kontakt E-Mail</Label>
+                        <Input value={settings.footerEmail || ''} onChange={(e) => setSettings({...settings, footerEmail: e.target.value})} className="mt-1" placeholder="kontakt@beispiel.de" />
+                      </div>
+                    </div>
+
+                    {/* Social Links */}
+                    <div className="p-4 rounded-xl border border-border space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2"><Link2 className="w-5 h-5" /><h2 className="font-semibold">Social Media Links</h2></div>
+                        <Button variant="outline" size="sm" onClick={addSocialLink}><Plus className="w-4 h-4 mr-1" /> Hinzufügen</Button>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        {(settings.socialLinks || []).map((link) => {
+                          const platform = SOCIAL_PLATFORMS.find(p => p.id === link.platform);
+                          const IconComponent = platform?.icon || Globe;
+                          return (
+                            <div key={link.id} className="flex items-center gap-3 p-3 border rounded-lg bg-card">
+                              <IconComponent className="w-5 h-5 text-muted-foreground" />
+                              <Select value={link.platform} onValueChange={(v) => updateSocialLink(link.id, 'platform', v)}>
+                                <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  {SOCIAL_PLATFORMS.map(p => (
+                                    <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <Input 
+                                value={link.url} 
+                                onChange={(e) => updateSocialLink(link.id, 'url', e.target.value)} 
+                                placeholder="https://..." 
+                                className="flex-1" 
+                              />
+                              <div className="flex items-center gap-2">
+                                <Switch checked={link.enabled} onCheckedChange={(v) => updateSocialLink(link.id, 'enabled', v)} />
+                                <span className="text-xs text-muted-foreground w-12">{link.enabled ? 'Aktiv' : 'Aus'}</span>
+                              </div>
+                              <Button variant="ghost" size="sm" onClick={() => removeSocialLink(link.id)}><Trash2 className="w-4 h-4" /></Button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Design Settings */}
                     <div className="p-4 rounded-xl border border-border space-y-4">
                       <div className="flex items-center gap-2 mb-2"><Palette className="w-5 h-5" /><h2 className="font-semibold">Design</h2></div>
                       <div className="grid sm:grid-cols-2 gap-4">
@@ -900,15 +1068,17 @@ export default function Admin() {
                       </div>
                     </div>
 
+                    {/* SEO Settings */}
                     <div className="p-4 rounded-xl border border-border space-y-4">
                       <div className="flex items-center gap-2 mb-2"><Search className="w-5 h-5" /><h2 className="font-semibold">SEO</h2></div>
-                      <div><Label className="text-xs">Meta-Beschreibung</Label><Textarea value={settings.metaDescription || ''} onChange={(e) => setSettings({...settings, metaDescription: e.target.value})} className="mt-1" rows={2} /></div>
-                      <div><Label className="text-xs">Google Analytics 4 Tag</Label><Input value={settings.ga4Tag || ''} onChange={(e) => setSettings({...settings, ga4Tag: e.target.value})} className="mt-1" placeholder="G-XXXXXXXXXX" /></div>
-                    </div>
-
-                    <div className="p-4 rounded-xl border border-border space-y-4">
-                      <div className="flex items-center gap-2 mb-2"><Shield className="w-5 h-5" /><h2 className="font-semibold">Sicherheit</h2></div>
-                      <p className="text-sm text-muted-foreground">Passwort: POST /api/admin/change-password?token=...&old_password=...&new_password=...</p>
+                      <div>
+                        <Label className="text-xs">Meta-Beschreibung</Label>
+                        <Textarea value={settings.metaDescription || ''} onChange={(e) => setSettings({...settings, metaDescription: e.target.value})} className="mt-1" rows={2} />
+                      </div>
+                      <div>
+                        <Label className="text-xs">Google Analytics 4 Tag</Label>
+                        <Input value={settings.ga4Tag || ''} onChange={(e) => setSettings({...settings, ga4Tag: e.target.value})} className="mt-1" placeholder="G-XXXXXXXXXX" />
+                      </div>
                     </div>
                   </div>
                 </motion.div>
@@ -920,7 +1090,7 @@ export default function Admin() {
 
       {/* Page Edit Modal */}
       <Dialog open={!!editingPage} onOpenChange={() => setEditingPage(null)}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{editingPage?.id ? 'Seite bearbeiten' : 'Neue Seite'}</DialogTitle></DialogHeader>
           {editingPage && (
             <div className="space-y-4">
@@ -947,14 +1117,14 @@ export default function Admin() {
 
       {/* Post Edit Modal */}
       <Dialog open={!!editingPost} onOpenChange={() => setEditingPost(null)}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{editingPost?.id ? 'Beitrag bearbeiten' : 'Neuer Beitrag'}</DialogTitle></DialogHeader>
           {editingPost && (
             <div className="space-y-4">
               <div><Label className="text-xs">Titel</Label><Input value={editingPost.title} onChange={(e) => setEditingPost({...editingPost, title: e.target.value})} className="mt-1" /></div>
               <div><Label className="text-xs">Kurzbeschreibung</Label><Input value={editingPost.excerpt} onChange={(e) => setEditingPost({...editingPost, excerpt: e.target.value})} className="mt-1" /></div>
               <div><Label className="text-xs">Inhalt</Label><Textarea value={editingPost.content} onChange={(e) => setEditingPost({...editingPost, content: e.target.value})} className="mt-1" rows={8} /></div>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div>
                   <Label className="text-xs">Kategorie</Label>
                   <Select value={editingPost.category} onValueChange={(v) => setEditingPost({...editingPost, category: v})}>
@@ -968,6 +1138,10 @@ export default function Admin() {
                     <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                     <SelectContent><SelectItem value="draft">Entwurf</SelectItem><SelectItem value="live">Live</SelectItem></SelectContent>
                   </Select>
+                </div>
+                <div>
+                  <Label className="text-xs flex items-center gap-1"><Calendar className="w-3 h-3" /> Veröffentlichungsdatum</Label>
+                  <Input type="date" value={editingPost.publish_date || ''} onChange={(e) => setEditingPost({...editingPost, publish_date: e.target.value})} className="mt-1" />
                 </div>
                 <div><Label className="text-xs">Bild-URL</Label><Input value={editingPost.image_url || ''} onChange={(e) => setEditingPost({...editingPost, image_url: e.target.value})} className="mt-1" /></div>
               </div>
@@ -1011,16 +1185,27 @@ export default function Admin() {
       <AlertDialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Löschen bestätigen</AlertDialogTitle>
-            <AlertDialogDescription>Möchtest du "{deleteConfirm?.title}" wirklich löschen?</AlertDialogDescription>
+            <AlertDialogTitle>
+              {deleteConfirm?.type?.includes('permanent') ? 'Endgültig löschen?' : 'In Papierkorb verschieben?'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteConfirm?.type?.includes('permanent') 
+                ? `"${deleteConfirm?.title}" wird endgültig gelöscht und kann nicht wiederhergestellt werden.`
+                : `"${deleteConfirm?.title}" wird in den Papierkorb verschoben. Du kannst es innerhalb von 30 Tagen wiederherstellen.`
+              }
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Abbrechen</AlertDialogCancel>
             <AlertDialogAction onClick={() => {
-              if (deleteConfirm.type === 'page') handleDeletePage(deleteConfirm.id);
-              if (deleteConfirm.type === 'post') handleDeletePost(deleteConfirm.id);
+              if (deleteConfirm.type === 'page') handleDeletePage(deleteConfirm.id, false);
+              if (deleteConfirm.type === 'page-permanent') handleDeletePage(deleteConfirm.id, true);
+              if (deleteConfirm.type === 'post') handleDeletePost(deleteConfirm.id, false);
+              if (deleteConfirm.type === 'post-permanent') handleDeletePost(deleteConfirm.id, true);
               if (deleteConfirm.type === 'image') handleDeleteImage(deleteConfirm.id);
-            }}>Löschen</AlertDialogAction>
+            }}>
+              {deleteConfirm?.type?.includes('permanent') ? 'Endgültig löschen' : 'In Papierkorb'}
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
