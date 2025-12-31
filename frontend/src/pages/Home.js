@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowDown, Baby, Heart, Lightbulb, Palette, ChevronRight } from 'lucide-react';
+import { ArrowDown, Baby, Heart, Lightbulb, Palette, ChevronRight, Mountain, Waves, Trees } from 'lucide-react';
 import axios from 'axios';
+import { useTheme } from '../context/ThemeContext';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function Home() {
   const [blogPosts, setBlogPosts] = useState([]);
+  const { theme } = useTheme();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -32,57 +34,96 @@ export default function Home() {
       title: 'Schwangerschaft & Geburt',
       description: 'Kliniktaschen, Haus-Organisation, emotionale Vorbereitung für Zwillinge',
       link: '/schwangerschaft',
+      nature: Mountain,
     },
     {
       icon: Heart,
       title: 'Baby-Alltag',
       description: 'Schlaf-Routinen, Füttern, Spielideen – was bei uns funktioniert',
       link: '/baby-alltag',
+      nature: Waves,
     },
     {
       icon: Lightbulb,
       title: 'Tipps & Hacks',
       description: '10 praktische Lösungen für Zwillingseltern – Mental Load bis Haushalt',
       link: '/tipps',
+      nature: Trees,
     },
   ];
 
   return (
     <main id="main-content">
-      {/* Hero Section */}
+      {/* Hero Section with Nature Background */}
       <section 
         className="relative min-h-screen flex items-center justify-center overflow-hidden"
         data-testid="hero-section"
       >
-        <div 
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ 
-            backgroundImage: 'url(https://images.pexels.com/photos/12529917/pexels-photo-12529917.jpeg)',
-            backgroundPosition: 'center 40%'
-          }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/60 to-background" />
+        {/* Dynamic Background based on theme */}
+        <div className="absolute inset-0">
+          {theme === 'dark' ? (
+            // Ocean Night
+            <div 
+              className="absolute inset-0 bg-cover bg-center transition-all duration-1000"
+              style={{ 
+                backgroundImage: 'url(https://images.pexels.com/photos/11654701/pexels-photo-11654701.jpeg)',
+              }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-b from-slate-900/80 via-slate-900/60 to-slate-900" />
+            </div>
+          ) : (
+            // Mountain Day
+            <div 
+              className="absolute inset-0 bg-cover bg-center transition-all duration-1000"
+              style={{ 
+                backgroundImage: 'url(https://images.pexels.com/photos/12241105/pexels-photo-12241105.jpeg)',
+              }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-b from-sky-100/40 via-transparent to-background" />
+            </div>
+          )}
         </div>
 
         <div className="relative z-10 container-width text-center py-32">
+          {/* Nature Icons */}
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="flex justify-center gap-4 mb-8"
+          >
+            <Mountain className="w-8 h-8 text-primary" />
+            <span className="text-2xl text-muted-foreground">•</span>
+            <Waves className="w-8 h-8 text-primary" />
+          </motion.div>
+
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-4xl sm:text-5xl lg:text-7xl font-extrabold text-foreground mb-6 tracking-tight"
+            className="text-4xl sm:text-5xl lg:text-7xl font-bold text-foreground mb-6 tracking-tight"
             data-testid="hero-title"
           >
-            gltz.de – Unsere Reise mit Zwillingen
+            Unsere Reise mit Zwillingen
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
+            className="font-handwriting text-2xl sm:text-3xl text-primary mb-4"
+          >
+            Von den Bergen bis zum Meer
+          </motion.p>
+
+          <motion.p
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
             className="text-base sm:text-lg text-muted-foreground mb-12 max-w-2xl mx-auto leading-relaxed"
           >
-            Anonyme Tipps für junge Familien vom Niederrhein. Von Schwangerschaft bis
-            Kleinkindalltag – praxisnah & ehrlich
+            Anonyme Tipps für junge Familien vom Niederrhein. 
+            Durch Wälder, über Wellen und Jahreszeiten – praxisnah & ehrlich.
           </motion.p>
 
           <motion.button
@@ -94,11 +135,12 @@ export default function Home() {
             aria-label="Zu den Tipps scrollen"
             data-testid="hero-cta"
           >
-            Tipps entdecken
+            Die Reise beginnt
             <ArrowDown className="w-5 h-5 animate-bounce" />
           </motion.button>
         </div>
 
+        {/* Animated scroll indicator */}
         <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
           <motion.div
             animate={{ y: [0, 10, 0] }}
@@ -123,7 +165,7 @@ export default function Home() {
               Was dich erwartet
             </h2>
             <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
-              Praxisnahe Tipps aus unserem Zwillingsalltag
+              Praxisnahe Tipps aus unserem Zwillingsalltag – wie eine Wanderung durch verschiedene Landschaften
             </p>
           </motion.div>
 
@@ -143,9 +185,12 @@ export default function Home() {
                   className="block h-full"
                   data-testid={`teaser-card-${index}`}
                 >
-                  <div className="glass-card p-8 rounded-3xl h-full">
-                    <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-2xl mb-6 group-hover:bg-primary/20 transition-colors">
-                      <teaser.icon className="w-8 h-8 text-primary" />
+                  <div className="glass-card p-8 rounded-3xl h-full transition-all duration-300">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="inline-flex items-center justify-center w-14 h-14 bg-primary/10 rounded-2xl group-hover:bg-primary/20 transition-colors">
+                        <teaser.icon className="w-7 h-7 text-primary" />
+                      </div>
+                      <teaser.nature className="w-5 h-5 text-muted-foreground opacity-50" />
                     </div>
                     <h3 className="text-xl font-semibold text-foreground mb-3">
                       {teaser.title}
@@ -161,6 +206,19 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Nature Divider */}
+      <section className="py-12 bg-card relative overflow-hidden">
+        <div className="container-width">
+          <div className="flex justify-center items-center gap-8 text-muted-foreground/30">
+            <Mountain className="w-12 h-12" />
+            <div className="h-px w-24 bg-border" />
+            <Trees className="w-12 h-12" />
+            <div className="h-px w-24 bg-border" />
+            <Waves className="w-12 h-12" />
+          </div>
+        </div>
+      </section>
+
       {/* Twins Art Preview */}
       <section className="section-padding bg-card" data-testid="twins-art-preview">
         <div className="container-width">
@@ -171,10 +229,13 @@ export default function Home() {
             transition={{ duration: 0.6 }}
             className="text-center"
           >
-            <Palette className="w-16 h-16 text-[hsl(var(--twins-art))] mx-auto mb-6" />
+            <Palette className="w-16 h-16 text-secondary mx-auto mb-6" />
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-6">
               Twins-Art
             </h2>
+            <p className="font-handwriting text-xl text-primary mb-4">
+              Kunst aus Kinderhand
+            </p>
             <p className="text-base sm:text-lg text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
               Anonyme Familienkunst aus Liebe zu unseren Kindern. 
               Unterstütze unser Familienprojekt.
@@ -182,10 +243,11 @@ export default function Home() {
 
             <div className="relative w-full max-w-3xl mx-auto mb-8 rounded-3xl overflow-hidden">
               <img
-                src="https://images.pexels.com/photos/5447092/pexels-photo-5447092.jpeg"
-                alt="Kunstmaterialien - Pinsel und Farben für Kinderkunst"
+                src="https://images.pexels.com/photos/5416626/pexels-photo-5416626.jpeg"
+                alt="Kinder spielen in der Natur - Twins Art Inspiration"
                 className="w-full h-64 sm:h-80 object-cover"
               />
+              <div className="absolute inset-0 bg-gradient-to-t from-card/80 to-transparent" />
             </div>
 
             <Link

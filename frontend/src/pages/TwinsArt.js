@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Heart, Palette, Lock } from 'lucide-react';
+import { Heart, Palette, Lock, Mountain, Waves } from 'lucide-react';
 import axios from 'axios';
 import Lightbox from '../components/Lightbox';
+import { useTheme } from '../context/ThemeContext';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -11,6 +12,7 @@ export default function TwinsArt() {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedTag, setSelectedTag] = useState('Alle');
+  const { theme } = useTheme();
 
   useEffect(() => {
     const fetchImages = async () => {
@@ -45,20 +47,36 @@ export default function TwinsArt() {
 
   return (
     <main id="main-content" className="pt-20">
-      {/* Hero */}
-      <section className="section-padding bg-gradient-to-b from-card to-background" data-testid="twins-art-hero">
-        <div className="container-width">
+      {/* Hero with Nature Theme */}
+      <section className="section-padding relative overflow-hidden" data-testid="twins-art-hero">
+        {/* Background */}
+        <div className="absolute inset-0">
+          {theme === 'dark' ? (
+            <div className="absolute inset-0 bg-gradient-to-b from-slate-900 via-slate-800 to-background" />
+          ) : (
+            <div className="absolute inset-0 bg-gradient-to-b from-amber-50 via-orange-50/50 to-background" />
+          )}
+        </div>
+        
+        <div className="container-width relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             className="text-center max-w-3xl mx-auto"
           >
-            <Palette className="w-16 h-16 text-[hsl(var(--twins-art))] mx-auto mb-6" />
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-foreground mb-6 tracking-tight">
+            <div className="flex justify-center gap-4 mb-6">
+              <Mountain className="w-8 h-8 text-primary opacity-50" />
+              <Palette className="w-16 h-16 text-secondary" />
+              <Waves className="w-8 h-8 text-primary opacity-50" />
+            </div>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-4 tracking-tight">
               Twins-Art
             </h1>
-            <p className="text-base sm:text-lg text-muted-foreground leading-relaxed mb-4">
+            <p className="font-handwriting text-2xl text-primary mb-6">
+              Kunst aus Kinderhand
+            </p>
+            <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
               Das Projekt: Anonyme Familienkunst aus Liebe zu unseren Kindern.
               Die Kunst bringt Freude, Einnahmen bleiben 100% in der Familie.
             </p>
