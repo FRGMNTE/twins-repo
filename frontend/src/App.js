@@ -14,6 +14,7 @@ import Kontakt from './pages/Kontakt';
 import Admin from './pages/Admin';
 import Impressum from './pages/Impressum';
 import Datenschutz from './pages/Datenschutz';
+import DynamicPage from './pages/DynamicPage';
 import './App.css';
 
 function App() {
@@ -33,6 +34,8 @@ function App() {
               <Route path="/admin" element={<Admin />} />
               <Route path="/impressum" element={<Impressum />} />
               <Route path="/datenschutz" element={<Datenschutz />} />
+              {/* Dynamic pages from database - catch all remaining routes */}
+              <Route path="/:slug" element={<DynamicPage />} />
             </Routes>
             <Footer />
             <CookieBanner />
