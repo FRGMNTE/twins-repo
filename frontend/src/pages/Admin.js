@@ -734,11 +734,27 @@ export default function Admin() {
                           <TabsTrigger value="trash">Papierkorb ({trashedPages.length})</TabsTrigger>
                         </TabsList>
                       </Tabs>
+                      <Button variant="outline" onClick={async () => {
+                        await axios.post(`${API}/admin/pages/init-defaults?token=${token}`);
+                        fetchAllData(token);
+                      }}>
+                        <Plus className="w-4 h-4 mr-1" /> Standardseiten
+                      </Button>
                       <Button onClick={() => setEditingPage({ title: '', slug: '', content: '', status: 'draft' })}>
                         <Plus className="w-4 h-4 mr-1" /> Neue Seite
                       </Button>
                     </div>
                   </div>
+
+                  {/* Info box */}
+                  {pages.length === 0 && (
+                    <div className="p-4 rounded-xl border border-border bg-secondary/30">
+                      <p className="text-sm text-muted-foreground">
+                        <strong>Tipp:</strong> Klicke auf "Standardseiten" um Impressum und Datenschutz automatisch zu erstellen.
+                        Alle Seiten können hier zentral bearbeitet werden.
+                      </p>
+                    </div>
+                  )}
 
                   {pagesView === 'active' ? (
                     <div className="border rounded-xl overflow-hidden">
@@ -752,16 +768,27 @@ export default function Admin() {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-border">
-                          {pages.map((page) => (
+                          {pages.length === 0 ? (
+                            <tr>
+                              <td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">
+                                Keine Seiten vorhanden. Erstelle eine neue Seite oder lade Standardseiten.
+                              </td>
+                            </tr>
+                          ) : pages.map((page) => (
                             <tr key={page.id} className="hover:bg-secondary/50">
                               <td className="px-4 py-3 font-medium">{page.title}</td>
-                              <td className="px-4 py-3 text-muted-foreground hidden sm:table-cell">/{page.slug}</td>
+                              <td className="px-4 py-3 text-muted-foreground hidden sm:table-cell">
+                                <a href={`/${page.slug}`} target="_blank" rel="noopener noreferrer" className="hover:text-foreground hover:underline">
+                                  /{page.slug}
+                                </a>
+                              </td>
                               <td className="px-4 py-3"><Badge variant={page.status === 'live' ? 'default' : 'secondary'}>{page.status}</Badge></td>
                               <td className="px-4 py-3">
                                 <div className="flex justify-end gap-1">
-                                  <Button variant="ghost" size="sm" onClick={() => setEditingPage(page)}><Pencil className="w-4 h-4" /></Button>
-                                  <Button variant="ghost" size="sm" onClick={() => handleDuplicatePage(page.id)}><Copy className="w-4 h-4" /></Button>
-                                  <Button variant="ghost" size="sm" onClick={() => setDeleteConfirm({ type: 'page', id: page.id, title: page.title })}><Trash2 className="w-4 h-4" /></Button>
+                                  <Button variant="ghost" size="sm" onClick={() => setEditingPage(page)} title="Bearbeiten"><Pencil className="w-4 h-4" /></Button>
+                                  <Button variant="ghost" size="sm" onClick={() => handleDuplicatePage(page.id)} title="Duplizieren"><Copy className="w-4 h-4" /></Button>
+                                  <Button variant="ghost" size="sm" onClick={() => window.open(`/${page.slug}`, '_blank')} title="Vorschau"><ExternalLink className="w-4 h-4" /></Button>
+                                  <Button variant="ghost" size="sm" onClick={() => setDeleteConfirm({ type: 'page', id: page.id, title: page.title })} title="Löschen"><Trash2 className="w-4 h-4" /></Button>
                                 </div>
                               </td>
                             </tr>
