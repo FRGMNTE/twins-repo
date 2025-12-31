@@ -79,7 +79,7 @@ export default function Home() {
                 backgroundImage: 'url(https://images.pexels.com/photos/12241105/pexels-photo-12241105.jpeg)',
               }}
             >
-              <div className="absolute inset-0 bg-gradient-to-b from-sky-100/40 via-transparent to-background" />
+              <div className="absolute inset-0 bg-gradient-to-b from-white/70 via-white/50 to-background" />
             </div>
           )}
         </div>
