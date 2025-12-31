@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Moon, Sun } from 'lucide-react';
-import { useTheme } from '../context/ThemeContext';
+import { Menu, X, Mountain } from 'lucide-react';
+import CelestialSwitch from './CelestialSwitch';
 
 export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const { theme, toggleTheme } = useTheme();
   const location = useLocation();
 
   useEffect(() => {
@@ -54,11 +53,12 @@ export default function Navigation() {
           <div className="flex justify-between items-center h-16 sm:h-20">
             <Link
               to="/"
-              className="text-xl sm:text-2xl font-bold text-foreground hover:opacity-70 transition-opacity"
+              className="flex items-center gap-2 text-xl sm:text-2xl font-bold text-foreground hover:opacity-70 transition-opacity"
               aria-label="gltz.de Startseite"
               data-testid="logo-link"
             >
-              gltz.de
+              <Mountain className="w-6 h-6 text-primary" />
+              <span>gltz.de</span>
             </Link>
 
             <div className="hidden lg:flex items-center space-x-1">
@@ -69,7 +69,7 @@ export default function Navigation() {
                   className={`px-4 py-2 text-sm font-medium rounded-full transition-all duration-200 ${
                     location.pathname === link.path
                       ? 'text-primary bg-primary/10'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-accent/10'
                   }`}
                   data-testid={`nav-link-${link.path.replace('/', '') || 'home'}`}
                 >
@@ -78,23 +78,12 @@ export default function Navigation() {
               ))}
             </div>
 
-            <div className="flex items-center gap-2">
-              <button
-                onClick={toggleTheme}
-                className="p-2.5 rounded-full hover:bg-accent transition-colors"
-                aria-label={theme === 'light' ? 'Zu Dark Mode wechseln' : 'Zu Light Mode wechseln'}
-                data-testid="theme-toggle"
-              >
-                {theme === 'light' ? (
-                  <Moon className="w-5 h-5 text-foreground" />
-                ) : (
-                  <Sun className="w-5 h-5 text-foreground" />
-                )}
-              </button>
+            <div className="flex items-center gap-3">
+              <CelestialSwitch />
 
               <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="lg:hidden p-2.5 rounded-full hover:bg-accent transition-colors"
+                className="lg:hidden p-2.5 rounded-full hover:bg-accent/10 transition-colors"
                 aria-label="Menü öffnen"
                 aria-expanded={isOpen}
                 data-testid="mobile-menu-toggle"
@@ -119,7 +108,7 @@ export default function Navigation() {
                   className={`block px-4 py-3 text-base font-medium rounded-xl transition-colors ${
                     location.pathname === link.path
                       ? 'text-primary bg-primary/10'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-accent/10'
                   }`}
                 >
                   {link.label}
