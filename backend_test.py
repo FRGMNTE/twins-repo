@@ -6,14 +6,14 @@ import json
 from datetime import datetime
 from typing import Dict, Any, List
 
-class GltzAPITester:
+class GltzAdminAPITester:
     def __init__(self, base_url="https://twin-family.preview.emergentagent.com/api"):
         self.base_url = base_url
-        self.session_token = None
+        self.admin_token = None
         self.tests_run = 0
         self.tests_passed = 0
         self.failed_tests = []
-        self.admin_email = "gltz.de@gmail.com"
+        self.admin_password = "gltz2025"
         
     def log_result(self, test_name: str, success: bool, details: str = ""):
         """Log test result"""
