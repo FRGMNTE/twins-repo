@@ -598,7 +598,8 @@ async def update_post(post_id: str, post: BlogPostCreate, token: str):
         updated['updated_at'] = datetime.fromisoformat(updated['updated_at'])
     if isinstance(updated.get('publish_date'), str):
         updated['publish_date'] = datetime.fromisoformat(updated['publish_date'])
-    if 'publish_date' not in updated:
+    # Ensure publish_date is never None
+    if 'publish_date' not in updated or updated['publish_date'] is None:
         updated['publish_date'] = updated.get('created_at', datetime.now(timezone.utc))
     return BlogPost(**updated)
 
