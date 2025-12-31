@@ -750,6 +750,7 @@ async def seed_data():
                 "category": "Schlaf",
                 "image_url": "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400",
                 "status": "live",
+                "publish_date": datetime.now(timezone.utc).isoformat(),
                 "created_at": datetime.now(timezone.utc).isoformat(),
                 "updated_at": datetime.now(timezone.utc).isoformat()
             },
@@ -761,6 +762,7 @@ async def seed_data():
                 "category": "Füttern",
                 "image_url": "https://images.unsplash.com/photo-1555252333-9f8e92e65df9?w=400",
                 "status": "live",
+                "publish_date": datetime.now(timezone.utc).isoformat(),
                 "created_at": datetime.now(timezone.utc).isoformat(),
                 "updated_at": datetime.now(timezone.utc).isoformat()
             },
@@ -772,6 +774,7 @@ async def seed_data():
                 "category": "Tipps",
                 "image_url": "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=400",
                 "status": "live",
+                "publish_date": datetime.now(timezone.utc).isoformat(),
                 "created_at": datetime.now(timezone.utc).isoformat(),
                 "updated_at": datetime.now(timezone.utc).isoformat()
             }
@@ -790,7 +793,74 @@ async def seed_data():
         ]
         await db.gallery_images.insert_many(default_images)
     
+    # Seed default pages if none exist
+    existing_pages = await db.pages.count_documents({})
+    if existing_pages == 0:
+        default_pages = [
+            {"id": str(uuid.uuid4()), "title": "Impressum", "slug": "impressum", "content": "Impressum Inhalt hier...", "status": "live", "order": 1, "created_at": datetime.now(timezone.utc).isoformat(), "updated_at": datetime.now(timezone.utc).isoformat()},
+            {"id": str(uuid.uuid4()), "title": "Datenschutz", "slug": "datenschutz", "content": "Datenschutzerklärung hier...", "status": "live", "order": 2, "created_at": datetime.now(timezone.utc).isoformat(), "updated_at": datetime.now(timezone.utc).isoformat()},
+            {"id": str(uuid.uuid4()), "title": "Über uns", "slug": "ueber-uns", "content": "Über uns Inhalt hier...", "status": "live", "order": 3, "created_at": datetime.now(timezone.utc).isoformat(), "updated_at": datetime.now(timezone.utc).isoformat()},
+            {"id": str(uuid.uuid4()), "title": "Kontakt", "slug": "kontakt", "content": "Kontakt Inhalt hier...", "status": "live", "order": 4, "created_at": datetime.now(timezone.utc).isoformat(), "updated_at": datetime.now(timezone.utc).isoformat()},
+            {"id": str(uuid.uuid4()), "title": "Schwangerschaft", "slug": "schwangerschaft", "content": "Schwangerschaft Inhalt hier...", "status": "draft", "order": 5, "created_at": datetime.now(timezone.utc).isoformat(), "updated_at": datetime.now(timezone.utc).isoformat()},
+            {"id": str(uuid.uuid4()), "title": "Baby-Alltag", "slug": "baby-alltag", "content": "Baby-Alltag Inhalt hier...", "status": "draft", "order": 6, "created_at": datetime.now(timezone.utc).isoformat(), "updated_at": datetime.now(timezone.utc).isoformat()},
+            {"id": str(uuid.uuid4()), "title": "Tipps", "slug": "tipps", "content": "Tipps Inhalt hier...", "status": "draft", "order": 7, "created_at": datetime.now(timezone.utc).isoformat(), "updated_at": datetime.now(timezone.utc).isoformat()},
+            {"id": str(uuid.uuid4()), "title": "Reisen", "slug": "reisen", "content": "Reisen Inhalt hier...", "status": "draft", "order": 8, "created_at": datetime.now(timezone.utc).isoformat(), "updated_at": datetime.now(timezone.utc).isoformat()},
+            {"id": str(uuid.uuid4()), "title": "Blog", "slug": "blog", "content": "Blog Übersicht hier...", "status": "live", "order": 9, "created_at": datetime.now(timezone.utc).isoformat(), "updated_at": datetime.now(timezone.utc).isoformat()},
+            {"id": str(uuid.uuid4()), "title": "Twins-Art", "slug": "twins-art", "content": "Twins-Art Portfolio hier...", "status": "live", "order": 10, "created_at": datetime.now(timezone.utc).isoformat(), "updated_at": datetime.now(timezone.utc).isoformat()},
+            {"id": str(uuid.uuid4()), "title": "Spende", "slug": "spende", "content": "Spenden Seite hier...", "status": "live", "order": 11, "created_at": datetime.now(timezone.utc).isoformat(), "updated_at": datetime.now(timezone.utc).isoformat()},
+        ]
+        await db.pages.insert_many(default_pages)
+    
     return {"success": True}
+
+# ============== Trash Cleanup (auto-delete after 30 days) ==============
+
+@api_router.post("/admin/trash/cleanup")
+async def cleanup_trash(token: str):
+    if not await verify_admin_session(token):
+        raise HTTPException(status_code=401, detail="Nicht autorisiert")
+    
+    thirty_days_ago = datetime.now(timezone.utc) - timedelta(days=30)
+    
+    # Delete old pages
+    pages_result = await db.pages.delete_many({
+        "status": "deleted",
+        "deleted_at": {"$lt": thirty_days_ago.isoformat()}
+    })
+    
+    # Delete old posts
+    posts_result = await db.blog_posts.delete_many({
+        "status": "deleted", 
+        "deleted_at": {"$lt": thirty_days_ago.isoformat()}
+    })
+    
+    return {
+        "success": True,
+        "deleted_pages": pages_result.deleted_count,
+        "deleted_posts": posts_result.deleted_count
+    }
+
+@api_router.post("/admin/trash/empty")
+async def empty_trash(token: str, type: str = "all"):
+    if not await verify_admin_session(token):
+        raise HTTPException(status_code=401, detail="Nicht autorisiert")
+    
+    deleted_pages = 0
+    deleted_posts = 0
+    
+    if type in ["all", "pages"]:
+        result = await db.pages.delete_many({"status": "deleted"})
+        deleted_pages = result.deleted_count
+    
+    if type in ["all", "posts"]:
+        result = await db.blog_posts.delete_many({"status": "deleted"})
+        deleted_posts = result.deleted_count
+    
+    return {
+        "success": True,
+        "deleted_pages": deleted_pages,
+        "deleted_posts": deleted_posts
+    }
 
 @api_router.get("/")
 async def root():
