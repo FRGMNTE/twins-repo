@@ -293,17 +293,20 @@ async def increment_donations(token: str):
 # ============== Pages CRUD ==============
 
 @api_router.get("/admin/pages", response_model=List[PageModel])
-async def get_all_pages(token: str):
+async def get_all_pages(token: str, include_deleted: bool = False):
     if not await verify_admin_session(token):
         raise HTTPException(status_code=401, detail="Nicht autorisiert")
     
-    pages = await db.pages.find({}, {"_id": 0}).sort("order", 1).to_list(100)
+    query = {} if include_deleted else {"status": {"$ne": "deleted"}}
+    pages = await db.pages.find(query, {"_id": 0}).sort("order", 1).to_list(100)
     result = []
     for p in pages:
         if isinstance(p.get('created_at'), str):
             p['created_at'] = datetime.fromisoformat(p['created_at'])
         if isinstance(p.get('updated_at'), str):
             p['updated_at'] = datetime.fromisoformat(p['updated_at'])
+        if isinstance(p.get('deleted_at'), str):
+            p['deleted_at'] = datetime.fromisoformat(p['deleted_at'])
         result.append(PageModel(**p))
     return result
 
