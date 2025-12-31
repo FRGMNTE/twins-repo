@@ -83,153 +83,235 @@ class GltzAdminAPITester:
             self.log_result("Seed Data Creation", False, f"Response: {response}")
             return False
     
-    def test_blog_endpoints(self):
-        """Test blog-related endpoints"""
-        # Test GET blog posts
-        success, response = self.make_request('GET', '/blog?limit=3')
-        if success and isinstance(response, list):
-            self.log_result("Get Blog Posts", True)
-            blog_posts_count = len(response)
-        else:
-            self.log_result("Get Blog Posts", False, f"Expected list, got: {response}")
-            return False
-            
-        # Test creating a blog post
-        new_post = {
-            "title": "Test Blog Post",
-            "excerpt": "This is a test excerpt",
-            "content": "This is test content for the blog post",
-            "category": "Test",
-            "image_url": "https://example.com/test.jpg"
-        }
+    def test_admin_login(self):
+        """Test admin password-based login"""
+        login_data = {"password": self.admin_password}
         
-        success, response = self.make_request('POST', '/blog', new_post, 200)
-        if success and response.get('id'):
-            self.log_result("Create Blog Post", True)
-            post_id = response['id']
+        success, response = self.make_request('POST', '/admin/login', login_data)
+        if success and response.get('token'):
+            self.log_result("Admin Login", True)
+            self.admin_token = response['token']
             
-            # Test deleting the blog post
-            success, response = self.make_request('DELETE', f'/blog/{post_id}')
-            if success and response.get('success'):
-                self.log_result("Delete Blog Post", True)
-            else:
-                self.log_result("Delete Blog Post", False, f"Response: {response}")
-        else:
-            self.log_result("Create Blog Post", False, f"Response: {response}")
-            
-        return True
-    
-    def test_gallery_endpoints(self):
-        """Test gallery-related endpoints"""
-        # Test GET gallery images
-        success, response = self.make_request('GET', '/gallery')
-        if success and isinstance(response, list):
-            self.log_result("Get Gallery Images", True)
-            return True
-        else:
-            self.log_result("Get Gallery Images", False, f"Expected list, got: {response}")
-            return False
-    
-    def test_contact_form(self):
-        """Test contact form submission"""
-        contact_data = {
-            "name": "Test User",
-            "email": "test@example.com",
-            "thema": "tipps",
-            "nachricht": "This is a test message from the automated test suite."
-        }
-        
-        success, response = self.make_request('POST', '/contact', contact_data)
-        if success and response.get('id'):
-            self.log_result("Contact Form Submission", True)
-            
-            # Test getting contact submissions
-            success, response = self.make_request('GET', '/contact')
-            if success and isinstance(response, list):
-                self.log_result("Get Contact Submissions", True)
+            # Test token verification
+            success, response = self.make_request('GET', '/admin/verify')
+            if success and response.get('valid'):
+                self.log_result("Admin Token Verification", True)
                 return True
             else:
-                self.log_result("Get Contact Submissions", False, f"Expected list, got: {response}")
+                self.log_result("Admin Token Verification", False, f"Response: {response}")
                 return False
         else:
-            self.log_result("Contact Form Submission", False, f"Response: {response}")
+            self.log_result("Admin Login", False, f"Response: {response}")
             return False
     
-    def test_admin_authentication(self):
-        """Test admin authentication flow"""
-        # Test requesting admin code with correct email
-        success, response = self.make_request('POST', '/admin/request-code', 
-                                            {"email": self.admin_email})
-        if success and response.get('success'):
-            self.log_result("Admin Code Request (Valid Email)", True)
+    def test_admin_stats(self):
+        """Test admin dashboard stats"""
+        if not self.admin_token:
+            self.log_result("Admin Stats", False, "No admin token available")
+            return False
             
-            # Extract code from response message if available
-            message = response.get('message', '')
-            if 'Code:' in message:
-                code = message.split('Code:')[1].strip().split()[0]
-                
-                # Test verifying the code
-                success, response = self.make_request('POST', '/admin/verify-code',
-                                                    {"email": self.admin_email, "code": code})
-                if success and response.get('token'):
-                    self.log_result("Admin Code Verification", True)
-                    self.session_token = response['token']
-                    
-                    # Test session verification
-                    success, response = self.make_request('GET', f'/admin/verify-session?token={self.session_token}')
-                    if success and response.get('valid'):
-                        self.log_result("Admin Session Verification", True)
-                        return True
-                    else:
-                        self.log_result("Admin Session Verification", False, f"Response: {response}")
-                else:
-                    self.log_result("Admin Code Verification", False, f"Response: {response}")
-            else:
-                self.log_result("Admin Code Verification", False, "No code found in response")
+        success, response = self.make_request('GET', '/admin/stats')
+        if success and 'total_contacts' in response:
+            self.log_result("Admin Dashboard Stats", True)
+            return True
         else:
-            self.log_result("Admin Code Request (Valid Email)", False, f"Response: {response}")
-        
-        # Test requesting admin code with invalid email
-        success, response = self.make_request('POST', '/admin/request-code', 
-                                            {"email": "invalid@example.com"}, 403)
-        if success:
-            self.log_result("Admin Code Request (Invalid Email - Should Fail)", True)
-        else:
-            self.log_result("Admin Code Request (Invalid Email - Should Fail)", False, 
-                          f"Expected 403, got different response: {response}")
-        
-        return True
+            self.log_result("Admin Dashboard Stats", False, f"Response: {response}")
+            return False
     
-    def test_contact_form_validation(self):
-        """Test contact form validation"""
-        # Test missing required fields
-        invalid_data = {
-            "name": "Test User",
-            # Missing email, thema, nachricht
+    def test_admin_pages_crud(self):
+        """Test admin pages CRUD operations"""
+        if not self.admin_token:
+            self.log_result("Admin Pages CRUD", False, "No admin token available")
+            return False
+        
+        # Test GET pages
+        success, response = self.make_request('GET', '/admin/pages')
+        if success and isinstance(response, list):
+            self.log_result("Get Admin Pages", True)
+        else:
+            self.log_result("Get Admin Pages", False, f"Response: {response}")
+            return False
+        
+        # Test CREATE page
+        new_page = {
+            "title": "Test Page",
+            "slug": "test-page",
+            "content": "This is test content",
+            "status": "draft"
         }
         
-        success, response = self.make_request('POST', '/contact', invalid_data, 422)
-        if not success and response.get('status_code') == 422:
-            self.log_result("Contact Form Validation (Missing Fields)", True)
+        success, response = self.make_request('POST', '/admin/pages', new_page, 200)
+        if success and response.get('id'):
+            self.log_result("Create Admin Page", True)
+            page_id = response['id']
+            
+            # Test UPDATE page
+            updated_page = {
+                "title": "Updated Test Page",
+                "slug": "test-page",
+                "content": "Updated content",
+                "status": "live"
+            }
+            
+            success, response = self.make_request('PUT', f'/admin/pages/{page_id}', updated_page)
+            if success:
+                self.log_result("Update Admin Page", True)
+            else:
+                self.log_result("Update Admin Page", False, f"Response: {response}")
+            
+            # Test DUPLICATE page
+            success, response = self.make_request('POST', f'/admin/pages/{page_id}/duplicate')
+            if success and response.get('id'):
+                self.log_result("Duplicate Admin Page", True)
+                duplicate_id = response['id']
+                
+                # Clean up duplicate
+                self.make_request('DELETE', f'/admin/pages/{duplicate_id}')
+            else:
+                self.log_result("Duplicate Admin Page", False, f"Response: {response}")
+            
+            # Test DELETE page
+            success, response = self.make_request('DELETE', f'/admin/pages/{page_id}')
+            if success and response.get('success'):
+                self.log_result("Delete Admin Page", True)
+            else:
+                self.log_result("Delete Admin Page", False, f"Response: {response}")
+                
+            return True
         else:
-            self.log_result("Contact Form Validation (Missing Fields)", False, 
-                          f"Expected validation error, got: {response}")
+            self.log_result("Create Admin Page", False, f"Response: {response}")
+            return False
+    
+    def test_admin_gallery_crud(self):
+        """Test admin gallery CRUD operations"""
+        if not self.admin_token:
+            self.log_result("Admin Gallery CRUD", False, "No admin token available")
+            return False
         
-        # Test invalid email format
-        invalid_email_data = {
-            "email": "invalid-email",
-            "thema": "tipps",
-            "nachricht": "Test message"
+        # Test GET gallery
+        success, response = self.make_request('GET', '/admin/gallery')
+        if success and isinstance(response, list):
+            self.log_result("Get Admin Gallery", True)
+        else:
+            self.log_result("Get Admin Gallery", False, f"Response: {response}")
+            return False
+        
+        # Test ADD image
+        params = {
+            'token': self.admin_token,
+            'url': 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400',
+            'title': 'Test Image',
+            'tags': 'Test,Automated'
         }
         
-        success, response = self.make_request('POST', '/contact', invalid_email_data, 422)
-        if not success and response.get('status_code') == 422:
-            self.log_result("Contact Form Validation (Invalid Email)", True)
+        success, response = self.make_request('POST', '/admin/gallery', params=params)
+        if success and response.get('id'):
+            self.log_result("Add Gallery Image", True)
+            image_id = response['id']
+            
+            # Test UPDATE image
+            update_params = {
+                'token': self.admin_token,
+                'title': 'Updated Test Image',
+                'alt': 'Updated alt text',
+                'tags': 'Updated,Test'
+            }
+            
+            success, response = self.make_request('PUT', f'/admin/gallery/{image_id}', params=update_params)
+            if success and response.get('success'):
+                self.log_result("Update Gallery Image", True)
+            else:
+                self.log_result("Update Gallery Image", False, f"Response: {response}")
+            
+            # Test DELETE image
+            success, response = self.make_request('DELETE', f'/admin/gallery/{image_id}')
+            if success and response.get('success'):
+                self.log_result("Delete Gallery Image", True)
+            else:
+                self.log_result("Delete Gallery Image", False, f"Response: {response}")
+                
+            return True
         else:
-            self.log_result("Contact Form Validation (Invalid Email)", False, 
-                          f"Expected validation error, got: {response}")
+            self.log_result("Add Gallery Image", False, f"Response: {response}")
+            return False
+    
+    def test_admin_contacts(self):
+        """Test admin contacts functionality"""
+        if not self.admin_token:
+            self.log_result("Admin Contacts", False, "No admin token available")
+            return False
         
-        return True
+        # Test GET contacts
+        success, response = self.make_request('GET', '/admin/contacts')
+        if success and isinstance(response, list):
+            self.log_result("Get Admin Contacts", True)
+            
+            # Test CSV export
+            success, response = self.make_request('GET', '/admin/contacts/export')
+            if success and 'csv' in response:
+                self.log_result("Export Contacts CSV", True)
+            else:
+                self.log_result("Export Contacts CSV", False, f"Response: {response}")
+                
+            return True
+        else:
+            self.log_result("Get Admin Contacts", False, f"Response: {response}")
+            return False
+    
+    def test_admin_posts_crud(self):
+        """Test admin blog posts CRUD operations"""
+        if not self.admin_token:
+            self.log_result("Admin Posts CRUD", False, "No admin token available")
+            return False
+        
+        # Test GET posts
+        success, response = self.make_request('GET', '/admin/posts')
+        if success and isinstance(response, list):
+            self.log_result("Get Admin Posts", True)
+        else:
+            self.log_result("Get Admin Posts", False, f"Response: {response}")
+            return False
+        
+        # Test CREATE post
+        new_post = {
+            "title": "Test Blog Post",
+            "excerpt": "Test excerpt",
+            "content": "Test content",
+            "category": "Tipps",
+            "status": "draft"
+        }
+        
+        success, response = self.make_request('POST', '/admin/posts', new_post)
+        if success and response.get('id'):
+            self.log_result("Create Admin Post", True)
+            post_id = response['id']
+            
+            # Test UPDATE post
+            updated_post = {
+                "title": "Updated Test Post",
+                "excerpt": "Updated excerpt",
+                "content": "Updated content",
+                "category": "Tipps",
+                "status": "live"
+            }
+            
+            success, response = self.make_request('PUT', f'/admin/posts/{post_id}', updated_post)
+            if success:
+                self.log_result("Update Admin Post", True)
+            else:
+                self.log_result("Update Admin Post", False, f"Response: {response}")
+            
+            # Test DELETE post
+            success, response = self.make_request('DELETE', f'/admin/posts/{post_id}')
+            if success and response.get('success'):
+                self.log_result("Delete Admin Post", True)
+            else:
+                self.log_result("Delete Admin Post", False, f"Response: {response}")
+                
+            return True
+        else:
+            self.log_result("Create Admin Post", False, f"Response: {response}")
+            return False
     
     def run_all_tests(self):
         """Run all backend tests"""
