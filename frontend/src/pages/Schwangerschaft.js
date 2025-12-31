@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Baby, Heart, Star, Clock, Package, CheckCircle } from 'lucide-react';
+import { Baby, Heart, Star, Clock, Package, CheckCircle, Mountain } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function Schwangerschaft() {
@@ -42,8 +42,11 @@ export default function Schwangerschaft() {
   return (
     <main id="main-content" className="pt-20">
       {/* Hero */}
-      <section className="section-padding bg-gradient-to-b from-card to-background" data-testid="schwangerschaft-page">
-        <div className="container-width">
+      <section className="section-padding bg-gradient-to-b from-emerald-50 dark:from-slate-900 to-background relative overflow-hidden" data-testid="schwangerschaft-page">
+        <div className="absolute top-10 right-10 opacity-10">
+          <Mountain className="w-64 h-64 text-primary" />
+        </div>
+        <div className="container-width relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}

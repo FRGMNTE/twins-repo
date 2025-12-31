@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Heart, Moon, Utensils, Play, Calendar, Bath, Smile } from 'lucide-react';
+import { Heart, Moon, Utensils, Play, Calendar, Bath, Smile, Waves } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function BabyAlltag() {
@@ -45,8 +45,11 @@ export default function BabyAlltag() {
   return (
     <main id="main-content" className="pt-20">
       {/* Hero */}
-      <section className="section-padding bg-gradient-to-b from-card to-background" data-testid="baby-alltag-page">
-        <div className="container-width">
+      <section className="section-padding bg-gradient-to-b from-sky-50 dark:from-slate-900 to-background relative overflow-hidden" data-testid="baby-alltag-page">
+        <div className="absolute top-10 left-10 opacity-10">
+          <Waves className="w-64 h-64 text-primary" />
+        </div>
+        <div className="container-width relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
