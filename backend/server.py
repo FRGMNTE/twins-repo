@@ -53,6 +53,19 @@ class SiteSettings(BaseModel):
     ga4Tag: Optional[str] = None
     metaDescription: str = "Zwillings-Tipps für junge Familien"
     autoReplyMessage: str = "Danke für deine Nachricht – wir melden uns in 24h!"
+    # Navigation
+    navItems: List[Dict[str, Any]] = []
+    # Footer
+    footerText: str = "Unsere Reise mit Zwillingen. Anonyme Tipps für junge Familien."
+    footerLinks: List[Dict[str, Any]] = []
+    socialFacebook: str = "https://www.facebook.com/people/%E0%B9%80%E0%B8%A1%E0%B8%B2%E0%B8%99%E0%B9%8C%E0%B9%80%E0%B8%97%E0%B8%B4%E0%B8%99-%E0%B9%82%E0%B8%AD%E0%B9%80%E0%B8%8A%E0%B8%B4%E0%B9%88%E0%B8%99/61584716588683/"
+    socialEmail: str = "gltz.de@gmail.com"
+    # Landing Page Teaser Cards
+    teaserCards: List[Dict[str, Any]] = []
+    # CTA Section
+    ctaTitle: str = "Projekt unterstützen"
+    ctaDescription: str = "Die Kunst bringt Freude, Einnahmen bleiben 100% in der Familie."
+    ctaButtonText: str = "Unterstützen"
 
 class PageModel(BaseModel):
     model_config = ConfigDict(extra="ignore")
