@@ -117,6 +117,10 @@ backend:
     stuck_count: 0
     priority: "high"
     needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: SiteSettings API verified. navItems array has proper children structure with M&O Portfolio containing Twins-Art submenu. socialLinks array exists with Facebook, Instagram, YouTube, TikTok, Twitter platforms. footerEmail field present for contact-only footer section."
 
   - task: "PageModel - Soft delete with deleted_at field"
     implemented: true
@@ -125,6 +129,10 @@ backend:
     stuck_count: 0
     priority: "high"
     needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: Pages soft delete functionality working correctly. Pages can be moved to trash with deleted_at timestamp, restored from trash, and permanently deleted. All trash endpoints functional."
 
   - task: "BlogPost - publish_date field, soft delete"
     implemented: true
@@ -133,6 +141,10 @@ backend:
     stuck_count: 0
     priority: "high"
     needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: BlogPost model has publish_date field for sorting/ordering. Soft delete moves posts to trash with deleted_at timestamp. Restore and permanent delete functionality working. Fixed minor validation issue in update_post endpoint."
 
   - task: "API - Trash endpoints (restore, permanent delete, empty trash)"
     implemented: true
@@ -141,6 +153,10 @@ backend:
     stuck_count: 0
     priority: "high"
     needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: All trash API endpoints working correctly. /admin/pages/trash, /admin/posts/trash, restore endpoints, permanent delete with ?permanent=true parameter, and cleanup functionality all verified."
 
 frontend:
   - task: "Navigation.js - Dropdown submenus with hover"
