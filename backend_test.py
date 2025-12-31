@@ -360,6 +360,107 @@ class GltzAdminAPITester:
         
         return len(self.failed_tests) == 0
     
+    def test_dynamic_pages_system(self):
+        """Test the dynamic pages system as requested in the review"""
+        print("\n📄 Testing Dynamic Pages System")
+        print("-" * 40)
+        
+        # 1. Test POST /api/admin/pages/init-defaults - Initialize default pages
+        success, response = self.make_request('POST', '/admin/pages/init-defaults')
+        if success and response.get('success'):
+            self.log_result("Dynamic Pages - Init Defaults", True, f"Created {response.get('created', 0)} default pages")
+        else:
+            self.log_result("Dynamic Pages - Init Defaults", False, f"Response: {response}")
+        
+        # 2. Test GET /api/pages - should return list of live pages
+        success, response = self.make_request('GET', '/pages')
+        if success and isinstance(response, list):
+            live_pages = [p for p in response if p.get('status') == 'live']
+            self.log_result("Dynamic Pages - GET /api/pages", True, f"Found {len(live_pages)} live pages")
+            
+            # Check if we have the expected pages
+            page_slugs = [p.get('slug') for p in live_pages]
+            expected_slugs = ['impressum', 'datenschutz', 'ueber-uns']
+            
+            for slug in expected_slugs:
+                if slug in page_slugs:
+                    self.log_result(f"Dynamic Pages - {slug} exists", True)
+                else:
+                    self.log_result(f"Dynamic Pages - {slug} exists", False, f"Page {slug} not found in live pages")
+        else:
+            self.log_result("Dynamic Pages - GET /api/pages", False, f"Response: {response}")
+            return False
+        
+        # 3. Test GET /api/pages/impressum - should return impressum page content
+        success, response = self.make_request('GET', '/pages/impressum')
+        if success and response.get('title') == 'Impressum':
+            self.log_result("Dynamic Pages - GET /api/pages/impressum", True, "Impressum page loaded correctly")
+            
+            # Verify content contains expected legal text
+            content = response.get('content', '')
+            if 'Angaben gemäß § 5 TMG' in content and 'gltz.de@gmail.com' in content:
+                self.log_result("Dynamic Pages - Impressum Content", True, "Contains expected legal content")
+            else:
+                self.log_result("Dynamic Pages - Impressum Content", False, "Missing expected legal content")
+        else:
+            self.log_result("Dynamic Pages - GET /api/pages/impressum", False, f"Response: {response}")
+        
+        # 4. Test GET /api/pages/datenschutz - should return datenschutz page content
+        success, response = self.make_request('GET', '/pages/datenschutz')
+        if success and response.get('title') == 'Datenschutzerklärung':
+            self.log_result("Dynamic Pages - GET /api/pages/datenschutz", True, "Datenschutz page loaded correctly")
+            
+            # Verify content contains expected privacy text
+            content = response.get('content', '')
+            if 'Datenschutzerklärung' in content and 'personenbezogenen Daten' in content:
+                self.log_result("Dynamic Pages - Datenschutz Content", True, "Contains expected privacy content")
+            else:
+                self.log_result("Dynamic Pages - Datenschutz Content", False, "Missing expected privacy content")
+        else:
+            self.log_result("Dynamic Pages - GET /api/pages/datenschutz", False, f"Response: {response}")
+        
+        # 5. Test GET /api/pages/ueber-uns - should return über uns page
+        success, response = self.make_request('GET', '/pages/ueber-uns')
+        if success and response.get('slug') == 'ueber-uns':
+            self.log_result("Dynamic Pages - GET /api/pages/ueber-uns", True, "Über uns page loaded correctly")
+        else:
+            self.log_result("Dynamic Pages - GET /api/pages/ueber-uns", False, f"Response: {response}")
+        
+        # 6. Test 404 for non-existent page
+        success, response = self.make_request('GET', '/pages/non-existent-page', expected_status=404)
+        if success:
+            self.log_result("Dynamic Pages - 404 for non-existent page", True, "Correctly returns 404")
+        else:
+            self.log_result("Dynamic Pages - 404 for non-existent page", False, f"Expected 404, got: {response}")
+        
+        # 7. Test page creation and live status
+        if self.admin_token:
+            test_page = {
+                "title": "Test Seite",
+                "slug": "test-seite",
+                "content": "<h1>Test Seite</h1><p>Dies ist eine Test-Seite für das dynamische Seiten-System.</p>",
+                "status": "live"
+            }
+            
+            success, response = self.make_request('POST', '/admin/pages', test_page)
+            if success and response.get('id'):
+                page_id = response['id']
+                self.log_result("Dynamic Pages - Create Test Page", True, f"Created page with ID: {page_id}")
+                
+                # Test accessing the new page via public API
+                success, public_response = self.make_request('GET', '/pages/test-seite')
+                if success and public_response.get('title') == 'Test Seite':
+                    self.log_result("Dynamic Pages - Access New Page Publicly", True, "New page accessible via public API")
+                else:
+                    self.log_result("Dynamic Pages - Access New Page Publicly", False, f"Response: {public_response}")
+                
+                # Clean up - delete the test page
+                self.make_request('DELETE', f'/admin/pages/{page_id}', params={'permanent': True})
+            else:
+                self.log_result("Dynamic Pages - Create Test Page", False, f"Response: {response}")
+        
+        return True
+
     def test_public_endpoints(self):
         """Test public endpoints"""
         # Test public blog
