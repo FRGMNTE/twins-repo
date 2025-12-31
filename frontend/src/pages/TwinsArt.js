@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Heart, Palette, Lock, Mountain, Waves } from 'lucide-react';
+import { Heart } from 'lucide-react';
 import axios from 'axios';
 import Lightbox from '../components/Lightbox';
 import { useTheme } from '../context/ThemeContext';
@@ -46,57 +46,38 @@ export default function TwinsArt() {
   };
 
   return (
-    <main id="main-content" className="pt-20">
-      {/* Hero with Nature Theme */}
-      <section className="section-padding relative overflow-hidden" data-testid="twins-art-hero">
-        {/* Background */}
-        <div className="absolute inset-0">
-          {theme === 'dark' ? (
-            <div className="absolute inset-0 bg-gradient-to-b from-slate-900 via-slate-800 to-background" />
-          ) : (
-            <div className="absolute inset-0 bg-gradient-to-b from-amber-50 via-orange-50/50 to-background" />
-          )}
-        </div>
-        
-        <div className="container-width relative z-10">
+    <main id="main-content" className="pt-14">
+      {/* Hero */}
+      <section className="section-padding" data-testid="twins-art-hero">
+        <div className="container-width text-center">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="text-center max-w-3xl mx-auto"
           >
-            <div className="flex justify-center gap-4 mb-6">
-              <Mountain className="w-8 h-8 text-primary opacity-50" />
-              <Palette className="w-16 h-16 text-secondary" />
-              <Waves className="w-8 h-8 text-primary opacity-50" />
-            </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-4 tracking-tight">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-semibold text-foreground mb-4 tracking-tight">
               Twins-Art
             </h1>
-            <p className="font-handwriting text-2xl text-primary mb-6">
-              Kunst aus Kinderhand
-            </p>
-            <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
-              Das Projekt: Anonyme Familienkunst aus Liebe zu unseren Kindern.
-              Die Kunst bringt Freude, Einnahmen bleiben 100% in der Familie.
+            <p className="text-lg text-muted-foreground max-w-xl mx-auto">
+              Anonyme Familienkunst aus Liebe zu unseren Kindern.
             </p>
           </motion.div>
         </div>
       </section>
 
-      {/* Filter Tags */}
+      {/* Filter */}
       {allTags.length > 1 && (
-        <section className="py-8 bg-background" data-testid="gallery-filters">
+        <section className="pb-8" data-testid="gallery-filters">
           <div className="container-width">
-            <div className="flex flex-wrap justify-center gap-3">
+            <div className="flex flex-wrap justify-center gap-2">
               {allTags.map((tag) => (
                 <button
                   key={tag}
                   onClick={() => setSelectedTag(tag)}
-                  className={`px-4 py-2 text-sm font-medium rounded-full transition-all ${
+                  className={`px-4 py-1.5 text-xs font-medium rounded-full transition-all ${
                     selectedTag === tag
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-secondary text-secondary-foreground hover:bg-accent'
+                      ? 'bg-foreground text-background'
+                      : 'bg-secondary text-muted-foreground hover:text-foreground'
                   }`}
                   data-testid={`filter-${tag}`}
                 >
@@ -108,45 +89,27 @@ export default function TwinsArt() {
         </section>
       )}
 
-      {/* Gallery Grid */}
-      <section className="section-padding bg-background" data-testid="gallery-section">
+      {/* Gallery */}
+      <section className="section-padding pt-0" data-testid="gallery-section">
         <div className="container-width">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {filteredImages.map((image, index) => (
               <motion.div
                 key={image.id}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.4, delay: index * 0.05 }}
-                whileHover={{ y: -8 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
                 className="group cursor-pointer"
                 onClick={() => openLightbox(index)}
                 data-testid={`gallery-item-${index}`}
               >
-                <div className="glass-card rounded-3xl overflow-hidden">
-                  <div className="aspect-square overflow-hidden">
-                    <img
-                      src={image.url}
-                      alt={image.alt}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                      loading="lazy"
-                    />
-                  </div>
-                  <div className="p-4">
-                    <p className="text-sm text-muted-foreground">{image.alt}</p>
-                    {image.tags && image.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {image.tags.map((tag) => (
-                          <span
-                            key={tag}
-                            className="px-2 py-1 text-xs bg-secondary text-secondary-foreground rounded-full"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                <div className="aspect-square rounded-xl overflow-hidden bg-secondary">
+                  <img
+                    src={image.url}
+                    alt={image.alt}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    loading="lazy"
+                  />
                 </div>
               </motion.div>
             ))}
@@ -154,49 +117,31 @@ export default function TwinsArt() {
         </div>
       </section>
 
-      {/* Support Section */}
-      <section className="section-padding bg-card" data-testid="support-section">
-        <div className="container-width">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="max-w-2xl mx-auto"
+      {/* Support */}
+      <section className="section-padding bg-secondary/30" data-testid="support-section">
+        <div className="container-width text-center">
+          <h2 className="text-2xl sm:text-3xl font-semibold text-foreground mb-4">
+            Projekt unterstützen
+          </h2>
+          <p className="text-muted-foreground mb-8 max-w-md mx-auto">
+            Die Kunst bringt Freude, Einnahmen bleiben 100% in der Familie.
+          </p>
+
+          <a
+            href="https://paypal.me/gltzfamily"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-primary"
+            data-testid="paypal-support-btn"
           >
-            <div className="glass-card p-8 sm:p-12 rounded-3xl text-center">
-              <Heart className="w-16 h-16 text-[hsl(var(--twins-art))] mx-auto mb-6" />
-              <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-6">
-                Unterstütze unser Familienprojekt
-              </h2>
-              <p className="text-muted-foreground mb-8 leading-relaxed">
-                Warum? Die Kunst bringt Freude, Einnahmen bleiben 100% in der Familie 
-                und fördern die kreative Entwicklung unserer Kinder.
-              </p>
+            <Heart className="w-4 h-4" />
+            Unterstützen
+          </a>
 
-              <a
-                href="https://paypal.me/gltzfamily"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-primary text-lg"
-                data-testid="paypal-support-btn"
-              >
-                <Heart className="w-5 h-5" />
-                Projekt unterstützen
-              </a>
-
-              {/* Legal Disclaimer */}
-              <div className="mt-8 p-4 bg-secondary/50 rounded-xl" data-testid="legal-disclaimer">
-                <div className="flex items-start gap-3 text-left">
-                  <Lock className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-0.5" />
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    Dies ist keine Spende im steuerlichen Sinne. Es erfolgt KEINE Gegenleistung 
-                    (keine Ware/Dienstleistung). 100% freiwillige Unterstützung für unser Familienprojekt.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </motion.div>
+          <p className="text-[10px] text-muted-foreground mt-6 max-w-md mx-auto" data-testid="legal-disclaimer">
+            Dies ist keine Spende im steuerlichen Sinne. Es erfolgt keine Gegenleistung. 
+            100% freiwillige Unterstützung für unser Familienprojekt.
+          </p>
         </div>
       </section>
 
