@@ -62,24 +62,24 @@ export default function Home() {
         {/* Dynamic Background based on theme */}
         <div className="absolute inset-0">
           {theme === 'dark' ? (
-            // Ocean Night
+            // Lake Night with Stars
             <div 
               className="absolute inset-0 bg-cover bg-center transition-all duration-1000"
               style={{ 
-                backgroundImage: 'url(https://images.pexels.com/photos/11654701/pexels-photo-11654701.jpeg)',
+                backgroundImage: 'url(https://images.unsplash.com/photo-1516572704891-60b47497c7b5?w=1920)',
               }}
             >
-              <div className="absolute inset-0 bg-gradient-to-b from-slate-900/80 via-slate-900/60 to-slate-900" />
+              <div className="absolute inset-0 bg-gradient-to-b from-slate-900/70 via-slate-900/50 to-slate-900" />
             </div>
           ) : (
-            // Mountain Day
+            // Norway/New Zealand Fjord - Mountains & Sea
             <div 
               className="absolute inset-0 bg-cover bg-center transition-all duration-1000"
               style={{ 
-                backgroundImage: 'url(https://images.pexels.com/photos/12241105/pexels-photo-12241105.jpeg)',
+                backgroundImage: 'url(https://images.unsplash.com/photo-1758205563637-4bd20dc1badb?w=1920)',
               }}
             >
-              <div className="absolute inset-0 bg-gradient-to-b from-white/70 via-white/50 to-background" />
+              <div className="absolute inset-0 bg-gradient-to-b from-white/60 via-white/40 to-background" />
             </div>
           )}
         </div>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Mountain } from 'lucide-react';
+import { Menu, X, Mountain, Waves } from 'lucide-react';
 import CelestialSwitch from './CelestialSwitch';
 
 export default function Navigation() {
@@ -51,13 +51,47 @@ export default function Navigation() {
       >
         <div className="container-width">
           <div className="flex justify-between items-center h-16 sm:h-20">
+            {/* Logo with Watermark Symbol */}
             <Link
               to="/"
               className="flex items-center gap-2 text-xl sm:text-2xl font-bold text-foreground hover:opacity-70 transition-opacity"
               aria-label="gltz.de Startseite"
               data-testid="logo-link"
             >
-              <Mountain className="w-6 h-6 text-primary" />
+              {/* Watermark Symbol - Mountain & Wave combined */}
+              <div className="relative w-10 h-10 flex items-center justify-center" data-testid="logo-watermark">
+                <svg 
+                  viewBox="0 0 40 40" 
+                  className="w-10 h-10"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  {/* Mountain */}
+                  <path 
+                    d="M5 28L15 12L20 20L25 14L35 28" 
+                    stroke="currentColor" 
+                    strokeWidth="2.5" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                    className="text-primary"
+                  />
+                  {/* Wave */}
+                  <path 
+                    d="M5 32C8 30 11 34 14 32C17 30 20 34 23 32C26 30 29 34 32 32C35 30 37 32 38 32" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round"
+                    className="text-primary opacity-70"
+                  />
+                  {/* Sun/Moon circle */}
+                  <circle 
+                    cx="30" 
+                    cy="10" 
+                    r="4" 
+                    className="fill-current text-secondary dark:text-sky-400"
+                  />
+                </svg>
+              </div>
               <span>gltz.de</span>
             </Link>
 

@@ -6,30 +6,30 @@
 
 @layer base {
     :root {
-        /* Alpine Morning - Light Mode */
+        /* Alpine Morning - Light Mode with Dark Green Text */
         --background: 45 33% 98%;
-        --foreground: 198 52% 24%;
+        --foreground: 152 50% 18%;
         --card: 0 0% 100%;
-        --card-foreground: 198 52% 24%;
+        --card-foreground: 152 50% 18%;
         --popover: 0 0% 100%;
-        --popover-foreground: 198 52% 24%;
-        --primary: 168 33% 27%;
+        --popover-foreground: 152 50% 18%;
+        --primary: 152 50% 22%;
         --primary-foreground: 0 0% 100%;
         --secondary: 43 76% 66%;
-        --secondary-foreground: 198 52% 24%;
+        --secondary-foreground: 152 50% 18%;
         --muted: 220 14% 96%;
-        --muted-foreground: 220 9% 46%;
-        --accent: 168 33% 27%;
+        --muted-foreground: 152 30% 35%;
+        --accent: 152 50% 22%;
         --accent-foreground: 0 0% 100%;
         --destructive: 0 84% 60%;
         --destructive-foreground: 0 0% 98%;
         --border: 220 13% 91%;
         --input: 220 13% 91%;
-        --ring: 168 33% 27%;
+        --ring: 152 50% 22%;
         --radius: 0.75rem;
         
         /* Custom Nature Colors */
-        --mountain: 168 33% 27%;
+        --mountain: 152 50% 22%;
         --ocean: 199 89% 48%;
         --forest: 142 76% 36%;
         --sunset: 28 100% 69%;
