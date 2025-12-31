@@ -54,7 +54,19 @@ class SiteSettings(BaseModel):
     metaDescription: str = "Zwillings-Tipps für junge Familien"
     autoReplyMessage: str = "Danke für deine Nachricht – wir melden uns in 24h!"
     # Navigation
-    navItems: List[Dict[str, Any]] = []
+    navItems: List[Dict[str, Any]] = [
+        {"id": "1", "label": "Home", "path": "/", "enabled": True},
+        {"id": "2", "label": "Über uns", "path": "/ueber-uns", "enabled": True},
+        {"id": "3", "label": "Schwangerschaft", "path": "/schwangerschaft", "enabled": True},
+        {"id": "4", "label": "Baby-Alltag", "path": "/baby-alltag", "enabled": True},
+        {"id": "5", "label": "Tipps", "path": "/tipps", "enabled": True},
+        {"id": "6", "label": "Reisen", "path": "/reisen", "enabled": True},
+        {"id": "7", "label": "Blog", "path": "/blog", "enabled": True},
+        {"id": "8", "label": "Suchen", "path": "/suchen", "enabled": True},
+        {"id": "9", "label": "M&O Portfolio", "path": "/twins-art", "enabled": True},
+        {"id": "10", "label": "Spende", "path": "/spende", "enabled": True},
+        {"id": "11", "label": "Kontakt", "path": "/kontakt", "enabled": True},
+    ]
     # Footer
     footerText: str = "Unsere Reise mit Zwillingen. Anonyme Tipps für junge Familien."
     footerLinks: List[Dict[str, Any]] = []
