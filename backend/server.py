@@ -24,6 +24,17 @@ api_router = APIRouter(prefix="/api")
 
 # ============== Models ==============
 
+class SiteSettings(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    heroTitle: str = "gltz.de"
+    heroSubtitle: str = "Unsere Reise mit Zwillingen"
+    heroDescription: str = "Anonyme Tipps für junge Familien vom Niederrhein."
+    fontFamily: str = "Inter"
+    primaryColor: str = "#1d1d1f"
+    lightBackground: str = "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920"
+    darkBackground: str = "https://images.unsplash.com/photo-1516572704891-60b47497c7b5?w=1920"
+    logoText: str = "gltz.de"
+
 class ContactFormInput(BaseModel):
     name: Optional[str] = None
     email: EmailStr
@@ -72,6 +83,28 @@ class GalleryImage(BaseModel):
     alt: str
     tags: List[str] = []
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+# ============== Site Settings ==============
+
+@api_router.get("/settings", response_model=SiteSettings)
+async def get_site_settings():
+    settings = await db.site_settings.find_one({"type": "main"}, {"_id": 0})
+    if settings:
+        return SiteSettings(**settings)
+    return SiteSettings()
+
+@api_router.post("/settings", response_model=SiteSettings)
+async def save_site_settings(settings: SiteSettings):
+    settings_dict = settings.model_dump()
+    settings_dict["type"] = "main"
+    settings_dict["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    await db.site_settings.update_one(
+        {"type": "main"},
+        {"$set": settings_dict},
+        upsert=True
+    )
+    return settings
 
 # ============== Contact Form ==============
 
