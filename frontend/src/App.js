@@ -6,14 +6,8 @@ import Navigation from './components/Navigation';
 import Footer from './components/Footer';
 import CookieBanner from './components/CookieBanner';
 import Home from './pages/Home';
-import Schwangerschaft from './pages/Schwangerschaft';
-import BabyAlltag from './pages/BabyAlltag';
-import Tipps from './pages/Tipps';
-import TwinsArt from './pages/TwinsArt';
 import Kontakt from './pages/Kontakt';
 import Admin from './pages/Admin';
-import Impressum from './pages/Impressum';
-import Datenschutz from './pages/Datenschutz';
 import DynamicPage from './pages/DynamicPage';
 import './App.css';
 
@@ -26,15 +20,9 @@ function App() {
             <Navigation />
             <Routes>
               <Route path="/" element={<Home />} />
-              <Route path="/schwangerschaft" element={<Schwangerschaft />} />
-              <Route path="/baby-alltag" element={<BabyAlltag />} />
-              <Route path="/tipps" element={<Tipps />} />
-              <Route path="/twins-art" element={<TwinsArt />} />
               <Route path="/kontakt" element={<Kontakt />} />
               <Route path="/admin" element={<Admin />} />
-              <Route path="/impressum" element={<Impressum />} />
-              <Route path="/datenschutz" element={<Datenschutz />} />
-              {/* Dynamic pages from database - catch all remaining routes */}
+              {/* All other pages are dynamic from database */}
               <Route path="/:slug" element={<DynamicPage />} />
             </Routes>
             <Footer />
