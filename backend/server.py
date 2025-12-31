@@ -349,14 +349,54 @@ async def update_page(page_id: str, page: PageCreate, token: str):
     return PageModel(**updated)
 
 @api_router.delete("/admin/pages/{page_id}")
-async def delete_page(page_id: str, token: str):
+async def delete_page(page_id: str, token: str, permanent: bool = False):
     if not await verify_admin_session(token):
         raise HTTPException(status_code=401, detail="Nicht autorisiert")
     
-    result = await db.pages.delete_one({"id": page_id})
-    if result.deleted_count == 0:
+    if permanent:
+        # Permanent delete
+        result = await db.pages.delete_one({"id": page_id})
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Seite nicht gefunden")
+    else:
+        # Soft delete - move to trash
+        result = await db.pages.update_one(
+            {"id": page_id},
+            {"$set": {"status": "deleted", "deleted_at": datetime.now(timezone.utc).isoformat()}}
+        )
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Seite nicht gefunden")
+    return {"success": True}
+
+@api_router.post("/admin/pages/{page_id}/restore")
+async def restore_page(page_id: str, token: str):
+    if not await verify_admin_session(token):
+        raise HTTPException(status_code=401, detail="Nicht autorisiert")
+    
+    result = await db.pages.update_one(
+        {"id": page_id},
+        {"$set": {"status": "draft", "deleted_at": None}}
+    )
+    if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Seite nicht gefunden")
     return {"success": True}
+
+@api_router.get("/admin/pages/trash")
+async def get_trashed_pages(token: str):
+    if not await verify_admin_session(token):
+        raise HTTPException(status_code=401, detail="Nicht autorisiert")
+    
+    pages = await db.pages.find({"status": "deleted"}, {"_id": 0}).to_list(100)
+    result = []
+    for p in pages:
+        if isinstance(p.get('created_at'), str):
+            p['created_at'] = datetime.fromisoformat(p['created_at'])
+        if isinstance(p.get('updated_at'), str):
+            p['updated_at'] = datetime.fromisoformat(p['updated_at'])
+        if isinstance(p.get('deleted_at'), str):
+            p['deleted_at'] = datetime.fromisoformat(p['deleted_at'])
+        result.append(p)
+    return result
 
 @api_router.post("/admin/pages/{page_id}/duplicate")
 async def duplicate_page(page_id: str, token: str):
