@@ -1090,30 +1090,20 @@ export default function Admin() {
         </div>
       </div>
 
-      {/* Page Edit Modal */}
+      {/* Page Edit Modal with Rich Text Editor */}
       <Dialog open={!!editingPage} onOpenChange={() => setEditingPage(null)}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>{editingPage?.id ? 'Seite bearbeiten' : 'Neue Seite'}</DialogTitle></DialogHeader>
+        <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editingPage?.id ? 'Seite bearbeiten' : 'Neue Seite'}</DialogTitle>
+          </DialogHeader>
           {editingPage && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div><Label className="text-xs">Titel</Label><Input value={editingPage.title} onChange={(e) => setEditingPage({...editingPage, title: e.target.value})} className="mt-1" /></div>
-                <div><Label className="text-xs">URL-Slug</Label><Input value={editingPage.slug} onChange={(e) => setEditingPage({...editingPage, slug: e.target.value})} className="mt-1" /></div>
-              </div>
-              <div><Label className="text-xs">Inhalt</Label><Textarea value={editingPage.content} onChange={(e) => setEditingPage({...editingPage, content: e.target.value})} className="mt-1" rows={8} /></div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-xs">Status</Label>
-                  <Select value={editingPage.status} onValueChange={(v) => setEditingPage({...editingPage, status: v})}>
-                    <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                    <SelectContent><SelectItem value="draft">Entwurf</SelectItem><SelectItem value="live">Live</SelectItem></SelectContent>
-                  </Select>
-                </div>
-                <div><Label className="text-xs">Hero-Bild URL</Label><Input value={editingPage.heroImage || ''} onChange={(e) => setEditingPage({...editingPage, heroImage: e.target.value})} className="mt-1" /></div>
-              </div>
-            </div>
+            <PageEditor 
+              page={editingPage} 
+              onChange={setEditingPage} 
+              onSave={handleSavePage}
+              onCancel={() => setEditingPage(null)}
+            />
           )}
-          <DialogFooter><Button variant="outline" onClick={() => setEditingPage(null)}>Abbrechen</Button><Button onClick={handleSavePage}>Speichern</Button></DialogFooter>
         </DialogContent>
       </Dialog>
 
