@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
+import { SiteSettingsProvider } from './context/SiteSettingsContext';
 import { Toaster } from './components/ui/sonner';
 import Navigation from './components/Navigation';
 import Footer from './components/Footer';
@@ -18,25 +19,27 @@ import './App.css';
 function App() {
   return (
     <ThemeProvider>
-      <Router>
-        <div className="min-h-screen bg-background text-foreground transition-colors">
-          <Navigation />
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/schwangerschaft" element={<Schwangerschaft />} />
-            <Route path="/baby-alltag" element={<BabyAlltag />} />
-            <Route path="/tipps" element={<Tipps />} />
-            <Route path="/twins-art" element={<TwinsArt />} />
-            <Route path="/kontakt" element={<Kontakt />} />
-            <Route path="/admin" element={<Admin />} />
-            <Route path="/impressum" element={<Impressum />} />
-            <Route path="/datenschutz" element={<Datenschutz />} />
-          </Routes>
-          <Footer />
-          <CookieBanner />
-          <Toaster position="top-center" />
-        </div>
-      </Router>
+      <SiteSettingsProvider>
+        <Router>
+          <div className="min-h-screen bg-background text-foreground transition-colors">
+            <Navigation />
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/schwangerschaft" element={<Schwangerschaft />} />
+              <Route path="/baby-alltag" element={<BabyAlltag />} />
+              <Route path="/tipps" element={<Tipps />} />
+              <Route path="/twins-art" element={<TwinsArt />} />
+              <Route path="/kontakt" element={<Kontakt />} />
+              <Route path="/admin" element={<Admin />} />
+              <Route path="/impressum" element={<Impressum />} />
+              <Route path="/datenschutz" element={<Datenschutz />} />
+            </Routes>
+            <Footer />
+            <CookieBanner />
+            <Toaster position="top-center" />
+          </div>
+        </Router>
+      </SiteSettingsProvider>
     </ThemeProvider>
   );
 }
