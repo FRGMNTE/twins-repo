@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,800;1,9..144,400&family=Manrope:wght@400;500;600;700&family=Caveat:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,58 +6,50 @@
 
 @layer base {
     :root {
-        /* Alpine Morning - Light Mode with Dark Green Text */
-        --background: 45 33% 98%;
-        --foreground: 152 50% 18%;
+        /* Apple-Style Minimalist Light Mode */
+        --background: 0 0% 100%;
+        --foreground: 0 0% 12%;
         --card: 0 0% 100%;
-        --card-foreground: 152 50% 18%;
+        --card-foreground: 0 0% 12%;
         --popover: 0 0% 100%;
-        --popover-foreground: 152 50% 18%;
-        --primary: 152 50% 22%;
+        --popover-foreground: 0 0% 12%;
+        --primary: 0 0% 12%;
         --primary-foreground: 0 0% 100%;
-        --secondary: 43 76% 66%;
-        --secondary-foreground: 152 50% 18%;
-        --muted: 220 14% 96%;
-        --muted-foreground: 152 30% 35%;
-        --accent: 152 50% 22%;
-        --accent-foreground: 0 0% 100%;
+        --secondary: 0 0% 96%;
+        --secondary-foreground: 0 0% 12%;
+        --muted: 0 0% 96%;
+        --muted-foreground: 0 0% 45%;
+        --accent: 0 0% 96%;
+        --accent-foreground: 0 0% 12%;
         --destructive: 0 84% 60%;
         --destructive-foreground: 0 0% 98%;
-        --border: 220 13% 91%;
-        --input: 220 13% 91%;
-        --ring: 152 50% 22%;
+        --border: 0 0% 90%;
+        --input: 0 0% 90%;
+        --ring: 0 0% 12%;
         --radius: 0.75rem;
-        
-        /* Custom Nature Colors */
-        --mountain: 152 50% 22%;
-        --ocean: 199 89% 48%;
-        --forest: 142 76% 36%;
-        --sunset: 28 100% 69%;
-        --sky-day: 199 95% 93%;
-        --sky-night: 222 47% 11%;
     }
 
     .dark {
         /* Deep Ocean Night - Dark Mode */
-        --background: 222 47% 11%;
-        --foreground: 210 40% 98%;
-        --card: 217 33% 17%;
-        --card-foreground: 210 40% 98%;
-        --popover: 217 33% 17%;
-        --popover-foreground: 210 40% 98%;
-        --primary: 199 89% 61%;
-        --primary-foreground: 222 47% 11%;
-        --secondary: 330 81% 70%;
-        --secondary-foreground: 210 40% 98%;
-        --muted: 217 33% 17%;
-        --muted-foreground: 215 20% 65%;
-        --accent: 199 89% 61%;
-        --accent-foreground: 222 47% 11%;
+        --background: 222 47% 6%;
+        --foreground: 0 0% 98%;
+        --card: 222 47% 8%;
+        --card-foreground: 0 0% 98%;
+        --popover: 222 47% 8%;
+        --popover-foreground: 0 0% 98%;
+        --primary: 0 0% 98%;
+        --primary-foreground: 222 47% 6%;
+        --secondary: 222 30% 14%;
+        --secondary-foreground: 0 0% 98%;
+        --muted: 222 30% 14%;
+        --muted-foreground: 0 0% 65%;
+        --accent: 222 30% 14%;
+        --accent-foreground: 0 0% 98%;
         --destructive: 0 63% 31%;
         --destructive-foreground: 0 0% 98%;
-        --border: 217 33% 25%;
-        --input: 217 33% 25%;
-        --ring: 199 89% 61%;
+        --border: 222 30% 18%;
+        --input: 222 30% 18%;
+        --ring: 0 0% 98%;
     }
 }
 
@@ -72,140 +64,75 @@
     
     body {
         @apply bg-background text-foreground;
-        font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+        font-family: var(--font-family, 'Inter'), -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+        letter-spacing: -0.01em;
     }
     
     h1, h2, h3, h4, h5, h6 {
-        font-family: 'Fraunces', Georgia, serif;
+        font-family: var(--font-family, 'Inter'), -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
         @apply tracking-tight font-semibold;
-    }
-    
-    .font-handwriting {
-        font-family: 'Caveat', cursive;
     }
 }
 
 @layer utilities {
     .glass {
-        @apply bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-white/20 dark:border-white/10;
+        @apply bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl;
     }
     
     .glass-card {
-        @apply bg-white/80 dark:bg-slate-800/60 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50;
-        box-shadow: 0 10px 40px -10px rgba(0,0,0,0.08);
-    }
-    
-    .glass-card:hover {
-        box-shadow: 0 20px 50px -12px rgba(0,0,0,0.15);
-    }
-    
-    .nature-gradient-light {
-        background: linear-gradient(135deg, #E0F7FA 0%, #FFF8E1 50%, #E8F5E9 100%);
-    }
-    
-    .nature-gradient-dark {
-        background: linear-gradient(135deg, #0F172A 0%, #1E3A5F 50%, #0D1B2A 100%);
-    }
-    
-    .sun-glow {
-        background: linear-gradient(135deg, #F6D365 0%, #FDA085 100%);
-    }
-    
-    .ocean-depth {
-        background: linear-gradient(135deg, #0F2027 0%, #203A43 50%, #2C5364 100%);
+        @apply bg-white dark:bg-slate-900/50 border border-border/50;
     }
     
     .text-balance {
         text-wrap: balance;
     }
-    
-    .animate-float {
-        animation: float 6s ease-in-out infinite;
-    }
-    
-    .animate-twinkle {
-        animation: twinkle 2s ease-in-out infinite;
-    }
-    
-    .animate-sun-ray {
-        animation: sunRay 8s linear infinite;
-    }
-    
-    @keyframes float {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-20px); }
-    }
-    
-    @keyframes twinkle {
-        0%, 100% { opacity: 1; transform: scale(1); }
-        50% { opacity: 0.5; transform: scale(0.8); }
-    }
-    
-    @keyframes sunRay {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
 }
 
 @layer components {
     .btn-primary {
-        @apply inline-flex items-center justify-center gap-2 px-8 py-3 bg-primary text-primary-foreground font-medium rounded-full transition-all duration-300 hover:opacity-90 active:scale-95;
+        @apply inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary text-primary-foreground text-sm font-medium rounded-full transition-all duration-200 hover:opacity-80 active:scale-95;
     }
     
     .btn-secondary {
-        @apply inline-flex items-center justify-center gap-2 px-8 py-3 bg-secondary text-secondary-foreground font-medium rounded-full border border-border transition-all duration-300 hover:bg-accent hover:text-accent-foreground active:scale-95;
+        @apply inline-flex items-center justify-center gap-2 px-6 py-3 bg-secondary text-secondary-foreground text-sm font-medium rounded-full transition-all duration-200 hover:bg-accent active:scale-95;
     }
     
     .btn-ghost {
-        @apply inline-flex items-center justify-center gap-2 px-6 py-2 text-foreground font-medium rounded-full transition-all duration-300 hover:bg-accent/10;
+        @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-foreground text-sm font-medium rounded-full transition-colors hover:bg-secondary;
     }
     
     .section-padding {
-        @apply py-24 md:py-32;
+        @apply py-20 md:py-28;
     }
     
     .container-width {
-        @apply max-w-7xl mx-auto px-6 sm:px-8;
-    }
-    
-    /* Organic card shapes */
-    .organic-card {
-        border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+        @apply max-w-6xl mx-auto px-6;
     }
 }
 
-/* Custom scrollbar */
+/* Minimal scrollbar */
 ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
 }
 
 ::-webkit-scrollbar-track {
-    background: hsl(var(--muted));
+    background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: hsl(var(--muted-foreground));
-    border-radius: 4px;
+    background: hsl(var(--muted-foreground) / 0.3);
+    border-radius: 3px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--foreground));
-}
-
-/* Selection color */
+/* Selection */
 ::selection {
-    background: hsl(var(--primary));
-    color: hsl(var(--primary-foreground));
+    background: hsl(var(--foreground));
+    color: hsl(var(--background));
 }
 
-/* Focus styles */
+/* Focus */
 *:focus-visible {
-    outline: 2px solid hsl(var(--primary));
+    outline: 2px solid hsl(var(--ring));
     outline-offset: 2px;
 }
 
-/* Debug wrapper fix */
-[data-debug-wrapper="true"] {
-    display: contents !important;
-}
