@@ -68,7 +68,18 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="pt-8 border-t border-border">
+        {/* Legal Notice for Support */}
+        <div className="pt-8 border-t border-border mb-8">
+          <div className="p-4 bg-secondary/30 rounded-xl">
+            <p className="text-xs text-muted-foreground text-center leading-relaxed">
+              <strong>Hinweis zur Unterstützung:</strong> Dies ist keine Spende im steuerlichen Sinne. 
+              Es erfolgt KEINE Gegenleistung (keine Ware/Dienstleistung). 
+              100% freiwillige Unterstützung für unser Familienprojekt.
+            </p>
+          </div>
+        </div>
+
+        <div className="pt-4 border-t border-border">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <p className="text-xs text-muted-foreground">
               © {new Date().getFullYear()} gltz.de – Alle Rechte vorbehalten
