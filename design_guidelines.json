@@ -1,144 +1,140 @@
 {
-  "project_name": "gltz.de - Family Website",
-  "design_philosophy": {
-    "theme": "Apple-Style Minimalist",
-    "core_principles": [
-      "High-key lighting with deep contrast",
-      "Generous whitespace (2x standard)",
-      "Frosted glass materials (backdrop-blur-xl)",
-      "Smooth, spring-based animations",
-      "Content-first hierarchy"
-    ],
-    "emotional_tone": "Trustworthy, Personal, Calm, Premium"
+  "identity": {
+    "persona": "E1",
+    "philosophy": "Fusion over Imitation. Emotion First. Content is King.",
+    "anti_patterns": [
+      "Generic 'Inter' everywhere",
+      "Center-everything layouts",
+      "Boring Bootstrap grids",
+      "Default Tailwind colors"
+    ]
   },
-  "typography": {
-    "headings": {
-      "family": "Manrope, sans-serif",
-      "weights": ["600", "800"],
-      "tracking": "tracking-tight",
-      "usage": "All section titles, hero text"
-    },
-    "body": {
-      "family": "Inter, sans-serif",
-      "weights": ["400", "500"],
-      "tracking": "tracking-normal",
-      "usage": "Paragraphs, UI elements, labels"
-    },
-    "mono": {
-      "family": "JetBrains Mono, monospace",
-      "usage": "Code snippets, technical data (if any)"
-    }
+  "project": {
+    "name": "gltz.de - Mountain & Ocean Journey",
+    "theme": "Nature Journey (Mountain/Ocean)",
+    "audience": "Young families, Nature lovers, Niederrhein",
+    "vibe": "Organic, Adventurous, Warm, Connected, Storybook"
   },
-  "colors": {
-    "light": {
-      "background": "#F5F5F7",
-      "surface": "#FFFFFF",
-      "text_primary": "#1D1D1F",
-      "text_secondary": "#86868B",
-      "border": "#D2D2D7"
+  "design_system": {
+    "typography": {
+      "headings": {
+        "family": "Fraunces, serif",
+        "weights": ["300", "600", "800"],
+        "usage": "Main titles, Section headers. Use 'Soft' axis if available.",
+        "letter_spacing": "tracking-tight"
+      },
+      "body": {
+        "family": "Manrope, sans-serif",
+        "weights": ["400", "500"],
+        "usage": "Paragraphs, UI elements, Buttons"
+      },
+      "accents": {
+        "family": "Caveat, handwriting",
+        "usage": "Personal notes, 'Twins' annotations, decorative elements"
+      }
     },
-    "dark": {
-      "background": "#000000",
-      "surface": "#1C1C1E",
-      "text_primary": "#F5F5F7",
-      "text_secondary": "#86868B",
-      "border": "#424245"
+    "colors": {
+      "light_mode": {
+        "name": "Alpine Morning",
+        "background": "#FDFCF8",
+        "surface": "#FFFFFF",
+        "primary": "#2E5C55",
+        "secondary": "#E9C46A",
+        "text_main": "#264653",
+        "text_muted": "#6B7280",
+        "border": "#E5E7EB"
+      },
+      "dark_mode": {
+        "name": "Deep Ocean Night",
+        "background": "#0F172A",
+        "surface": "#1E293B",
+        "primary": "#38BDF8",
+        "secondary": "#F472B6",
+        "text_main": "#F8FAFC",
+        "text_muted": "#94A3B8",
+        "border": "#334155"
+      },
+      "gradients": {
+        "sun_glow": "linear-gradient(135deg, #F6D365 0%, #FDA085 100%)",
+        "ocean_depth": "linear-gradient(135deg, #0F2027 0%, #203A43 50%, #2C5364 100%)"
+      }
     },
-    "accents": {
-      "primary": "#0071E3",
-      "success": "#34C759",
-      "warning": "#FF9F0A",
-      "danger": "#FF3B30",
-      "twins_art": "#FF375F",
-      "nature": "#34C759"
-    }
-  },
-  "layout": {
-    "grid_system": "Bento Grid (Asymmetric)",
-    "container_width": "max-w-7xl",
     "spacing": {
-      "section_padding": "py-24 md:py-32",
-      "element_gap": "gap-8 md:gap-12"
+      "scale": "Generous. Use p-8, p-12, p-24 for section gaps.",
+      "container": "max-w-7xl mx-auto px-6"
     },
     "radius": {
       "default": "rounded-2xl",
-      "large": "rounded-3xl",
-      "button": "rounded-full"
+      "buttons": "rounded-full",
+      "cards": "rounded-3xl"
+    },
+    "shadows": {
+      "soft": "0 10px 40px -10px rgba(0,0,0,0.08)",
+      "glow": "0 0 20px rgba(56, 189, 248, 0.3)"
     }
   },
   "components": {
-    "buttons": {
-      "primary": "bg-primary text-primary-foreground hover:opacity-90 rounded-full px-8 py-3 font-medium transition-all active:scale-95",
-      "secondary": "bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-full px-8 py-3 font-medium transition-all active:scale-95",
-      "ghost": "hover:bg-accent hover:text-accent-foreground rounded-full px-6 py-2 transition-all"
+    "theme_toggle": {
+      "name": "CelestialSwitch",
+      "type": "Custom",
+      "specs": "A pill-shaped toggle. Light mode shows a yellow sun with spinning rays. Dark mode shows a crescent moon with twinkling stars. Background transitions from Sky Blue to Midnight Blue.",
+      "animation": "Spring-based transition (framer-motion)"
+    },
+    "hero_section": {
+      "layout": "Full-screen split or Parallax",
+      "elements": [
+        "Headline: 'Our Journey: Mountains to Oceans'",
+        "Subhead: 'Exploring life with twins'",
+        "Background: Dynamic switch based on theme (Mountain Day / Ocean Night)"
+      ]
+    },
+    "journey_line": {
+      "description": "A dashed SVG path that winds down the page, connecting sections.",
+      "behavior": "Draws itself as the user scrolls (ScrollTrigger/Framer Motion)."
     },
     "cards": {
-      "style": "bg-surface/80 backdrop-blur-xl border border-white/20 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-500 hover:-translate-y-1",
-      "dark_style": "dark:bg-surface/60 dark:border-white/10"
-    },
-    "inputs": {
-      "style": "bg-surface/50 border-transparent focus:border-primary/50 focus:ring-0 rounded-xl px-4 py-3 transition-all"
+      "style": "Glassmorphism with organic borders (border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%).",
+      "hover": "Scale up 1.02, shadow-lg"
     }
   },
   "assets": {
-    "images": {
-      "hero_background": {
-        "url": "https://images.pexels.com/photos/12529917/pexels-photo-12529917.jpeg",
-        "alt": "Family walking in nature, back view",
-        "position": "center 40%"
+    "images": [
+      {
+        "category": "hero_mountain",
+        "url": "https://images.pexels.com/photos/12241105/pexels-photo-12241105.jpeg",
+        "alt": "Misty mountain peaks"
       },
-      "twins_section": {
-        "url": "https://images.unsplash.com/photo-1767082090743-c82e651bd9d6?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzh8MHwxfHNlYXJjaHwxfHxjdXRlJTIwdHdpbiUyMGJhYmllcyUyMG1pbmltYWxpc3QlMjB3aGl0ZSUyMGJhY2tncm91bmR8ZW58MHx8fHwxNzY3MTg4NzcxfDA&ixlib=rb-4.1.0&q=85",
-        "alt": "Cute twin babies minimalist"
+      {
+        "category": "hero_ocean",
+        "url": "https://images.pexels.com/photos/11654701/pexels-photo-11654701.jpeg",
+        "alt": "Deep blue ocean waves"
       },
-      "art_section": {
-        "url": "https://images.pexels.com/photos/5447092/pexels-photo-5447092.jpeg",
-        "alt": "Art supplies minimalist flat lay"
+      {
+        "category": "family_twins",
+        "url": "https://images.pexels.com/photos/5416626/pexels-photo-5416626.jpeg",
+        "alt": "Twins playing in nature"
       },
-      "niederrhein_bg": {
-        "url": "https://images.pexels.com/photos/6016498/pexels-photo-6016498.jpeg",
-        "alt": "Niederrhein landscape nature"
-      },
-      "baby_daily": {
-        "url": "https://images.unsplash.com/photo-1744424705160-c2a32b5dc4e3?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzh8MHwxfHNlYXJjaHw0fHxjdXRlJTIwdHdpbiUyMGJhYmllcyUyMG1pbmltYWxpc3QlMjB3aGl0ZSUyMGJhY2tncm91bmR8ZW58MHx8fHwxNzY3MTg4NzcxfDA&ixlib=rb-4.1.0&q=85",
-        "alt": "Babies lying on blanket"
+      {
+        "category": "nature_forest",
+        "url": "https://images.pexels.com/photos/17454831/pexels-photo-17454831.jpeg",
+        "alt": "Forest path"
       }
-    },
-    "icons": "lucide-react"
+    ],
+    "icons": "Lucide React (Feather icons). Use thin strokes (1.5px)."
   },
-  "sections": {
-    "hero": {
-      "type": "Parallax",
-      "content": "Welcome to the gltz.de Family",
-      "subtext": "Sharing our journey, twins' art, and life in Niederrhein."
-    },
-    "twins_art": {
-      "type": "Showcase",
-      "features": ["Gallery Grid", "PayPal.me Button (No Cart)"],
-      "disclaimer": "Dies ist keine Spende im steuerlichen Sinne. Es erfolgt KEINE Gegenleistung. 100% freiwillige Unterstützung für unser Familienprojekt."
-    },
-    "contact": {
-      "type": "Form",
-      "fields": ["Name (Optional)", "Email (Required)", "Topic (Dropdown)", "Message"],
-      "integration": "Gmail/Sheets (Mocked for UI)"
-    },
-    "admin": {
-      "type": "Protected",
-      "auth": "Email Code Verification",
-      "features": ["Dashboard", "Blog Editor"]
-    }
-  },
-  "accessibility": {
-    "contrast": "WCAG AA Compliant (4.5:1)",
-    "motion": "Respect prefers-reduced-motion",
-    "aria": "Full ARIA labels for interactive elements"
-  },
+  "instructions_to_main_agent": [
+    "1. INSTALL FONTS: Add 'Fraunces' and 'Caveat' from Google Fonts to index.css.",
+    "2. SETUP THEME: Update tailwind.config.js to use the new color palette variables.",
+    "3. CREATE TOGGLE: Build the 'CelestialSwitch' component first. It's the core visual anchor.",
+    "4. BUILD LAYOUT: Use the 'Journey Line' concept to connect sections vertically.",
+    "5. USE IMAGES: Use the provided Pexels URLs for the hero and section backgrounds.",
+    "6. ANIMATION: Use framer-motion for the scroll-triggered journey line and entrance animations.",
+    "7. DO NOT use generic card layouts. Use the organic shapes defined in 'components.cards'."
+  ],
   "universal_guidelines": [
-    "Do not use gradients for text.",
-    "Use 'backdrop-blur-xl' for all overlays (nav, modals, cards).",
-    "Ensure all interactive elements have a hover state that lifts or brightens.",
-    "Use 'data-testid' for all key interactions.",
-    "Mobile-first: Stack grids to single column on mobile.",
-    "Images must have 'object-cover' and proper aspect ratios."
+    "Avoid 'AI Slop' aesthetics (generic gradients, centered text).",
+    "Use 2-3x more spacing than usual.",
+    "Ensure high contrast for accessibility.",
+    "Add data-testid to all interactive elements."
   ]
 }
