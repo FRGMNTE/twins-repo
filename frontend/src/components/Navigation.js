@@ -6,11 +6,16 @@ import { useSiteSettings } from '../context/SiteSettingsContext';
 
 const DEFAULT_NAV_ITEMS = [
   { id: '1', label: 'Home', path: '/', enabled: true },
-  { id: '2', label: 'Schwangerschaft', path: '/schwangerschaft', enabled: true },
-  { id: '3', label: 'Baby-Alltag', path: '/baby-alltag', enabled: true },
-  { id: '4', label: 'Tipps', path: '/tipps', enabled: true },
-  { id: '5', label: 'Twins-Art', path: '/twins-art', enabled: true },
-  { id: '6', label: 'Kontakt', path: '/kontakt', enabled: true },
+  { id: '2', label: 'Über uns', path: '/ueber-uns', enabled: true },
+  { id: '3', label: 'Schwangerschaft', path: '/schwangerschaft', enabled: true },
+  { id: '4', label: 'Baby-Alltag', path: '/baby-alltag', enabled: true },
+  { id: '5', label: 'Tipps', path: '/tipps', enabled: true },
+  { id: '6', label: 'Reisen', path: '/reisen', enabled: true },
+  { id: '7', label: 'Blog', path: '/blog', enabled: true },
+  { id: '8', label: 'Suchen', path: '/suchen', enabled: true },
+  { id: '9', label: 'M&O Portfolio', path: '/twins-art', enabled: true },
+  { id: '10', label: 'Spende', path: '/spende', enabled: true },
+  { id: '11', label: 'Kontakt', path: '/kontakt', enabled: true },
 ];
 
 export default function Navigation() {

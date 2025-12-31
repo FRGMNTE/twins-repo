@@ -28,7 +28,7 @@ export default function Footer() {
           </div>
 
           <div className="flex gap-12">
-            {/* Dynamic Footer Links */}
+            {/* Dynamic Footer Links - Rechtliches */}
             {footerLinks.length > 0 && (
               <div>
                 <h4 className="text-xs font-semibold text-foreground mb-3 uppercase tracking-wide">
@@ -50,12 +50,23 @@ export default function Footer() {
               </div>
             )}
 
-            {/* Social */}
+            {/* Kontakt - nur E-Mail und Facebook */}
             <div>
               <h4 className="text-xs font-semibold text-foreground mb-3 uppercase tracking-wide">
                 Kontakt
               </h4>
               <ul className="space-y-2">
+                {settings.socialEmail && (
+                  <li>
+                    <a 
+                      href={`mailto:${settings.socialEmail}`}
+                      className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                      data-testid="footer-email"
+                    >
+                      E-Mail
+                    </a>
+                  </li>
+                )}
                 {settings.socialFacebook && (
                   <li>
                     <a 
@@ -69,26 +80,6 @@ export default function Footer() {
                     </a>
                   </li>
                 )}
-                {settings.socialEmail && (
-                  <li>
-                    <a 
-                      href={`mailto:${settings.socialEmail}`}
-                      className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                      data-testid="footer-email"
-                    >
-                      E-Mail
-                    </a>
-                  </li>
-                )}
-                <li>
-                  <Link 
-                    to="/admin"
-                    className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                    data-testid="footer-admin"
-                  >
-                    Admin
-                  </Link>
-                </li>
               </ul>
             </div>
           </div>
@@ -101,9 +92,9 @@ export default function Footer() {
           </p>
         </div>
 
-        {/* Copyright */}
+        {/* Copyright - mit geheimem Admin-Link */}
         <div className="flex justify-between items-center text-[10px] text-muted-foreground">
-          <p>© {new Date().getFullYear()} {settings.logoText || 'gltz.de'}</p>
+          <p>© {new Date().getFullYear()} <Link to="/admin" className="hover:text-foreground transition-colors" data-testid="secret-admin-link">{settings.logoText || 'gltz.de'}</Link></p>
           <p>Made with love for families</p>
         </div>
       </div>
