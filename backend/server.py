@@ -437,6 +437,75 @@ async def duplicate_page(page_id: str, token: str):
     await db.pages.insert_one(new_page)
     return {"success": True, "id": new_page['id']}
 
+@api_router.post("/admin/pages/init-defaults")
+async def init_default_pages(token: str):
+    """Initialize default system pages if they don't exist"""
+    if not await verify_admin_session(token):
+        raise HTTPException(status_code=401, detail="Nicht autorisiert")
+    
+    default_pages = [
+        {
+            "slug": "impressum",
+            "title": "Impressum",
+            "content": """<h2>Angaben gemäß § 5 TMG</h2>
+<p>gltz.de<br>
+Familie vom Niederrhein<br>
+Deutschland</p>
+
+<h3>Kontakt</h3>
+<p>E-Mail: gltz.de@gmail.com</p>
+
+<h3>Haftungsausschluss</h3>
+<p>Diese Website dient ausschließlich privaten, nicht-kommerziellen Zwecken. Die Inhalte wurden mit größter Sorgfalt erstellt. Für die Richtigkeit, Vollständigkeit und Aktualität der Inhalte können wir jedoch keine Gewähr übernehmen.</p>
+
+<h3>Urheberrecht</h3>
+<p>Die durch die Seitenbetreiber erstellten Inhalte und Werke auf diesen Seiten unterliegen dem deutschen Urheberrecht. Die Vervielfältigung, Bearbeitung, Verbreitung und jede Art der Verwertung außerhalb der Grenzen des Urheberrechtes bedürfen der schriftlichen Zustimmung des jeweiligen Autors bzw. Erstellers.</p>""",
+            "status": "live",
+            "order": 100
+        },
+        {
+            "slug": "datenschutz",
+            "title": "Datenschutzerklärung",
+            "content": """<h2>Datenschutzerklärung</h2>
+
+<h3>1. Datenschutz auf einen Blick</h3>
+<p>Die folgenden Hinweise geben einen einfachen Überblick darüber, was mit Ihren personenbezogenen Daten passiert, wenn Sie diese Website besuchen.</p>
+
+<h3>2. Datenerfassung auf dieser Website</h3>
+<p><strong>Wer ist verantwortlich für die Datenerfassung auf dieser Website?</strong><br>
+Die Datenverarbeitung auf dieser Website erfolgt durch den Websitebetreiber (gltz.de).</p>
+
+<h3>3. Hosting</h3>
+<p>Diese Website wird extern gehostet. Die personenbezogenen Daten, die auf dieser Website erfasst werden, werden auf den Servern des Hosters gespeichert.</p>
+
+<h3>4. Kontaktformular</h3>
+<p>Wenn Sie uns per Kontaktformular Anfragen zukommen lassen, werden Ihre Angaben aus dem Anfrageformular inklusive der von Ihnen dort angegebenen Kontaktdaten zwecks Bearbeitung der Anfrage und für den Fall von Anschlussfragen bei uns gespeichert.</p>
+
+<h3>5. Cookies</h3>
+<p>Diese Website verwendet Cookies. Diese kleinen Textdateien werden auf Ihrem Computer gespeichert und dienen dazu, unser Angebot nutzerfreundlicher und effektiver zu gestalten. Sie können die Speicherung von Cookies in Ihrem Browser deaktivieren.</p>
+
+<h3>6. Ihre Rechte</h3>
+<p>Sie haben jederzeit das Recht auf Auskunft, Berichtigung, Löschung und Einschränkung der Verarbeitung Ihrer personenbezogenen Daten. Kontaktieren Sie uns dazu per E-Mail.</p>""",
+            "status": "live",
+            "order": 101
+        }
+    ]
+    
+    created = 0
+    for page_data in default_pages:
+        existing = await db.pages.find_one({"slug": page_data["slug"]})
+        if not existing:
+            new_page = {
+                "id": str(uuid.uuid4()),
+                **page_data,
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }
+            await db.pages.insert_one(new_page)
+            created += 1
+    
+    return {"success": True, "created": created}
+
 # ============== Gallery CRUD ==============
 
 @api_router.get("/admin/gallery", response_model=List[GalleryImage])
