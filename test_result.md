@@ -101,3 +101,107 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: |
+  Implement Navigation/Menu Management in Admin Area for gltz.de family website.
+  Requirements:
+  - Header menu should have: Home, Über uns, Schwangerschaft, Baby-Alltag, Tipps, Reisen, Blog, Suchen, M&O Portfolio (Twins-Art), Spende, Kontakt
+  - Footer: Rechtliches (Impressum, Datenschutz), Kontakt (only E-Mail and Facebook - Instagram, Youtube, TikTok are offline)
+  - Remove visible "Admin" link from footer and make secret link at "gltz.de" copyright text
+  - Fix Cookie Banner covering footer content
+
+backend:
+  - task: "Navigation Management API - Settings include navItems and footerLinks"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Backend SiteSettings model already had navItems and footerLinks arrays. Added default navigation items to match user requirements."
+
+frontend:
+  - task: "Navigation Component - Dynamic menu from settings"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/Navigation.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Updated DEFAULT_NAV_ITEMS to include all 11 menu items as requested by user. Component already reads navItems from SiteSettingsContext."
+
+  - task: "Footer Component - E-Mail, Facebook only, secret Admin link"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/Footer.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Removed visible Admin link, added secret link to /admin on gltz.de copyright text. Reordered to show E-Mail first, then Facebook. Removed Instagram/YouTube/TikTok references."
+
+  - task: "Admin Navigation Management UI"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/Admin.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Navigation tab already exists with full CRUD for header menu items and footer links. Updated DEFAULT_NAV_ITEMS to match user requirements."
+
+  - task: "Cookie Banner z-index fix"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/CookieBanner.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Changed z-50 to z-40, added pointer-events-none to container and pointer-events-auto to content. This allows clicking footer elements while banner is visible."
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: true
+
+test_plan:
+  current_focus:
+    - "Navigation Component - Dynamic menu from settings"
+    - "Footer Component - E-Mail, Facebook only, secret Admin link"
+    - "Admin Navigation Management UI"
+    - "Cookie Banner z-index fix"
+  stuck_tasks: []
+  test_all: true
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: |
+      Implemented Navigation Management feature:
+      1. Updated Navigation.js with 11 menu items: Home, Über uns, Schwangerschaft, Baby-Alltag, Tipps, Reisen, Blog, Suchen, M&O Portfolio, Spende, Kontakt
+      2. Updated Footer.js: Removed visible Admin link, added secret link on "gltz.de" copyright, show only E-Mail and Facebook
+      3. Fixed Cookie Banner: Changed z-index from z-50 to z-40, added pointer-events handling
+      4. Admin Navigation tab was already implemented - just updated defaults
+      
+      Test scenarios:
+      - Verify all 11 menu items appear in header navigation
+      - Verify footer shows only E-Mail and Facebook under Kontakt
+      - Verify clicking "gltz.de" in copyright goes to /admin
+      - Verify footer is accessible even when cookie banner is shown
+      - Verify navigation changes in admin are reflected on live site
+      
+      Admin credentials: password "gltz2025" at /admin
