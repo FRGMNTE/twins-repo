@@ -415,6 +415,91 @@ class GltzAdminAPITester:
         else:
             self.log_result("Save Site Settings", False, f"Response: {response}")
             return False
+    
+    def test_navigation_management(self):
+        """Test Navigation Management feature specifically"""
+        print("\n🧭 Testing Navigation Management Feature")
+        print("-" * 40)
+        
+        # Test GET /api/settings - should return navItems array with 11 items and footerLinks array
+        success, response = self.make_request('GET', '/settings')
+        if not success:
+            self.log_result("Navigation - GET Settings", False, f"Failed to get settings: {response}")
+            return False
+        
+        # Verify navItems exists and has 11 items
+        nav_items = response.get('navItems', [])
+        if len(nav_items) != 11:
+            self.log_result("Navigation - NavItems Count", False, f"Expected 11 nav items, got {len(nav_items)}")
+            return False
+        else:
+            self.log_result("Navigation - NavItems Count (11 items)", True)
+        
+        # Verify the specific menu items are present
+        expected_labels = [
+            "Home", "Über uns", "Schwangerschaft", "Baby-Alltag", "Tipps", 
+            "Reisen", "Blog", "Suchen", "M&O Portfolio", "Spende", "Kontakt"
+        ]
+        
+        actual_labels = [item.get('label', '') for item in nav_items]
+        missing_labels = [label for label in expected_labels if label not in actual_labels]
+        
+        if missing_labels:
+            self.log_result("Navigation - Required Menu Items", False, f"Missing labels: {missing_labels}")
+            return False
+        else:
+            self.log_result("Navigation - Required Menu Items", True)
+        
+        # Verify footerLinks array exists
+        footer_links = response.get('footerLinks', None)
+        if footer_links is None:
+            self.log_result("Navigation - FooterLinks Array", False, "footerLinks array not found")
+            return False
+        else:
+            self.log_result("Navigation - FooterLinks Array", True)
+        
+        # Test POST /api/settings - update navItems and verify changes persist
+        # First, save original settings
+        original_settings = response
+        
+        # Create modified navItems (disable one item for testing)
+        modified_nav_items = nav_items.copy()
+        if len(modified_nav_items) > 0:
+            modified_nav_items[0]['enabled'] = False  # Disable first item
+        
+        # Update settings with modified navItems
+        update_data = original_settings.copy()
+        update_data['navItems'] = modified_nav_items
+        
+        success, update_response = self.make_request('POST', '/settings', update_data)
+        if not success:
+            self.log_result("Navigation - Update Settings", False, f"Failed to update settings: {update_response}")
+            return False
+        else:
+            self.log_result("Navigation - Update Settings", True)
+        
+        # Verify changes persist by getting settings again
+        success, verify_response = self.make_request('GET', '/settings')
+        if not success:
+            self.log_result("Navigation - Verify Persistence", False, f"Failed to verify settings: {verify_response}")
+            return False
+        
+        # Check if the change was persisted
+        updated_nav_items = verify_response.get('navItems', [])
+        if len(updated_nav_items) > 0 and updated_nav_items[0].get('enabled') == False:
+            self.log_result("Navigation - Verify Persistence", True)
+        else:
+            self.log_result("Navigation - Verify Persistence", False, "Changes were not persisted correctly")
+            return False
+        
+        # Restore original settings
+        success, restore_response = self.make_request('POST', '/settings', original_settings)
+        if success:
+            self.log_result("Navigation - Restore Original Settings", True)
+        else:
+            self.log_result("Navigation - Restore Original Settings", False, f"Failed to restore: {restore_response}")
+        
+        return True
 
 def main():
     """Main test execution"""
