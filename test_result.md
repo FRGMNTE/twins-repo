@@ -110,6 +110,54 @@ user_problem_statement: |
   4. Einstellungen: Logo-Text oder Bild, Footer nur E-Mail, separate Social Media Sektion
 
 backend:
+  - task: "Dynamic Pages System - Public API endpoints and page routing"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: Dynamic pages system fully operational. All API endpoints working: GET /api/pages returns live pages, GET /api/pages/{slug} returns individual pages (impressum, datenschutz, ueber-uns), POST /api/admin/pages/init-defaults initializes default pages. 404 handling working correctly for non-existent pages."
+
+  - task: "Admin Page Editor - Rich text editor with visual/source toggle"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/Admin.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: Rich text editor fully functional. 'Visuell' and 'Quellcode' toggle buttons working. All formatting tools operational: Bold, Italic, H1/H2/H3 headings, unordered/ordered lists, link insertion. Visual editor uses contentEditable with proper styling, source editor shows raw HTML."
+
+  - task: "Page Management - Create, edit, duplicate, trash functionality"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: Complete page management working. Page creation with title/slug/content/status, editing with rich text editor, duplication, soft delete to trash with deleted_at timestamp, restoration from trash, permanent delete. All CRUD operations verified."
+
+  - task: "Frontend Dynamic Routing - DynamicPage component for /:slug routes"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/DynamicPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: Dynamic routing working perfectly. DynamicPage component handles all /:slug routes, fetches content from API, displays with proper styling. 404 error page shows 'Seite nicht gefunden' for non-existent pages. Loading states and error handling working correctly."
+
   - task: "SiteSettings Model - navItems with children, socialLinks array, footerEmail, logoImage"
     implemented: true
     working: true
