@@ -4,11 +4,24 @@ import { Menu, X } from 'lucide-react';
 import CelestialSwitch from './CelestialSwitch';
 import { useSiteSettings } from '../context/SiteSettingsContext';
 
+const DEFAULT_NAV_ITEMS = [
+  { id: '1', label: 'Home', path: '/', enabled: true },
+  { id: '2', label: 'Schwangerschaft', path: '/schwangerschaft', enabled: true },
+  { id: '3', label: 'Baby-Alltag', path: '/baby-alltag', enabled: true },
+  { id: '4', label: 'Tipps', path: '/tipps', enabled: true },
+  { id: '5', label: 'Twins-Art', path: '/twins-art', enabled: true },
+  { id: '6', label: 'Kontakt', path: '/kontakt', enabled: true },
+];
+
 export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
   const { settings } = useSiteSettings();
+
+  const navItems = (settings.navItems && settings.navItems.length > 0) 
+    ? settings.navItems.filter(item => item.enabled) 
+    : DEFAULT_NAV_ITEMS;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -21,15 +34,6 @@ export default function Navigation() {
   useEffect(() => {
     setIsOpen(false);
   }, [location]);
-
-  const navLinks = [
-    { path: '/', label: 'Home' },
-    { path: '/schwangerschaft', label: 'Schwangerschaft' },
-    { path: '/baby-alltag', label: 'Baby-Alltag' },
-    { path: '/tipps', label: 'Tipps' },
-    { path: '/twins-art', label: 'Twins-Art' },
-    { path: '/kontakt', label: 'Kontakt' },
-  ];
 
   return (
     <>
@@ -55,7 +59,7 @@ export default function Navigation() {
             <Link
               to="/"
               className="text-lg font-semibold text-foreground hover:opacity-60 transition-opacity"
-              aria-label="gltz.de Startseite"
+              aria-label="Startseite"
               data-testid="logo-link"
             >
               {settings.logoText || 'gltz.de'}
@@ -63,18 +67,18 @@ export default function Navigation() {
 
             {/* Desktop Nav */}
             <div className="hidden lg:flex items-center space-x-1">
-              {navLinks.map((link) => (
+              {navItems.map((item) => (
                 <Link
-                  key={link.path}
-                  to={link.path}
+                  key={item.id}
+                  to={item.path}
                   className={`px-3 py-1.5 text-xs font-medium transition-colors ${
-                    location.pathname === link.path
+                    location.pathname === item.path
                       ? 'text-foreground'
                       : 'text-muted-foreground hover:text-foreground'
                   }`}
-                  data-testid={`nav-link-${link.path.replace('/', '') || 'home'}`}
+                  data-testid={`nav-link-${item.path.replace('/', '') || 'home'}`}
                 >
-                  {link.label}
+                  {item.label}
                 </Link>
               ))}
             </div>
@@ -104,17 +108,17 @@ export default function Navigation() {
         {isOpen && (
           <div className="lg:hidden glass border-t border-border" data-testid="mobile-menu">
             <div className="container-width py-4 space-y-1">
-              {navLinks.map((link) => (
+              {navItems.map((item) => (
                 <Link
-                  key={link.path}
-                  to={link.path}
+                  key={item.id}
+                  to={item.path}
                   className={`block px-4 py-2.5 text-sm font-medium rounded-lg transition-colors ${
-                    location.pathname === link.path
+                    location.pathname === item.path
                       ? 'text-foreground bg-secondary'
                       : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
                   }`}
                 >
-                  {link.label}
+                  {item.label}
                 </Link>
               ))}
             </div>

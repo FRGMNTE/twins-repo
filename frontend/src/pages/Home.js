@@ -8,10 +8,20 @@ import { useSiteSettings } from '../context/SiteSettingsContext';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
+const DEFAULT_TEASER_CARDS = [
+  { id: '1', title: 'Schwangerschaft', description: 'Vorbereitung auf Zwillinge', link: '/schwangerschaft', enabled: true },
+  { id: '2', title: 'Baby-Alltag', description: 'Routinen & Tipps', link: '/baby-alltag', enabled: true },
+  { id: '3', title: 'Twins-Art', description: 'Familienkunst', link: '/twins-art', enabled: true },
+];
+
 export default function Home() {
   const [blogPosts, setBlogPosts] = useState([]);
   const { theme } = useTheme();
   const { settings } = useSiteSettings();
+
+  const teaserCards = (settings.teaserCards && settings.teaserCards.length > 0) 
+    ? settings.teaserCards.filter(card => card.enabled) 
+    : DEFAULT_TEASER_CARDS;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -26,27 +36,9 @@ export default function Home() {
     fetchData();
   }, []);
 
-  const teasers = [
-    {
-      title: 'Schwangerschaft',
-      description: 'Vorbereitung auf Zwillinge',
-      link: '/schwangerschaft',
-    },
-    {
-      title: 'Baby-Alltag',
-      description: 'Routinen & Tipps',
-      link: '/baby-alltag',
-    },
-    {
-      title: 'Twins-Art',
-      description: 'Familienkunst',
-      link: '/twins-art',
-    },
-  ];
-
   return (
     <main id="main-content">
-      {/* Hero Section - Apple Style Minimal */}
+      {/* Hero Section */}
       <section 
         className="relative min-h-screen flex items-center justify-center overflow-hidden"
         data-testid="hero-section"
@@ -120,13 +112,13 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Teaser Grid - Apple Style */}
+      {/* Teaser Grid */}
       <section className="section-padding bg-background" data-testid="teaser-section">
         <div className="container-width">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {teasers.map((teaser, index) => (
+            {teaserCards.map((teaser, index) => (
               <motion.div
-                key={teaser.title}
+                key={teaser.id}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -155,7 +147,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Blog Section - Minimal */}
+      {/* Blog Section */}
       {blogPosts.length > 0 && (
         <section className="section-padding bg-secondary/30" data-testid="blog-teaser-section">
           <div className="container-width">
@@ -214,19 +206,19 @@ export default function Home() {
       <section className="section-padding bg-background">
         <div className="container-width text-center">
           <h2 className="text-3xl sm:text-4xl font-semibold text-foreground mb-4">
-            Projekt unterstützen
+            {settings.ctaTitle || 'Projekt unterstützen'}
           </h2>
           <p className="text-muted-foreground mb-8 max-w-md mx-auto">
-            Die Kunst bringt Freude, Einnahmen bleiben 100% in der Familie.
+            {settings.ctaDescription || 'Die Kunst bringt Freude, Einnahmen bleiben 100% in der Familie.'}
           </p>
           <a
-            href="https://paypal.me/gltzfamily"
+            href={settings.paypalLink || 'https://paypal.me/gltzfamily'}
             target="_blank"
             rel="noopener noreferrer"
             className="btn-primary"
             data-testid="paypal-cta"
           >
-            Unterstützen
+            {settings.ctaButtonText || 'Unterstützen'}
           </a>
         </div>
       </section>

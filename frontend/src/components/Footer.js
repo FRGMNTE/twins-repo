@@ -1,9 +1,18 @@
 import { Link } from 'react-router-dom';
 import { useSiteSettings } from '../context/SiteSettingsContext';
 
+const DEFAULT_FOOTER_LINKS = [
+  { id: '1', label: 'Impressum', path: '/impressum', enabled: true },
+  { id: '2', label: 'Datenschutz', path: '/datenschutz', enabled: true },
+];
+
 export default function Footer() {
   const { settings } = useSiteSettings();
   
+  const footerLinks = (settings.footerLinks && settings.footerLinks.length > 0) 
+    ? settings.footerLinks.filter(link => link.enabled) 
+    : DEFAULT_FOOTER_LINKS;
+
   return (
     <footer className="border-t border-border bg-background" data-testid="footer">
       <div className="container-width py-12">
@@ -14,56 +23,71 @@ export default function Footer() {
               {settings.logoText || 'gltz.de'}
             </h3>
             <p className="text-xs text-muted-foreground max-w-xs">
-              Unsere Reise mit Zwillingen. Anonyme Tipps für junge Familien.
+              {settings.footerText || 'Unsere Reise mit Zwillingen. Anonyme Tipps für junge Familien.'}
             </p>
           </div>
 
           <div className="flex gap-12">
-            <div>
-              <h4 className="text-xs font-semibold text-foreground mb-3 uppercase tracking-wide">
-                Seiten
-              </h4>
-              <ul className="space-y-2">
-                <li><Link to="/tipps" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Tipps</Link></li>
-                <li><Link to="/twins-art" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Twins-Art</Link></li>
-                <li><Link to="/kontakt" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Kontakt</Link></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="text-xs font-semibold text-foreground mb-3 uppercase tracking-wide">
-                Rechtliches
-              </h4>
-              <ul className="space-y-2">
-                <li><Link to="/impressum" className="text-xs text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-impressum">Impressum</Link></li>
-                <li><Link to="/datenschutz" className="text-xs text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-datenschutz">Datenschutz</Link></li>
-              </ul>
-            </div>
+            {/* Dynamic Footer Links */}
+            {footerLinks.length > 0 && (
+              <div>
+                <h4 className="text-xs font-semibold text-foreground mb-3 uppercase tracking-wide">
+                  Rechtliches
+                </h4>
+                <ul className="space-y-2">
+                  {footerLinks.map((link) => (
+                    <li key={link.id}>
+                      <Link 
+                        to={link.path} 
+                        className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                        data-testid={`footer-${link.label.toLowerCase()}`}
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
+            {/* Social */}
             <div>
               <h4 className="text-xs font-semibold text-foreground mb-3 uppercase tracking-wide">
-                Social
+                Kontakt
               </h4>
               <ul className="space-y-2">
+                {settings.socialFacebook && (
+                  <li>
+                    <a 
+                      href={settings.socialFacebook}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                      data-testid="footer-facebook"
+                    >
+                      Facebook
+                    </a>
+                  </li>
+                )}
+                {settings.socialEmail && (
+                  <li>
+                    <a 
+                      href={`mailto:${settings.socialEmail}`}
+                      className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                      data-testid="footer-email"
+                    >
+                      E-Mail
+                    </a>
+                  </li>
+                )}
                 <li>
-                  <a 
-                    href="https://www.facebook.com/people/%E0%B9%80%E0%B8%A1%E0%B8%B2%E0%B8%99%E0%B9%8C%E0%B9%80%E0%B8%97%E0%B8%B4%E0%B8%99-%E0%B9%82%E0%B8%AD%E0%B9%80%E0%B8%8A%E0%B8%B4%E0%B9%88%E0%B8%99/61584716588683/"
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <Link 
+                    to="/admin"
                     className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                    data-testid="footer-facebook"
+                    data-testid="footer-admin"
                   >
-                    Facebook
-                  </a>
-                </li>
-                <li>
-                  <a 
-                    href="mailto:gltz.de@gmail.com"
-                    className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                    data-testid="footer-email"
-                  >
-                    E-Mail
-                  </a>
+                    Admin
+                  </Link>
                 </li>
               </ul>
             </div>
@@ -73,21 +97,14 @@ export default function Footer() {
         {/* Legal Notice */}
         <div className="py-4 border-t border-border mb-4">
           <p className="text-[10px] text-muted-foreground text-center">
-            Hinweis zur Unterstützung: Dies ist keine Spende im steuerlichen Sinne. 
-            Es erfolgt keine Gegenleistung. 100% freiwillige Unterstützung für unser Familienprojekt.
+            {settings.donationDisclaimer || 'Hinweis zur Unterstützung: Dies ist keine Spende im steuerlichen Sinne. Es erfolgt keine Gegenleistung. 100% freiwillige Unterstützung für unser Familienprojekt.'}
           </p>
         </div>
 
         {/* Copyright */}
         <div className="flex justify-between items-center text-[10px] text-muted-foreground">
-          <p>© {new Date().getFullYear()} gltz.de</p>
-          <Link 
-            to="/admin" 
-            className="hover:text-foreground transition-colors"
-            data-testid="footer-admin-link"
-          >
-            Admin
-          </Link>
+          <p>© {new Date().getFullYear()} {settings.logoText || 'gltz.de'}</p>
+          <p>Made with love for families</p>
         </div>
       </div>
     </footer>
