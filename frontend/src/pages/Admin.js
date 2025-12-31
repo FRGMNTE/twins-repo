@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence, Reorder } from 'framer-motion';
 import { 
   Lock, LogOut, LayoutDashboard, FileText, Image, Mail, Settings, 
-  Users, Eye, Plus, Pencil, Trash2, Copy, Download, Check, X,
-  ChevronRight, Search, Filter, Star, ExternalLink, Save, RefreshCw,
-  Palette, Type, Globe, Shield, Database, Clock
+  Users, Plus, Pencil, Trash2, Copy, Download, Check, X,
+  ChevronRight, Search, Filter, Star, Save,
+  Palette, Type, Globe, Shield, Menu, Home, GripVertical,
+  ExternalLink, Facebook, AtSign, Layout, Layers
 } from 'lucide-react';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
@@ -12,6 +13,7 @@ import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
 import { Label } from '../components/ui/label';
 import { Badge } from '../components/ui/badge';
+import { Switch } from '../components/ui/switch';
 import {
   Select,
   SelectContent,
@@ -36,11 +38,36 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '../components/ui/alert-dialog';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '../components/ui/accordion';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 const CATEGORIES = ['Schlaf', 'Füttern', 'Tipps', 'Alltag', 'Gesundheit'];
-const TAGS = ['Baby-Art', 'Abstrakt', 'Familie', 'Neu', 'Featured'];
+
+const DEFAULT_NAV_ITEMS = [
+  { id: '1', label: 'Home', path: '/', enabled: true },
+  { id: '2', label: 'Schwangerschaft', path: '/schwangerschaft', enabled: true },
+  { id: '3', label: 'Baby-Alltag', path: '/baby-alltag', enabled: true },
+  { id: '4', label: 'Tipps', path: '/tipps', enabled: true },
+  { id: '5', label: 'Twins-Art', path: '/twins-art', enabled: true },
+  { id: '6', label: 'Kontakt', path: '/kontakt', enabled: true },
+];
+
+const DEFAULT_FOOTER_LINKS = [
+  { id: '1', label: 'Impressum', path: '/impressum', enabled: true },
+  { id: '2', label: 'Datenschutz', path: '/datenschutz', enabled: true },
+];
+
+const DEFAULT_TEASER_CARDS = [
+  { id: '1', title: 'Schwangerschaft', description: 'Vorbereitung auf Zwillinge', link: '/schwangerschaft', enabled: true },
+  { id: '2', title: 'Baby-Alltag', description: 'Routinen & Tipps', link: '/baby-alltag', enabled: true },
+  { id: '3', title: 'Twins-Art', description: 'Familienkunst', link: '/twins-art', enabled: true },
+];
 
 export default function Admin() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -57,7 +84,11 @@ export default function Admin() {
   const [gallery, setGallery] = useState([]);
   const [contacts, setContacts] = useState([]);
   const [posts, setPosts] = useState([]);
-  const [settings, setSettings] = useState({});
+  const [settings, setSettings] = useState({
+    navItems: DEFAULT_NAV_ITEMS,
+    footerLinks: DEFAULT_FOOTER_LINKS,
+    teaserCards: DEFAULT_TEASER_CARDS,
+  });
   
   // Modal states
   const [editingPage, setEditingPage] = useState(null);
@@ -81,10 +112,10 @@ export default function Admin() {
     }
   }, []);
 
-  // Auto-save settings
+  // Auto-save
   useEffect(() => {
     const interval = setInterval(() => {
-      if (isAuthenticated && activeTab === 'settings') {
+      if (isAuthenticated && (activeTab === 'settings' || activeTab === 'landing' || activeTab === 'navigation')) {
         handleSaveSettings(true);
       }
     }, 30000);
@@ -117,7 +148,15 @@ export default function Admin() {
       setGallery(galleryRes.data);
       setContacts(contactsRes.data);
       setPosts(postsRes.data);
-      setSettings(settingsRes.data);
+      
+      // Merge settings with defaults
+      const fetchedSettings = settingsRes.data;
+      setSettings({
+        ...fetchedSettings,
+        navItems: fetchedSettings.navItems?.length > 0 ? fetchedSettings.navItems : DEFAULT_NAV_ITEMS,
+        footerLinks: fetchedSettings.footerLinks?.length > 0 ? fetchedSettings.footerLinks : DEFAULT_FOOTER_LINKS,
+        teaserCards: fetchedSettings.teaserCards?.length > 0 ? fetchedSettings.teaserCards : DEFAULT_TEASER_CARDS,
+      });
     } catch (err) {
       console.error('Error fetching data:', err);
     }
@@ -245,6 +284,66 @@ export default function Admin() {
     fetchAllData(token);
   };
 
+  // Navigation helpers
+  const addNavItem = () => {
+    const newItem = { id: Date.now().toString(), label: 'Neue Seite', path: '/', enabled: true };
+    setSettings({ ...settings, navItems: [...(settings.navItems || []), newItem] });
+  };
+
+  const updateNavItem = (id, field, value) => {
+    setSettings({
+      ...settings,
+      navItems: (settings.navItems || []).map(item => item.id === id ? { ...item, [field]: value } : item)
+    });
+  };
+
+  const removeNavItem = (id) => {
+    setSettings({
+      ...settings,
+      navItems: (settings.navItems || []).filter(item => item.id !== id)
+    });
+  };
+
+  // Footer helpers
+  const addFooterLink = () => {
+    const newLink = { id: Date.now().toString(), label: 'Neuer Link', path: '/', enabled: true };
+    setSettings({ ...settings, footerLinks: [...(settings.footerLinks || []), newLink] });
+  };
+
+  const updateFooterLink = (id, field, value) => {
+    setSettings({
+      ...settings,
+      footerLinks: (settings.footerLinks || []).map(link => link.id === id ? { ...link, [field]: value } : link)
+    });
+  };
+
+  const removeFooterLink = (id) => {
+    setSettings({
+      ...settings,
+      footerLinks: (settings.footerLinks || []).filter(link => link.id !== id)
+    });
+  };
+
+  // Teaser Card helpers
+  const addTeaserCard = () => {
+    const newCard = { id: Date.now().toString(), title: 'Neue Karte', description: 'Beschreibung', link: '/', enabled: true };
+    setSettings({ ...settings, teaserCards: [...(settings.teaserCards || []), newCard] });
+  };
+
+  const updateTeaserCard = (id, field, value) => {
+    setSettings({
+      ...settings,
+      teaserCards: (settings.teaserCards || []).map(card => card.id === id ? { ...card, [field]: value } : card)
+    });
+  };
+
+  const removeTeaserCard = (id) => {
+    setSettings({
+      ...settings,
+      teaserCards: (settings.teaserCards || []).filter(card => card.id !== id)
+    });
+  };
+
   const filteredContacts = contacts.filter(c => {
     if (contactFilter !== 'all' && c.status !== contactFilter) return false;
     if (searchQuery && !c.email.toLowerCase().includes(searchQuery.toLowerCase()) && !c.nachricht.toLowerCase().includes(searchQuery.toLowerCase())) return false;
@@ -255,11 +354,7 @@ export default function Admin() {
   if (!isAuthenticated) {
     return (
       <main id="main-content" className="min-h-screen bg-background flex items-center justify-center p-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-sm"
-        >
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-sm">
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-foreground rounded-2xl flex items-center justify-center mx-auto mb-4">
               <Lock className="w-8 h-8 text-background" />
@@ -267,27 +362,16 @@ export default function Admin() {
             <h1 className="text-2xl font-semibold text-foreground">gltz.de Admin</h1>
             <p className="text-sm text-muted-foreground mt-1">Melde dich an, um fortzufahren</p>
           </div>
-
           <form onSubmit={handleLogin} className="space-y-4" data-testid="admin-login-form">
             <div>
               <Label className="text-xs">Passwort</Label>
-              <Input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="mt-1"
-                required
-                data-testid="admin-password-input"
-              />
+              <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className="mt-1" required data-testid="admin-password-input" />
             </div>
             {error && <p className="text-xs text-destructive">{error}</p>}
             <Button type="submit" disabled={loading} className="w-full" data-testid="admin-login-btn">
               {loading ? 'Wird geprüft...' : 'Einloggen'}
             </Button>
-            <p className="text-[10px] text-muted-foreground text-center">
-              Standard-Passwort: gltz2025
-            </p>
+            <p className="text-[10px] text-muted-foreground text-center">Standard-Passwort: gltz2025</p>
           </form>
         </motion.div>
       </main>
@@ -306,15 +390,9 @@ export default function Admin() {
             </div>
             <span className="font-semibold text-foreground">gltz.de Admin</span>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground hidden sm:block">
-              <Clock className="w-3 h-3 inline mr-1" />
-              Session: 30 Min
-            </span>
-            <Button variant="ghost" size="sm" onClick={handleLogout} data-testid="admin-logout-btn">
-              <LogOut className="w-4 h-4" />
-            </Button>
-          </div>
+          <Button variant="ghost" size="sm" onClick={handleLogout} data-testid="admin-logout-btn">
+            <LogOut className="w-4 h-4" />
+          </Button>
         </div>
       </header>
 
@@ -325,29 +403,25 @@ export default function Admin() {
             <div className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0">
               {[
                 { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+                { id: 'landing', icon: Home, label: 'Landing Page' },
+                { id: 'navigation', icon: Menu, label: 'Navigation' },
                 { id: 'pages', icon: FileText, label: 'Seiten' },
                 { id: 'gallery', icon: Image, label: 'Galerie' },
                 { id: 'contacts', icon: Mail, label: 'Kontakte', badge: stats.unread_contacts },
-                { id: 'posts', icon: FileText, label: 'Blog' },
+                { id: 'posts', icon: Layers, label: 'Blog' },
                 { id: 'settings', icon: Settings, label: 'Einstellungen' },
               ].map((item) => (
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
-                    activeTab === item.id
-                      ? 'bg-foreground text-background'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                    activeTab === item.id ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
                   }`}
                   data-testid={`nav-${item.id}`}
                 >
                   <item.icon className="w-4 h-4" />
                   {item.label}
-                  {item.badge > 0 && (
-                    <Badge variant="destructive" className="ml-auto text-[10px] px-1.5">
-                      {item.badge}
-                    </Badge>
-                  )}
+                  {item.badge > 0 && <Badge variant="destructive" className="ml-auto text-[10px] px-1.5">{item.badge}</Badge>}
                 </button>
               ))}
             </div>
@@ -358,16 +432,9 @@ export default function Admin() {
             <AnimatePresence mode="wait">
               {/* Dashboard Tab */}
               {activeTab === 'dashboard' && (
-                <motion.div
-                  key="dashboard"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="space-y-6"
-                >
+                <motion.div key="dashboard" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6">
                   <h1 className="text-2xl font-semibold">Dashboard</h1>
                   
-                  {/* Stats Grid */}
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     {[
                       { label: 'Kontakte', value: stats.total_contacts, sub: `${stats.unread_contacts} ungelesen`, icon: Mail },
@@ -378,9 +445,7 @@ export default function Admin() {
                       <div key={stat.label} className="p-4 rounded-xl border border-border bg-card">
                         <div className="flex items-center justify-between mb-2">
                           <stat.icon className="w-5 h-5 text-muted-foreground" />
-                          {stat.action && (
-                            <button onClick={stat.action} className="text-xs text-primary hover:underline">+1</button>
-                          )}
+                          {stat.action && <button onClick={stat.action} className="text-xs text-primary hover:underline">+1</button>}
                         </div>
                         <p className="text-2xl font-semibold">{stat.value}</p>
                         <p className="text-xs text-muted-foreground">{stat.sub || stat.label}</p>
@@ -388,12 +453,11 @@ export default function Admin() {
                     ))}
                   </div>
 
-                  {/* Quick Actions */}
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                     {[
-                      { label: 'Neue Seite', icon: Plus, action: () => { setActiveTab('pages'); setEditingPage({ title: '', slug: '', content: '', status: 'draft' }); }},
+                      { label: 'Landing Page', icon: Home, action: () => setActiveTab('landing') },
+                      { label: 'Navigation', icon: Menu, action: () => setActiveTab('navigation') },
                       { label: 'Galerie', icon: Image, action: () => setActiveTab('gallery') },
-                      { label: 'Inhalte', icon: FileText, action: () => setActiveTab('posts') },
                       { label: 'Einstellungen', icon: Settings, action: () => setActiveTab('settings') },
                     ].map((btn) => (
                       <Button key={btn.label} variant="outline" className="h-auto py-4 flex-col gap-2" onClick={btn.action}>
@@ -403,13 +467,10 @@ export default function Admin() {
                     ))}
                   </div>
 
-                  {/* Recent Contacts */}
                   <div>
                     <div className="flex items-center justify-between mb-3">
                       <h2 className="font-semibold">Neueste Anfragen</h2>
-                      <Button variant="ghost" size="sm" onClick={() => setActiveTab('contacts')}>
-                        Alle <ChevronRight className="w-4 h-4" />
-                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => setActiveTab('contacts')}>Alle <ChevronRight className="w-4 h-4" /></Button>
                     </div>
                     <div className="space-y-2">
                       {contacts.slice(0, 3).map((c) => (
@@ -418,9 +479,7 @@ export default function Admin() {
                             <p className="text-sm font-medium truncate">{c.email}</p>
                             <p className="text-xs text-muted-foreground truncate">{c.nachricht.slice(0, 50)}...</p>
                           </div>
-                          <Badge variant={c.status === 'neu' ? 'default' : 'secondary'} className="text-[10px]">
-                            {c.status}
-                          </Badge>
+                          <Badge variant={c.status === 'neu' ? 'default' : 'secondary'} className="text-[10px]">{c.status}</Badge>
                         </div>
                       ))}
                     </div>
@@ -428,22 +487,227 @@ export default function Admin() {
                 </motion.div>
               )}
 
+              {/* Landing Page Tab */}
+              {activeTab === 'landing' && (
+                <motion.div key="landing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <h1 className="text-2xl font-semibold">Landing Page</h1>
+                    <Button onClick={() => handleSaveSettings(false)} data-testid="save-landing-btn">
+                      {saveStatus === 'saved' ? <><Check className="w-4 h-4 mr-1" /> Gespeichert</> : <><Save className="w-4 h-4 mr-1" /> Speichern</>}
+                    </Button>
+                  </div>
+
+                  <Accordion type="multiple" defaultValue={['hero', 'teaser', 'cta']} className="space-y-4">
+                    {/* Hero Section */}
+                    <AccordionItem value="hero" className="border rounded-xl px-4">
+                      <AccordionTrigger className="py-4">
+                        <div className="flex items-center gap-2">
+                          <Layout className="w-5 h-5" />
+                          <span className="font-semibold">Hero-Bereich</span>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="pb-4 space-y-4">
+                        <div className="grid sm:grid-cols-2 gap-4">
+                          <div>
+                            <Label className="text-xs">Überschrift</Label>
+                            <Input value={settings.heroTitle || ''} onChange={(e) => setSettings({...settings, heroTitle: e.target.value})} className="mt-1" />
+                          </div>
+                          <div>
+                            <Label className="text-xs">Untertitel</Label>
+                            <Input value={settings.heroSubtitle || ''} onChange={(e) => setSettings({...settings, heroSubtitle: e.target.value})} className="mt-1" />
+                          </div>
+                        </div>
+                        <div>
+                          <Label className="text-xs">Beschreibung</Label>
+                          <Textarea value={settings.heroDescription || ''} onChange={(e) => setSettings({...settings, heroDescription: e.target.value})} className="mt-1" rows={2} />
+                        </div>
+                        <div className="grid sm:grid-cols-2 gap-4">
+                          <div>
+                            <Label className="text-xs">Hintergrund (Hell)</Label>
+                            <Input value={settings.lightBackground || ''} onChange={(e) => setSettings({...settings, lightBackground: e.target.value})} className="mt-1" placeholder="https://..." />
+                            {settings.lightBackground && <img src={settings.lightBackground} alt="Preview" className="mt-2 h-20 w-full object-cover rounded" />}
+                          </div>
+                          <div>
+                            <Label className="text-xs">Hintergrund (Dunkel)</Label>
+                            <Input value={settings.darkBackground || ''} onChange={(e) => setSettings({...settings, darkBackground: e.target.value})} className="mt-1" placeholder="https://..." />
+                            {settings.darkBackground && <img src={settings.darkBackground} alt="Preview" className="mt-2 h-20 w-full object-cover rounded" />}
+                          </div>
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+
+                    {/* Teaser Cards */}
+                    <AccordionItem value="teaser" className="border rounded-xl px-4">
+                      <AccordionTrigger className="py-4">
+                        <div className="flex items-center gap-2">
+                          <Layers className="w-5 h-5" />
+                          <span className="font-semibold">Teaser-Karten</span>
+                          <Badge variant="secondary" className="ml-2">{(settings.teaserCards || []).length}</Badge>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="pb-4 space-y-3">
+                        {(settings.teaserCards || []).map((card, index) => (
+                          <div key={card.id} className="p-3 border rounded-lg space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm font-medium">Karte {index + 1}</span>
+                              <div className="flex items-center gap-2">
+                                <Switch checked={card.enabled} onCheckedChange={(v) => updateTeaserCard(card.id, 'enabled', v)} />
+                                <Button variant="ghost" size="sm" onClick={() => removeTeaserCard(card.id)}><Trash2 className="w-4 h-4" /></Button>
+                              </div>
+                            </div>
+                            <div className="grid sm:grid-cols-3 gap-3">
+                              <div>
+                                <Label className="text-xs">Titel</Label>
+                                <Input value={card.title} onChange={(e) => updateTeaserCard(card.id, 'title', e.target.value)} className="mt-1" />
+                              </div>
+                              <div>
+                                <Label className="text-xs">Beschreibung</Label>
+                                <Input value={card.description} onChange={(e) => updateTeaserCard(card.id, 'description', e.target.value)} className="mt-1" />
+                              </div>
+                              <div>
+                                <Label className="text-xs">Link</Label>
+                                <Input value={card.link} onChange={(e) => updateTeaserCard(card.id, 'link', e.target.value)} className="mt-1" />
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                        <Button variant="outline" onClick={addTeaserCard} className="w-full"><Plus className="w-4 h-4 mr-1" /> Karte hinzufügen</Button>
+                      </AccordionContent>
+                    </AccordionItem>
+
+                    {/* CTA Section */}
+                    <AccordionItem value="cta" className="border rounded-xl px-4">
+                      <AccordionTrigger className="py-4">
+                        <div className="flex items-center gap-2">
+                          <Users className="w-5 h-5" />
+                          <span className="font-semibold">Call-to-Action (Spenden)</span>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="pb-4 space-y-4">
+                        <div className="grid sm:grid-cols-2 gap-4">
+                          <div>
+                            <Label className="text-xs">Überschrift</Label>
+                            <Input value={settings.ctaTitle || ''} onChange={(e) => setSettings({...settings, ctaTitle: e.target.value})} className="mt-1" />
+                          </div>
+                          <div>
+                            <Label className="text-xs">Button-Text</Label>
+                            <Input value={settings.ctaButtonText || ''} onChange={(e) => setSettings({...settings, ctaButtonText: e.target.value})} className="mt-1" />
+                          </div>
+                        </div>
+                        <div>
+                          <Label className="text-xs">Beschreibung</Label>
+                          <Textarea value={settings.ctaDescription || ''} onChange={(e) => setSettings({...settings, ctaDescription: e.target.value})} className="mt-1" rows={2} />
+                        </div>
+                        <div>
+                          <Label className="text-xs">PayPal.me Link</Label>
+                          <Input value={settings.paypalLink || ''} onChange={(e) => setSettings({...settings, paypalLink: e.target.value})} className="mt-1" />
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+                </motion.div>
+              )}
+
+              {/* Navigation Tab */}
+              {activeTab === 'navigation' && (
+                <motion.div key="navigation" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <h1 className="text-2xl font-semibold">Navigation & Menü</h1>
+                    <Button onClick={() => handleSaveSettings(false)}>
+                      {saveStatus === 'saved' ? <><Check className="w-4 h-4 mr-1" /> Gespeichert</> : <><Save className="w-4 h-4 mr-1" /> Speichern</>}
+                    </Button>
+                  </div>
+
+                  {/* Header Navigation */}
+                  <div className="p-4 rounded-xl border border-border space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Menu className="w-5 h-5" />
+                        <h2 className="font-semibold">Header-Menü (Primärnavigation)</h2>
+                      </div>
+                      <Button variant="outline" size="sm" onClick={addNavItem}><Plus className="w-4 h-4 mr-1" /> Hinzufügen</Button>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      {(settings.navItems || []).map((item, index) => (
+                        <div key={item.id} className="flex items-center gap-3 p-3 border rounded-lg bg-card">
+                          <GripVertical className="w-4 h-4 text-muted-foreground cursor-move" />
+                          <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            <Input value={item.label} onChange={(e) => updateNavItem(item.id, 'label', e.target.value)} placeholder="Label" className="h-9" />
+                            <Input value={item.path} onChange={(e) => updateNavItem(item.id, 'path', e.target.value)} placeholder="/pfad" className="h-9" />
+                            <div className="flex items-center gap-2">
+                              <Switch checked={item.enabled} onCheckedChange={(v) => updateNavItem(item.id, 'enabled', v)} />
+                              <span className="text-xs text-muted-foreground">{item.enabled ? 'Aktiv' : 'Inaktiv'}</span>
+                            </div>
+                            <Button variant="ghost" size="sm" onClick={() => removeNavItem(item.id)} className="justify-self-end"><Trash2 className="w-4 h-4" /></Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Footer Links */}
+                  <div className="p-4 rounded-xl border border-border space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <FileText className="w-5 h-5" />
+                        <h2 className="font-semibold">Footer-Links (Rechtliches)</h2>
+                      </div>
+                      <Button variant="outline" size="sm" onClick={addFooterLink}><Plus className="w-4 h-4 mr-1" /> Hinzufügen</Button>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      {(settings.footerLinks || []).map((link) => (
+                        <div key={link.id} className="flex items-center gap-3 p-3 border rounded-lg bg-card">
+                          <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            <Input value={link.label} onChange={(e) => updateFooterLink(link.id, 'label', e.target.value)} placeholder="Label" className="h-9" />
+                            <Input value={link.path} onChange={(e) => updateFooterLink(link.id, 'path', e.target.value)} placeholder="/pfad" className="h-9" />
+                            <div className="flex items-center gap-2">
+                              <Switch checked={link.enabled} onCheckedChange={(v) => updateFooterLink(link.id, 'enabled', v)} />
+                              <span className="text-xs text-muted-foreground">{link.enabled ? 'Aktiv' : 'Inaktiv'}</span>
+                            </div>
+                            <Button variant="ghost" size="sm" onClick={() => removeFooterLink(link.id)} className="justify-self-end"><Trash2 className="w-4 h-4" /></Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Footer Settings */}
+                  <div className="p-4 rounded-xl border border-border space-y-4">
+                    <div className="flex items-center gap-2">
+                      <Globe className="w-5 h-5" />
+                      <h2 className="font-semibold">Footer-Einstellungen</h2>
+                    </div>
+                    
+                    <div>
+                      <Label className="text-xs">Footer-Text</Label>
+                      <Textarea value={settings.footerText || ''} onChange={(e) => setSettings({...settings, footerText: e.target.value})} className="mt-1" rows={2} />
+                    </div>
+                    
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-xs flex items-center gap-1"><Facebook className="w-3 h-3" /> Facebook-Link</Label>
+                        <Input value={settings.socialFacebook || ''} onChange={(e) => setSettings({...settings, socialFacebook: e.target.value})} className="mt-1" />
+                      </div>
+                      <div>
+                        <Label className="text-xs flex items-center gap-1"><AtSign className="w-3 h-3" /> E-Mail</Label>
+                        <Input value={settings.socialEmail || ''} onChange={(e) => setSettings({...settings, socialEmail: e.target.value})} className="mt-1" />
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
               {/* Pages Tab */}
               {activeTab === 'pages' && (
-                <motion.div
-                  key="pages"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="space-y-4"
-                >
+                <motion.div key="pages" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-semibold">Seiten</h1>
                     <Button onClick={() => setEditingPage({ title: '', slug: '', content: '', status: 'draft' })} data-testid="new-page-btn">
                       <Plus className="w-4 h-4 mr-1" /> Neue Seite
                     </Button>
                   </div>
-
                   <div className="border rounded-xl overflow-hidden">
                     <table className="w-full text-sm">
                       <thead className="bg-secondary">
@@ -459,9 +723,7 @@ export default function Admin() {
                           <tr key={page.id} className="hover:bg-secondary/50">
                             <td className="px-4 py-3 font-medium">{page.title}</td>
                             <td className="px-4 py-3 text-muted-foreground hidden sm:table-cell">/{page.slug}</td>
-                            <td className="px-4 py-3">
-                              <Badge variant={page.status === 'live' ? 'default' : 'secondary'}>{page.status}</Badge>
-                            </td>
+                            <td className="px-4 py-3"><Badge variant={page.status === 'live' ? 'default' : 'secondary'}>{page.status}</Badge></td>
                             <td className="px-4 py-3">
                               <div className="flex justify-end gap-1">
                                 <Button variant="ghost" size="sm" onClick={() => setEditingPage(page)}><Pencil className="w-4 h-4" /></Button>
@@ -479,31 +741,16 @@ export default function Admin() {
 
               {/* Gallery Tab */}
               {activeTab === 'gallery' && (
-                <motion.div
-                  key="gallery"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="space-y-4"
-                >
+                <motion.div key="gallery" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-semibold">Galerie</h1>
-                    <Button onClick={() => setShowNewImageModal(true)} data-testid="new-image-btn">
-                      <Plus className="w-4 h-4 mr-1" /> Bild hinzufügen
-                    </Button>
+                    <Button onClick={() => setShowNewImageModal(true)} data-testid="new-image-btn"><Plus className="w-4 h-4 mr-1" /> Bild hinzufügen</Button>
                   </div>
-
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {gallery.map((img) => (
                       <div key={img.id} className="group relative rounded-xl overflow-hidden border border-border">
-                        <div className="aspect-square">
-                          <img src={img.url} alt={img.alt} className="w-full h-full object-cover" />
-                        </div>
-                        {img.featured && (
-                          <div className="absolute top-2 left-2">
-                            <Badge className="bg-yellow-500"><Star className="w-3 h-3" /></Badge>
-                          </div>
-                        )}
+                        <div className="aspect-square"><img src={img.url} alt={img.alt} className="w-full h-full object-cover" /></div>
+                        {img.featured && <div className="absolute top-2 left-2"><Badge className="bg-yellow-500"><Star className="w-3 h-3" /></Badge></div>}
                         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                           <Button size="sm" variant="secondary" onClick={() => setEditingImage(img)}><Pencil className="w-4 h-4" /></Button>
                           <Button size="sm" variant="destructive" onClick={() => setDeleteConfirm({ type: 'image', id: img.id, title: img.title })}><Trash2 className="w-4 h-4" /></Button>
@@ -511,9 +758,7 @@ export default function Admin() {
                         <div className="p-2">
                           <p className="text-xs font-medium truncate">{img.title || 'Unbenannt'}</p>
                           <div className="flex gap-1 mt-1 flex-wrap">
-                            {(img.tags || []).slice(0, 2).map(tag => (
-                              <Badge key={tag} variant="secondary" className="text-[10px]">{tag}</Badge>
-                            ))}
+                            {(img.tags || []).slice(0, 2).map(tag => <Badge key={tag} variant="secondary" className="text-[10px]">{tag}</Badge>)}
                           </div>
                         </div>
                       </div>
@@ -524,35 +769,18 @@ export default function Admin() {
 
               {/* Contacts Tab */}
               {activeTab === 'contacts' && (
-                <motion.div
-                  key="contacts"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="space-y-4"
-                >
+                <motion.div key="contacts" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
                   <div className="flex items-center justify-between flex-wrap gap-4">
                     <h1 className="text-2xl font-semibold">Kontakte</h1>
-                    <Button variant="outline" onClick={handleExportContacts}>
-                      <Download className="w-4 h-4 mr-1" /> CSV Export
-                    </Button>
+                    <Button variant="outline" onClick={handleExportContacts}><Download className="w-4 h-4 mr-1" /> CSV Export</Button>
                   </div>
-
                   <div className="flex flex-wrap gap-2">
                     <div className="relative flex-1 min-w-[200px]">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input
-                        placeholder="Suchen..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-9"
-                      />
+                      <Input placeholder="Suchen..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9" />
                     </div>
                     <Select value={contactFilter} onValueChange={setContactFilter}>
-                      <SelectTrigger className="w-[140px]">
-                        <Filter className="w-4 h-4 mr-2" />
-                        <SelectValue />
-                      </SelectTrigger>
+                      <SelectTrigger className="w-[140px]"><Filter className="w-4 h-4 mr-2" /><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">Alle</SelectItem>
                         <SelectItem value="neu">Ungelesen</SelectItem>
@@ -561,7 +789,6 @@ export default function Admin() {
                       </SelectContent>
                     </Select>
                   </div>
-
                   <div className="space-y-2">
                     {filteredContacts.map((c) => (
                       <div key={c.id} className="p-4 rounded-xl border border-border">
@@ -570,27 +797,21 @@ export default function Admin() {
                             <div className="flex items-center gap-2 mb-1 flex-wrap">
                               <Badge variant={c.status === 'neu' ? 'default' : 'secondary'} className="text-[10px]">{c.status}</Badge>
                               <span className="text-xs text-muted-foreground">{c.thema}</span>
-                              <span className="text-xs text-muted-foreground">
-                                {new Date(c.timestamp).toLocaleDateString('de-DE')}
-                              </span>
+                              <span className="text-xs text-muted-foreground">{new Date(c.timestamp).toLocaleDateString('de-DE')}</span>
                             </div>
                             <p className="font-medium text-sm">{c.name || 'Anonym'} – {c.email}</p>
                             <p className="text-sm text-muted-foreground mt-1">{c.nachricht}</p>
                           </div>
                           <div className="flex flex-col gap-1">
                             <Select value={c.status} onValueChange={(v) => handleUpdateContactStatus(c.id, v)}>
-                              <SelectTrigger className="w-[120px] h-8 text-xs">
-                                <SelectValue />
-                              </SelectTrigger>
+                              <SelectTrigger className="w-[120px] h-8 text-xs"><SelectValue /></SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="neu">Neu</SelectItem>
                                 <SelectItem value="gelesen">Gelesen</SelectItem>
                                 <SelectItem value="beantwortet">Beantwortet</SelectItem>
                               </SelectContent>
                             </Select>
-                            <a href={`mailto:${c.email}`} className="text-xs text-primary hover:underline text-center">
-                              Antworten
-                            </a>
+                            <a href={`mailto:${c.email}`} className="text-xs text-primary hover:underline text-center">Antworten</a>
                           </div>
                         </div>
                       </div>
@@ -601,26 +822,15 @@ export default function Admin() {
 
               {/* Posts Tab */}
               {activeTab === 'posts' && (
-                <motion.div
-                  key="posts"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="space-y-4"
-                >
+                <motion.div key="posts" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-semibold">Blog-Beiträge</h1>
-                    <Button onClick={() => setEditingPost({ title: '', excerpt: '', content: '', category: 'Tipps', status: 'draft' })} data-testid="new-post-btn">
-                      <Plus className="w-4 h-4 mr-1" /> Neuer Beitrag
-                    </Button>
+                    <Button onClick={() => setEditingPost({ title: '', excerpt: '', content: '', category: 'Tipps', status: 'draft' })} data-testid="new-post-btn"><Plus className="w-4 h-4 mr-1" /> Neuer Beitrag</Button>
                   </div>
-
                   <div className="grid gap-4">
                     {posts.map((post) => (
                       <div key={post.id} className="p-4 rounded-xl border border-border flex items-center gap-4">
-                        {post.image_url && (
-                          <img src={post.image_url} alt="" className="w-20 h-20 rounded-lg object-cover hidden sm:block" />
-                        )}
+                        {post.image_url && <img src={post.image_url} alt="" className="w-20 h-20 rounded-lg object-cover hidden sm:block" />}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             <Badge variant={post.status === 'live' ? 'default' : 'secondary'}>{post.status}</Badge>
@@ -641,13 +851,7 @@ export default function Admin() {
 
               {/* Settings Tab */}
               {activeTab === 'settings' && (
-                <motion.div
-                  key="settings"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="space-y-6"
-                >
+                <motion.div key="settings" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6">
                   <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-semibold">Einstellungen</h1>
                     <Button onClick={() => handleSaveSettings(false)} data-testid="save-settings-btn">
@@ -656,42 +860,16 @@ export default function Admin() {
                   </div>
 
                   <div className="grid gap-6">
-                    {/* Website */}
                     <div className="p-4 rounded-xl border border-border space-y-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Globe className="w-5 h-5" />
-                        <h2 className="font-semibold">Website</h2>
-                      </div>
+                      <div className="flex items-center gap-2 mb-2"><Globe className="w-5 h-5" /><h2 className="font-semibold">Allgemein</h2></div>
                       <div className="grid sm:grid-cols-2 gap-4">
-                        <div>
-                          <Label className="text-xs">Seiten-Titel</Label>
-                          <Input value={settings.siteTitle || ''} onChange={(e) => setSettings({...settings, siteTitle: e.target.value})} className="mt-1" />
-                        </div>
-                        <div>
-                          <Label className="text-xs">Logo-Text</Label>
-                          <Input value={settings.logoText || ''} onChange={(e) => setSettings({...settings, logoText: e.target.value})} className="mt-1" />
-                        </div>
-                        <div>
-                          <Label className="text-xs">Hero-Titel</Label>
-                          <Input value={settings.heroTitle || ''} onChange={(e) => setSettings({...settings, heroTitle: e.target.value})} className="mt-1" />
-                        </div>
-                        <div>
-                          <Label className="text-xs">Hero-Untertitel</Label>
-                          <Input value={settings.heroSubtitle || ''} onChange={(e) => setSettings({...settings, heroSubtitle: e.target.value})} className="mt-1" />
-                        </div>
-                        <div className="sm:col-span-2">
-                          <Label className="text-xs">Hero-Beschreibung</Label>
-                          <Textarea value={settings.heroDescription || ''} onChange={(e) => setSettings({...settings, heroDescription: e.target.value})} className="mt-1" rows={2} />
-                        </div>
+                        <div><Label className="text-xs">Seiten-Titel</Label><Input value={settings.siteTitle || ''} onChange={(e) => setSettings({...settings, siteTitle: e.target.value})} className="mt-1" /></div>
+                        <div><Label className="text-xs">Logo-Text</Label><Input value={settings.logoText || ''} onChange={(e) => setSettings({...settings, logoText: e.target.value})} className="mt-1" /></div>
                       </div>
                     </div>
 
-                    {/* Design */}
                     <div className="p-4 rounded-xl border border-border space-y-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Palette className="w-5 h-5" />
-                        <h2 className="font-semibold">Design</h2>
-                      </div>
+                      <div className="flex items-center gap-2 mb-2"><Palette className="w-5 h-5" /><h2 className="font-semibold">Design</h2></div>
                       <div className="grid sm:grid-cols-2 gap-4">
                         <div>
                           <Label className="text-xs">Schriftart</Label>
@@ -714,66 +892,18 @@ export default function Admin() {
                             </SelectContent>
                           </Select>
                         </div>
-                        <div>
-                          <Label className="text-xs">Hell-Hintergrund URL</Label>
-                          <Input value={settings.lightBackground || ''} onChange={(e) => setSettings({...settings, lightBackground: e.target.value})} className="mt-1" />
-                        </div>
-                        <div>
-                          <Label className="text-xs">Dunkel-Hintergrund URL</Label>
-                          <Input value={settings.darkBackground || ''} onChange={(e) => setSettings({...settings, darkBackground: e.target.value})} className="mt-1" />
-                        </div>
                       </div>
                     </div>
 
-                    {/* PayPal */}
                     <div className="p-4 rounded-xl border border-border space-y-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Users className="w-5 h-5" />
-                        <h2 className="font-semibold">Spenden</h2>
-                      </div>
-                      <div className="grid sm:grid-cols-2 gap-4">
-                        <div>
-                          <Label className="text-xs">PayPal.me Link</Label>
-                          <Input value={settings.paypalLink || ''} onChange={(e) => setSettings({...settings, paypalLink: e.target.value})} className="mt-1" />
-                        </div>
-                        <div>
-                          <Label className="text-xs">Button-Text</Label>
-                          <Input value={settings.donationText || ''} onChange={(e) => setSettings({...settings, donationText: e.target.value})} className="mt-1" />
-                        </div>
-                        <div className="sm:col-span-2">
-                          <Label className="text-xs">Rechtshinweis</Label>
-                          <Textarea value={settings.donationDisclaimer || ''} onChange={(e) => setSettings({...settings, donationDisclaimer: e.target.value})} className="mt-1" rows={2} />
-                        </div>
-                      </div>
+                      <div className="flex items-center gap-2 mb-2"><Search className="w-5 h-5" /><h2 className="font-semibold">SEO</h2></div>
+                      <div><Label className="text-xs">Meta-Beschreibung</Label><Textarea value={settings.metaDescription || ''} onChange={(e) => setSettings({...settings, metaDescription: e.target.value})} className="mt-1" rows={2} /></div>
+                      <div><Label className="text-xs">Google Analytics 4 Tag</Label><Input value={settings.ga4Tag || ''} onChange={(e) => setSettings({...settings, ga4Tag: e.target.value})} className="mt-1" placeholder="G-XXXXXXXXXX" /></div>
                     </div>
 
-                    {/* SEO */}
                     <div className="p-4 rounded-xl border border-border space-y-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Search className="w-5 h-5" />
-                        <h2 className="font-semibold">SEO & Analytics</h2>
-                      </div>
-                      <div className="grid sm:grid-cols-2 gap-4">
-                        <div className="sm:col-span-2">
-                          <Label className="text-xs">Meta-Beschreibung</Label>
-                          <Textarea value={settings.metaDescription || ''} onChange={(e) => setSettings({...settings, metaDescription: e.target.value})} className="mt-1" rows={2} />
-                        </div>
-                        <div className="sm:col-span-2">
-                          <Label className="text-xs">Google Analytics 4 Tag (z.B. G-XXXXXXXXXX)</Label>
-                          <Input value={settings.ga4Tag || ''} onChange={(e) => setSettings({...settings, ga4Tag: e.target.value})} className="mt-1" placeholder="G-XXXXXXXXXX" />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Security */}
-                    <div className="p-4 rounded-xl border border-border space-y-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Shield className="w-5 h-5" />
-                        <h2 className="font-semibold">Sicherheit</h2>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        Passwort kann über die API geändert werden: POST /api/admin/change-password
-                      </p>
+                      <div className="flex items-center gap-2 mb-2"><Shield className="w-5 h-5" /><h2 className="font-semibold">Sicherheit</h2></div>
+                      <p className="text-sm text-muted-foreground">Passwort: POST /api/admin/change-password?token=...&old_password=...&new_password=...</p>
                     </div>
                   </div>
                 </motion.div>
@@ -786,162 +916,89 @@ export default function Admin() {
       {/* Page Edit Modal */}
       <Dialog open={!!editingPage} onOpenChange={() => setEditingPage(null)}>
         <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>{editingPage?.id ? 'Seite bearbeiten' : 'Neue Seite'}</DialogTitle>
-          </DialogHeader>
+          <DialogHeader><DialogTitle>{editingPage?.id ? 'Seite bearbeiten' : 'Neue Seite'}</DialogTitle></DialogHeader>
           {editingPage && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-xs">Titel</Label>
-                  <Input value={editingPage.title} onChange={(e) => setEditingPage({...editingPage, title: e.target.value})} className="mt-1" />
-                </div>
-                <div>
-                  <Label className="text-xs">URL-Slug</Label>
-                  <Input value={editingPage.slug} onChange={(e) => setEditingPage({...editingPage, slug: e.target.value})} className="mt-1" />
-                </div>
+                <div><Label className="text-xs">Titel</Label><Input value={editingPage.title} onChange={(e) => setEditingPage({...editingPage, title: e.target.value})} className="mt-1" /></div>
+                <div><Label className="text-xs">URL-Slug</Label><Input value={editingPage.slug} onChange={(e) => setEditingPage({...editingPage, slug: e.target.value})} className="mt-1" /></div>
               </div>
-              <div>
-                <Label className="text-xs">Inhalt</Label>
-                <Textarea value={editingPage.content} onChange={(e) => setEditingPage({...editingPage, content: e.target.value})} className="mt-1" rows={8} />
-              </div>
+              <div><Label className="text-xs">Inhalt</Label><Textarea value={editingPage.content} onChange={(e) => setEditingPage({...editingPage, content: e.target.value})} className="mt-1" rows={8} /></div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label className="text-xs">Status</Label>
                   <Select value={editingPage.status} onValueChange={(v) => setEditingPage({...editingPage, status: v})}>
                     <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="draft">Entwurf</SelectItem>
-                      <SelectItem value="live">Live</SelectItem>
-                    </SelectContent>
+                    <SelectContent><SelectItem value="draft">Entwurf</SelectItem><SelectItem value="live">Live</SelectItem></SelectContent>
                   </Select>
                 </div>
-                <div>
-                  <Label className="text-xs">Hero-Bild URL</Label>
-                  <Input value={editingPage.heroImage || ''} onChange={(e) => setEditingPage({...editingPage, heroImage: e.target.value})} className="mt-1" />
-                </div>
+                <div><Label className="text-xs">Hero-Bild URL</Label><Input value={editingPage.heroImage || ''} onChange={(e) => setEditingPage({...editingPage, heroImage: e.target.value})} className="mt-1" /></div>
               </div>
             </div>
           )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditingPage(null)}>Abbrechen</Button>
-            <Button onClick={handleSavePage}>Speichern</Button>
-          </DialogFooter>
+          <DialogFooter><Button variant="outline" onClick={() => setEditingPage(null)}>Abbrechen</Button><Button onClick={handleSavePage}>Speichern</Button></DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Post Edit Modal */}
       <Dialog open={!!editingPost} onOpenChange={() => setEditingPost(null)}>
         <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>{editingPost?.id ? 'Beitrag bearbeiten' : 'Neuer Beitrag'}</DialogTitle>
-          </DialogHeader>
+          <DialogHeader><DialogTitle>{editingPost?.id ? 'Beitrag bearbeiten' : 'Neuer Beitrag'}</DialogTitle></DialogHeader>
           {editingPost && (
             <div className="space-y-4">
-              <div>
-                <Label className="text-xs">Titel</Label>
-                <Input value={editingPost.title} onChange={(e) => setEditingPost({...editingPost, title: e.target.value})} className="mt-1" />
-              </div>
-              <div>
-                <Label className="text-xs">Kurzbeschreibung</Label>
-                <Input value={editingPost.excerpt} onChange={(e) => setEditingPost({...editingPost, excerpt: e.target.value})} className="mt-1" />
-              </div>
-              <div>
-                <Label className="text-xs">Inhalt</Label>
-                <Textarea value={editingPost.content} onChange={(e) => setEditingPost({...editingPost, content: e.target.value})} className="mt-1" rows={8} />
-              </div>
+              <div><Label className="text-xs">Titel</Label><Input value={editingPost.title} onChange={(e) => setEditingPost({...editingPost, title: e.target.value})} className="mt-1" /></div>
+              <div><Label className="text-xs">Kurzbeschreibung</Label><Input value={editingPost.excerpt} onChange={(e) => setEditingPost({...editingPost, excerpt: e.target.value})} className="mt-1" /></div>
+              <div><Label className="text-xs">Inhalt</Label><Textarea value={editingPost.content} onChange={(e) => setEditingPost({...editingPost, content: e.target.value})} className="mt-1" rows={8} /></div>
               <div className="grid grid-cols-3 gap-4">
                 <div>
                   <Label className="text-xs">Kategorie</Label>
                   <Select value={editingPost.category} onValueChange={(v) => setEditingPost({...editingPost, category: v})}>
                     <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                    </SelectContent>
+                    <SelectContent>{CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <div>
                   <Label className="text-xs">Status</Label>
                   <Select value={editingPost.status} onValueChange={(v) => setEditingPost({...editingPost, status: v})}>
                     <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="draft">Entwurf</SelectItem>
-                      <SelectItem value="live">Live</SelectItem>
-                    </SelectContent>
+                    <SelectContent><SelectItem value="draft">Entwurf</SelectItem><SelectItem value="live">Live</SelectItem></SelectContent>
                   </Select>
                 </div>
-                <div>
-                  <Label className="text-xs">Bild-URL</Label>
-                  <Input value={editingPost.image_url || ''} onChange={(e) => setEditingPost({...editingPost, image_url: e.target.value})} className="mt-1" />
-                </div>
+                <div><Label className="text-xs">Bild-URL</Label><Input value={editingPost.image_url || ''} onChange={(e) => setEditingPost({...editingPost, image_url: e.target.value})} className="mt-1" /></div>
               </div>
             </div>
           )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditingPost(null)}>Abbrechen</Button>
-            <Button onClick={handleSavePost}>Speichern</Button>
-          </DialogFooter>
+          <DialogFooter><Button variant="outline" onClick={() => setEditingPost(null)}>Abbrechen</Button><Button onClick={handleSavePost}>Speichern</Button></DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Image Edit Modal */}
       <Dialog open={!!editingImage} onOpenChange={() => setEditingImage(null)}>
         <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Bild bearbeiten</DialogTitle>
-          </DialogHeader>
+          <DialogHeader><DialogTitle>Bild bearbeiten</DialogTitle></DialogHeader>
           {editingImage && (
             <div className="space-y-4">
               <img src={editingImage.url} alt="" className="w-full h-40 object-cover rounded-lg" />
-              <div>
-                <Label className="text-xs">Titel</Label>
-                <Input value={editingImage.title} onChange={(e) => setEditingImage({...editingImage, title: e.target.value})} className="mt-1" />
-              </div>
-              <div>
-                <Label className="text-xs">Alt-Text</Label>
-                <Input value={editingImage.alt} onChange={(e) => setEditingImage({...editingImage, alt: e.target.value})} className="mt-1" />
-              </div>
-              <div>
-                <Label className="text-xs">Tags (kommagetrennt)</Label>
-                <Input value={(editingImage.tags || []).join(', ')} onChange={(e) => setEditingImage({...editingImage, tags: e.target.value.split(',').map(t => t.trim())})} className="mt-1" />
-              </div>
-              <div className="flex items-center gap-2">
-                <input type="checkbox" checked={editingImage.featured} onChange={(e) => setEditingImage({...editingImage, featured: e.target.checked})} />
-                <Label className="text-xs">Als Featured markieren</Label>
-              </div>
+              <div><Label className="text-xs">Titel</Label><Input value={editingImage.title} onChange={(e) => setEditingImage({...editingImage, title: e.target.value})} className="mt-1" /></div>
+              <div><Label className="text-xs">Alt-Text</Label><Input value={editingImage.alt} onChange={(e) => setEditingImage({...editingImage, alt: e.target.value})} className="mt-1" /></div>
+              <div><Label className="text-xs">Tags (kommagetrennt)</Label><Input value={(editingImage.tags || []).join(', ')} onChange={(e) => setEditingImage({...editingImage, tags: e.target.value.split(',').map(t => t.trim())})} className="mt-1" /></div>
+              <div className="flex items-center gap-2"><input type="checkbox" checked={editingImage.featured} onChange={(e) => setEditingImage({...editingImage, featured: e.target.checked})} /><Label className="text-xs">Als Featured markieren</Label></div>
             </div>
           )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditingImage(null)}>Abbrechen</Button>
-            <Button onClick={handleUpdateImage}>Speichern</Button>
-          </DialogFooter>
+          <DialogFooter><Button variant="outline" onClick={() => setEditingImage(null)}>Abbrechen</Button><Button onClick={handleUpdateImage}>Speichern</Button></DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* New Image Modal */}
       <Dialog open={showNewImageModal} onOpenChange={setShowNewImageModal}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Bild hinzufügen</DialogTitle>
-          </DialogHeader>
+          <DialogHeader><DialogTitle>Bild hinzufügen</DialogTitle></DialogHeader>
           <div className="space-y-4 py-4">
-            <div>
-              <Label className="text-xs">Bild-URL</Label>
-              <Input value={newImageUrl} onChange={(e) => setNewImageUrl(e.target.value)} className="mt-1" placeholder="https://..." />
-            </div>
-            <div>
-              <Label className="text-xs">Titel</Label>
-              <Input value={newImageTitle} onChange={(e) => setNewImageTitle(e.target.value)} className="mt-1" />
-            </div>
-            <div>
-              <Label className="text-xs">Tags (kommagetrennt)</Label>
-              <Input value={newImageTags} onChange={(e) => setNewImageTags(e.target.value)} className="mt-1" placeholder="Baby-Art, Abstrakt" />
-            </div>
+            <div><Label className="text-xs">Bild-URL</Label><Input value={newImageUrl} onChange={(e) => setNewImageUrl(e.target.value)} className="mt-1" placeholder="https://..." /></div>
+            <div><Label className="text-xs">Titel</Label><Input value={newImageTitle} onChange={(e) => setNewImageTitle(e.target.value)} className="mt-1" /></div>
+            <div><Label className="text-xs">Tags (kommagetrennt)</Label><Input value={newImageTags} onChange={(e) => setNewImageTags(e.target.value)} className="mt-1" placeholder="Baby-Art, Abstrakt" /></div>
           </div>
-          <DialogFooter className="gap-2">
-            <Button type="button" variant="outline" onClick={() => setShowNewImageModal(false)}>Abbrechen</Button>
-            <Button type="button" onClick={handleAddImage} disabled={!newImageUrl}>Hinzufügen</Button>
-          </DialogFooter>
+          <DialogFooter className="gap-2"><Button type="button" variant="outline" onClick={() => setShowNewImageModal(false)}>Abbrechen</Button><Button type="button" onClick={handleAddImage} disabled={!newImageUrl}>Hinzufügen</Button></DialogFooter>
         </DialogContent>
       </Dialog>
 
@@ -950,9 +1007,7 @@ export default function Admin() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Löschen bestätigen</AlertDialogTitle>
-            <AlertDialogDescription>
-              Möchtest du "{deleteConfirm?.title}" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.
-            </AlertDialogDescription>
+            <AlertDialogDescription>Möchtest du "{deleteConfirm?.title}" wirklich löschen?</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Abbrechen</AlertDialogCancel>
@@ -960,9 +1015,7 @@ export default function Admin() {
               if (deleteConfirm.type === 'page') handleDeletePage(deleteConfirm.id);
               if (deleteConfirm.type === 'post') handleDeletePost(deleteConfirm.id);
               if (deleteConfirm.type === 'image') handleDeleteImage(deleteConfirm.id);
-            }}>
-              Löschen
-            </AlertDialogAction>
+            }}>Löschen</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
