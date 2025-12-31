@@ -154,9 +154,11 @@ class BlogPost(BaseModel):
     content: str
     category: str
     image_url: Optional[str] = None
-    status: str = "draft"
+    status: str = "draft"  # draft, live, deleted
+    publish_date: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))  # For sorting/ordering
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    deleted_at: Optional[datetime] = None  # For trash functionality
 
 class BlogPostCreate(BaseModel):
     title: str
@@ -165,6 +167,7 @@ class BlogPostCreate(BaseModel):
     category: str
     image_url: Optional[str] = None
     status: str = "draft"
+    publish_date: Optional[str] = None  # ISO format string
 
 class DashboardStats(BaseModel):
     total_contacts: int = 0
