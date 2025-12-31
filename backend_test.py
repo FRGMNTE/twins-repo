@@ -315,7 +315,7 @@ class GltzAdminAPITester:
     
     def run_all_tests(self):
         """Run all backend tests"""
-        print("🚀 Starting gltz.de Admin Backend API Tests")
+        print("🚀 Starting gltz.de Dynamic Pages System Tests")
         print("=" * 50)
         
         # Test basic connectivity
@@ -326,15 +326,16 @@ class GltzAdminAPITester:
         # Seed data first
         self.test_seed_data()
         
-        # Test public endpoints
-        self.test_public_endpoints()
-        
         # Test admin authentication
         if not self.test_admin_login():
             print("❌ Admin authentication failed. Stopping admin tests.")
             return False
         
-        # Test admin functionality
+        # Test dynamic pages system specifically
+        self.test_dynamic_pages_system()
+        
+        # Test other functionality
+        self.test_public_endpoints()
         self.test_admin_stats()
         self.test_admin_pages_crud()
         self.test_admin_gallery_crud()
