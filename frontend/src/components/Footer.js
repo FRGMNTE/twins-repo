@@ -1,10 +1,19 @@
 import { Link } from 'react-router-dom';
+import { Facebook, Instagram, Youtube, Twitter } from 'lucide-react';
 import { useSiteSettings } from '../context/SiteSettingsContext';
 
 const DEFAULT_FOOTER_LINKS = [
   { id: '1', label: 'Impressum', path: '/impressum', enabled: true },
   { id: '2', label: 'Datenschutz', path: '/datenschutz', enabled: true },
 ];
+
+const SOCIAL_ICONS = {
+  facebook: Facebook,
+  instagram: Instagram,
+  youtube: Youtube,
+  twitter: Twitter,
+  tiktok: () => <span className="text-xs font-bold">TT</span>,
+};
 
 export default function Footer() {
   const { settings } = useSiteSettings();
@@ -13,6 +22,9 @@ export default function Footer() {
     ? settings.footerLinks.filter(link => link.enabled) 
     : DEFAULT_FOOTER_LINKS;
 
+  const enabledSocialLinks = (settings.socialLinks || []).filter(link => link.enabled && link.url);
+  const footerEmail = settings.footerEmail || settings.socialEmail || '';
+
   return (
     <footer className="border-t border-border bg-background" data-testid="footer">
       <div className="container-width py-12">
@@ -20,7 +32,11 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row justify-between gap-8 mb-8">
           <div>
             <h3 className="text-sm font-semibold text-foreground mb-4">
-              {settings.logoText || 'gltz.de'}
+              {settings.logoImage ? (
+                <img src={settings.logoImage} alt={settings.logoText || 'Logo'} className="h-6 object-contain" />
+              ) : (
+                settings.logoText || 'gltz.de'
+              )}
             </h3>
             <p className="text-xs text-muted-foreground max-w-xs">
               {settings.footerText || 'Unsere Reise mit Zwillingen. Anonyme Tipps für junge Familien.'}
@@ -50,38 +66,61 @@ export default function Footer() {
               </div>
             )}
 
-            {/* Kontakt - nur E-Mail und Facebook */}
-            <div>
-              <h4 className="text-xs font-semibold text-foreground mb-3 uppercase tracking-wide">
-                Kontakt
-              </h4>
-              <ul className="space-y-2">
-                {settings.socialEmail && (
+            {/* Kontakt - nur E-Mail */}
+            {footerEmail && (
+              <div>
+                <h4 className="text-xs font-semibold text-foreground mb-3 uppercase tracking-wide">
+                  Kontakt
+                </h4>
+                <ul className="space-y-2">
                   <li>
                     <a 
-                      href={`mailto:${settings.socialEmail}`}
+                      href={`mailto:${footerEmail}`}
                       className="text-xs text-muted-foreground hover:text-foreground transition-colors"
                       data-testid="footer-email"
                     >
                       E-Mail
                     </a>
                   </li>
-                )}
-                {settings.socialFacebook && (
-                  <li>
-                    <a 
-                      href={settings.socialFacebook}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                      data-testid="footer-facebook"
-                    >
-                      Facebook
-                    </a>
-                  </li>
-                )}
-              </ul>
-            </div>
+                </ul>
+              </div>
+            )}
+
+            {/* Social Links */}
+            {enabledSocialLinks.length > 0 && (
+              <div>
+                <h4 className="text-xs font-semibold text-foreground mb-3 uppercase tracking-wide">
+                  Social Media
+                </h4>
+                <ul className="space-y-2">
+                  {enabledSocialLinks.map((link) => {
+                    const IconComponent = SOCIAL_ICONS[link.platform] || Facebook;
+                    const platformName = {
+                      facebook: 'Facebook',
+                      instagram: 'Instagram',
+                      youtube: 'YouTube',
+                      tiktok: 'TikTok',
+                      twitter: 'X (Twitter)',
+                    }[link.platform] || link.platform;
+
+                    return (
+                      <li key={link.id}>
+                        <a 
+                          href={link.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                          data-testid={`footer-${link.platform}`}
+                        >
+                          <IconComponent className="w-3 h-3" />
+                          {platformName}
+                        </a>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
           </div>
         </div>
 
