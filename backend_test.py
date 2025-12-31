@@ -315,7 +315,7 @@ class GltzAdminAPITester:
     
     def run_all_tests(self):
         """Run all backend tests"""
-        print("🚀 Starting gltz.de Backend API Tests")
+        print("🚀 Starting gltz.de Admin Backend API Tests")
         print("=" * 50)
         
         # Test basic connectivity
@@ -323,13 +323,24 @@ class GltzAdminAPITester:
             print("❌ API is not accessible. Stopping tests.")
             return False
         
-        # Run all test suites
+        # Seed data first
         self.test_seed_data()
-        self.test_blog_endpoints()
-        self.test_gallery_endpoints()
-        self.test_contact_form()
-        self.test_contact_form_validation()
-        self.test_admin_authentication()
+        
+        # Test public endpoints
+        self.test_public_endpoints()
+        
+        # Test admin authentication
+        if not self.test_admin_login():
+            print("❌ Admin authentication failed. Stopping admin tests.")
+            return False
+        
+        # Test admin functionality
+        self.test_admin_stats()
+        self.test_admin_pages_crud()
+        self.test_admin_gallery_crud()
+        self.test_admin_contacts()
+        self.test_admin_posts_crud()
+        self.test_settings_management()
         
         # Print summary
         print("\n" + "=" * 50)
@@ -344,10 +355,70 @@ class GltzAdminAPITester:
         print(f"✅ Success Rate: {success_rate:.1f}%")
         
         return len(self.failed_tests) == 0
+    
+    def test_public_endpoints(self):
+        """Test public endpoints"""
+        # Test public blog
+        success, response = self.make_request('GET', '/blog?limit=3')
+        if success and isinstance(response, list):
+            self.log_result("Public Blog Posts", True)
+        else:
+            self.log_result("Public Blog Posts", False, f"Response: {response}")
+        
+        # Test public gallery
+        success, response = self.make_request('GET', '/gallery')
+        if success and isinstance(response, list):
+            self.log_result("Public Gallery", True)
+        else:
+            self.log_result("Public Gallery", False, f"Response: {response}")
+        
+        # Test public contact form
+        contact_data = {
+            "name": "Test User",
+            "email": "test@example.com",
+            "thema": "Tipps",
+            "nachricht": "This is a test message from the automated test suite."
+        }
+        
+        success, response = self.make_request('POST', '/contact', contact_data)
+        if success and response.get('id'):
+            self.log_result("Public Contact Form", True)
+        else:
+            self.log_result("Public Contact Form", False, f"Response: {response}")
+        
+        # Test site settings
+        success, response = self.make_request('GET', '/settings')
+        if success and 'siteTitle' in response:
+            self.log_result("Public Site Settings", True)
+        else:
+            self.log_result("Public Site Settings", False, f"Response: {response}")
+        
+        return True
+    
+    def test_settings_management(self):
+        """Test settings management"""
+        if not self.admin_token:
+            self.log_result("Settings Management", False, "No admin token available")
+            return False
+        
+        # Test saving settings
+        test_settings = {
+            "siteTitle": "Test Site Title",
+            "heroTitle": "Test Hero",
+            "logoText": "Test Logo"
+        }
+        
+        success, response = self.make_request('POST', '/settings', test_settings)
+        if success:
+            self.log_result("Save Site Settings", True)
+            return True
+        else:
+            self.log_result("Save Site Settings", False, f"Response: {response}")
+            return False
 
 def main():
     """Main test execution"""
-    tester = GltzAPITester()
+    tester = GltzAdminAPITester()
     
     try:
         success = tester.run_all_tests()
