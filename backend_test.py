@@ -341,6 +341,7 @@ class GltzAdminAPITester:
         self.test_admin_contacts()
         self.test_admin_posts_crud()
         self.test_settings_management()
+        self.test_navigation_management()  # Add navigation-specific tests
         
         # Print summary
         print("\n" + "=" * 50)
