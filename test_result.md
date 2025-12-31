@@ -166,6 +166,13 @@ frontend:
     stuck_count: 0
     priority: "high"
     needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: Navigation dropdown working perfectly. M&O Portfolio shows dropdown with 'M&O Portfolio (Übersicht)' and 'Twins-Art' on hover. Clicking Twins-Art navigates correctly to /twins-art page. Desktop navigation fully functional."
+      - working: false
+        agent: "testing"
+        comment: "Minor: Mobile menu submenu expansion not working correctly - M&O Portfolio not found in mobile menu structure."
 
   - task: "Footer.js - Social Media Links section, Email only in Contact"
     implemented: true
@@ -174,6 +181,10 @@ frontend:
     stuck_count: 0
     priority: "high"
     needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: Footer sections working correctly. RECHTLICHES section shows Impressum and Datenschutz links. KONTAKT section shows E-Mail only as required. SOCIAL MEDIA section displays Facebook with icon. Secret admin link in copyright navigates to /admin correctly."
 
   - task: "Admin.js - Complete overhaul with Navigation submenus, Pages trash, Posts trash with date, Settings with Social section"
     implemented: true
@@ -182,6 +193,13 @@ frontend:
     stuck_count: 0
     priority: "high"
     needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: Admin functionality working well. Login with 'gltz2025' successful. Settings section fully functional with Allgemein (Seiten-Titel, Logo-Text, Logo-Bild URL), Footer-Einstellungen (Footer-Text, Kontakt E-Mail), and Social Media Links (platform dropdown, URL input, enable/disable switch, add button) all working correctly."
+      - working: false
+        agent: "testing"
+        comment: "Minor: Blog and Seiten sections have navigation issues - tabs not displaying correctly after clicking sidebar navigation. Core admin functionality works but specific section views need attention."
 
 metadata:
   created_by: "main_agent"
