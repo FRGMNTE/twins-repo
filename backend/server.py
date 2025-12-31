@@ -532,17 +532,25 @@ async def export_contacts(token: str):
 # ============== Blog Posts ==============
 
 @api_router.get("/admin/posts", response_model=List[BlogPost])
-async def get_all_posts(token: str):
+async def get_all_posts(token: str, include_deleted: bool = False):
     if not await verify_admin_session(token):
         raise HTTPException(status_code=401, detail="Nicht autorisiert")
     
-    posts = await db.blog_posts.find({}, {"_id": 0}).sort("created_at", -1).to_list(100)
+    query = {} if include_deleted else {"status": {"$ne": "deleted"}}
+    posts = await db.blog_posts.find(query, {"_id": 0}).sort("publish_date", -1).to_list(100)
     result = []
     for p in posts:
         if isinstance(p.get('created_at'), str):
             p['created_at'] = datetime.fromisoformat(p['created_at'])
         if isinstance(p.get('updated_at'), str):
             p['updated_at'] = datetime.fromisoformat(p['updated_at'])
+        if isinstance(p.get('publish_date'), str):
+            p['publish_date'] = datetime.fromisoformat(p['publish_date'])
+        if isinstance(p.get('deleted_at'), str):
+            p['deleted_at'] = datetime.fromisoformat(p['deleted_at'])
+        # Ensure publish_date exists
+        if 'publish_date' not in p:
+            p['publish_date'] = p.get('created_at', datetime.now(timezone.utc))
         result.append(BlogPost(**p))
     return result
 
@@ -551,18 +559,22 @@ async def create_post(post: BlogPostCreate, token: str):
     if not await verify_admin_session(token):
         raise HTTPException(status_code=401, detail="Nicht autorisiert")
     
+    publish_date = datetime.fromisoformat(post.publish_date) if post.publish_date else datetime.now(timezone.utc)
+    
     new_post = BlogPost(
         title=post.title,
         excerpt=post.excerpt,
         content=post.content,
         category=post.category,
         image_url=post.image_url,
-        status=post.status
+        status=post.status,
+        publish_date=publish_date
     )
     
     doc = new_post.model_dump()
     doc['created_at'] = doc['created_at'].isoformat()
     doc['updated_at'] = doc['updated_at'].isoformat()
+    doc['publish_date'] = doc['publish_date'].isoformat()
     
     await db.blog_posts.insert_one(doc)
     return new_post
@@ -574,6 +586,8 @@ async def update_post(post_id: str, post: BlogPostCreate, token: str):
     
     update_data = post.model_dump()
     update_data['updated_at'] = datetime.now(timezone.utc).isoformat()
+    if post.publish_date:
+        update_data['publish_date'] = post.publish_date
     
     await db.blog_posts.update_one({"id": post_id}, {"$set": update_data})
     
