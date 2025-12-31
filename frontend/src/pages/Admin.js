@@ -1204,3 +1204,249 @@ export default function Admin() {
     </main>
   );
 }
+
+// ============== Page Editor Component with Rich Text ==============
+function PageEditor({ page, onChange, onSave, onCancel }) {
+  const [viewMode, setViewMode] = useState('visual'); // 'visual' or 'source'
+  const editorRef = useRef(null);
+  const [linkUrl, setLinkUrl] = useState('');
+  const [showLinkInput, setShowLinkInput] = useState(false);
+
+  // Format content for visual display
+  const formatForVisual = (content) => {
+    if (!content) return '';
+    return content;
+  };
+
+  // Execute formatting command
+  const execCommand = useCallback((command, value = null) => {
+    if (editorRef.current) {
+      editorRef.current.focus();
+      document.execCommand(command, false, value);
+      // Update the page content
+      onChange({ ...page, content: editorRef.current.innerHTML });
+    }
+  }, [page, onChange]);
+
+  // Insert HTML at cursor
+  const insertHTML = useCallback((html) => {
+    if (editorRef.current) {
+      editorRef.current.focus();
+      document.execCommand('insertHTML', false, html);
+      onChange({ ...page, content: editorRef.current.innerHTML });
+    }
+  }, [page, onChange]);
+
+  // Handle link insertion
+  const insertLink = () => {
+    if (linkUrl) {
+      execCommand('createLink', linkUrl);
+      setLinkUrl('');
+      setShowLinkInput(false);
+    }
+  };
+
+  // Handle editor content change
+  const handleEditorChange = () => {
+    if (editorRef.current) {
+      onChange({ ...page, content: editorRef.current.innerHTML });
+    }
+  };
+
+  // Handle source code change
+  const handleSourceChange = (e) => {
+    onChange({ ...page, content: e.target.value });
+  };
+
+  // Toolbar button component
+  const ToolbarButton = ({ icon: Icon, onClick, title, active }) => (
+    <Button
+      type="button"
+      variant={active ? "secondary" : "ghost"}
+      size="sm"
+      onClick={onClick}
+      title={title}
+      className="h-8 w-8 p-0"
+    >
+      <Icon className="w-4 h-4" />
+    </Button>
+  );
+
+  return (
+    <div className="space-y-4">
+      {/* Page Meta */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <Label className="text-xs">Titel</Label>
+          <Input 
+            value={page.title} 
+            onChange={(e) => onChange({...page, title: e.target.value})} 
+            className="mt-1" 
+            placeholder="Seitentitel"
+          />
+        </div>
+        <div>
+          <Label className="text-xs">URL-Slug</Label>
+          <Input 
+            value={page.slug} 
+            onChange={(e) => onChange({...page, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-')})} 
+            className="mt-1" 
+            placeholder="url-slug"
+          />
+        </div>
+        <div>
+          <Label className="text-xs">Status</Label>
+          <Select value={page.status} onValueChange={(v) => onChange({...page, status: v})}>
+            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="draft">Entwurf</SelectItem>
+              <SelectItem value="live">Live</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <Label className="text-xs">Hero-Bild URL (optional)</Label>
+          <Input 
+            value={page.heroImage || ''} 
+            onChange={(e) => onChange({...page, heroImage: e.target.value})} 
+            className="mt-1" 
+            placeholder="https://..."
+          />
+        </div>
+        <div>
+          <Label className="text-xs">Meta-Beschreibung (SEO)</Label>
+          <Input 
+            value={page.metaDescription || ''} 
+            onChange={(e) => onChange({...page, metaDescription: e.target.value})} 
+            className="mt-1" 
+            placeholder="Kurze Beschreibung für Suchmaschinen"
+          />
+        </div>
+      </div>
+
+      {/* Editor Toolbar */}
+      <div className="border rounded-lg overflow-hidden">
+        <div className="bg-secondary p-2 border-b flex flex-wrap items-center gap-1">
+          {/* View Mode Toggle */}
+          <div className="flex items-center border-r pr-2 mr-2">
+            <Button
+              type="button"
+              variant={viewMode === 'visual' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('visual')}
+              className="h-8 text-xs"
+            >
+              <Eye className="w-4 h-4 mr-1" /> Visuell
+            </Button>
+            <Button
+              type="button"
+              variant={viewMode === 'source' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('source')}
+              className="h-8 text-xs"
+            >
+              <Code className="w-4 h-4 mr-1" /> Quellcode
+            </Button>
+          </div>
+
+          {viewMode === 'visual' && (
+            <>
+              {/* Text Formatting */}
+              <div className="flex items-center gap-0.5 border-r pr-2 mr-2">
+                <ToolbarButton icon={Bold} onClick={() => execCommand('bold')} title="Fett (Ctrl+B)" />
+                <ToolbarButton icon={Italic} onClick={() => execCommand('italic')} title="Kursiv (Ctrl+I)" />
+              </div>
+
+              {/* Headings */}
+              <div className="flex items-center gap-0.5 border-r pr-2 mr-2">
+                <ToolbarButton icon={Heading1} onClick={() => execCommand('formatBlock', 'h1')} title="Überschrift 1" />
+                <ToolbarButton icon={Heading2} onClick={() => execCommand('formatBlock', 'h2')} title="Überschrift 2" />
+                <ToolbarButton icon={Heading3} onClick={() => execCommand('formatBlock', 'h3')} title="Überschrift 3" />
+                <ToolbarButton icon={Type} onClick={() => execCommand('formatBlock', 'p')} title="Absatz" />
+              </div>
+
+              {/* Lists */}
+              <div className="flex items-center gap-0.5 border-r pr-2 mr-2">
+                <ToolbarButton icon={List} onClick={() => execCommand('insertUnorderedList')} title="Aufzählung" />
+                <ToolbarButton icon={ListOrdered} onClick={() => execCommand('insertOrderedList')} title="Nummerierung" />
+                <ToolbarButton icon={Quote} onClick={() => execCommand('formatBlock', 'blockquote')} title="Zitat" />
+              </div>
+
+              {/* Alignment */}
+              <div className="flex items-center gap-0.5 border-r pr-2 mr-2">
+                <ToolbarButton icon={AlignLeft} onClick={() => execCommand('justifyLeft')} title="Linksbündig" />
+                <ToolbarButton icon={AlignCenter} onClick={() => execCommand('justifyCenter')} title="Zentriert" />
+                <ToolbarButton icon={AlignRight} onClick={() => execCommand('justifyRight')} title="Rechtsbündig" />
+              </div>
+
+              {/* Link */}
+              <div className="flex items-center gap-1">
+                {showLinkInput ? (
+                  <div className="flex items-center gap-1">
+                    <Input
+                      value={linkUrl}
+                      onChange={(e) => setLinkUrl(e.target.value)}
+                      placeholder="https://..."
+                      className="h-8 w-40 text-xs"
+                      onKeyDown={(e) => e.key === 'Enter' && insertLink()}
+                    />
+                    <Button type="button" size="sm" onClick={insertLink} className="h-8">
+                      <Check className="w-3 h-3" />
+                    </Button>
+                    <Button type="button" variant="ghost" size="sm" onClick={() => setShowLinkInput(false)} className="h-8">
+                      <X className="w-3 h-3" />
+                    </Button>
+                  </div>
+                ) : (
+                  <ToolbarButton icon={LinkIcon} onClick={() => setShowLinkInput(true)} title="Link einfügen" />
+                )}
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Editor Content */}
+        {viewMode === 'visual' ? (
+          <div
+            ref={editorRef}
+            contentEditable
+            className="min-h-[300px] p-4 focus:outline-none prose prose-neutral dark:prose-invert max-w-none
+              prose-headings:text-foreground prose-headings:font-semibold
+              prose-p:text-foreground prose-p:leading-relaxed
+              prose-a:text-primary prose-a:underline
+              prose-strong:text-foreground
+              prose-ul:text-foreground prose-ol:text-foreground
+              prose-blockquote:border-l-primary prose-blockquote:text-muted-foreground"
+            onInput={handleEditorChange}
+            dangerouslySetInnerHTML={{ __html: formatForVisual(page.content) }}
+          />
+        ) : (
+          <Textarea
+            value={page.content || ''}
+            onChange={handleSourceChange}
+            className="min-h-[300px] border-0 rounded-none font-mono text-sm resize-none focus-visible:ring-0"
+            placeholder="<p>HTML-Inhalt hier eingeben...</p>"
+          />
+        )}
+      </div>
+
+      {/* Preview Link */}
+      {page.slug && page.status === 'live' && (
+        <p className="text-xs text-muted-foreground">
+          Vorschau: <a href={`/${page.slug}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">/{page.slug}</a>
+        </p>
+      )}
+
+      {/* Actions */}
+      <DialogFooter className="gap-2">
+        <Button variant="outline" onClick={onCancel}>Abbrechen</Button>
+        <Button onClick={onSave}>
+          <Save className="w-4 h-4 mr-1" /> Speichern
+        </Button>
+      </DialogFooter>
+    </div>
+  );
+}
