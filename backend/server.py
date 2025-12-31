@@ -46,6 +46,7 @@ class SiteSettings(BaseModel):
     lightBackground: str = "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920"
     darkBackground: str = "https://images.unsplash.com/photo-1516572704891-60b47497c7b5?w=1920"
     logoText: str = "gltz.de"
+    logoImage: Optional[str] = None  # Logo image URL (alternative to logoText)
     defaultTheme: str = "light"
     paypalLink: str = "https://paypal.me/gltzfamily"
     donationText: str = "Projekt unterstützen"
@@ -53,24 +54,36 @@ class SiteSettings(BaseModel):
     ga4Tag: Optional[str] = None
     metaDescription: str = "Zwillings-Tipps für junge Familien"
     autoReplyMessage: str = "Danke für deine Nachricht – wir melden uns in 24h!"
-    # Navigation
+    # Navigation with submenus support
     navItems: List[Dict[str, Any]] = [
-        {"id": "1", "label": "Home", "path": "/", "enabled": True},
-        {"id": "2", "label": "Über uns", "path": "/ueber-uns", "enabled": True},
-        {"id": "3", "label": "Schwangerschaft", "path": "/schwangerschaft", "enabled": True},
-        {"id": "4", "label": "Baby-Alltag", "path": "/baby-alltag", "enabled": True},
-        {"id": "5", "label": "Tipps", "path": "/tipps", "enabled": True},
-        {"id": "6", "label": "Reisen", "path": "/reisen", "enabled": True},
-        {"id": "7", "label": "Blog", "path": "/blog", "enabled": True},
-        {"id": "8", "label": "Suchen", "path": "/suchen", "enabled": True},
-        {"id": "9", "label": "M&O Portfolio", "path": "/twins-art", "enabled": True},
-        {"id": "10", "label": "Spende", "path": "/spende", "enabled": True},
-        {"id": "11", "label": "Kontakt", "path": "/kontakt", "enabled": True},
+        {"id": "1", "label": "Home", "path": "/", "enabled": True, "children": []},
+        {"id": "2", "label": "Über uns", "path": "/ueber-uns", "enabled": True, "children": []},
+        {"id": "3", "label": "Schwangerschaft", "path": "/schwangerschaft", "enabled": True, "children": []},
+        {"id": "4", "label": "Baby-Alltag", "path": "/baby-alltag", "enabled": True, "children": []},
+        {"id": "5", "label": "Tipps", "path": "/tipps", "enabled": True, "children": []},
+        {"id": "6", "label": "Reisen", "path": "/reisen", "enabled": True, "children": []},
+        {"id": "7", "label": "Blog", "path": "/blog", "enabled": True, "children": []},
+        {"id": "8", "label": "Suchen", "path": "/suchen", "enabled": True, "children": []},
+        {"id": "9", "label": "M&O Portfolio", "path": "/mo-portfolio", "enabled": True, "children": [
+            {"id": "9-1", "label": "Twins-Art", "path": "/twins-art", "enabled": True}
+        ]},
+        {"id": "10", "label": "Spende", "path": "/spende", "enabled": True, "children": []},
+        {"id": "11", "label": "Kontakt", "path": "/kontakt", "enabled": True, "children": []},
     ]
     # Footer
     footerText: str = "Unsere Reise mit Zwillingen. Anonyme Tipps für junge Familien."
     footerLinks: List[Dict[str, Any]] = []
-    socialFacebook: str = "https://www.facebook.com/people/%E0%B9%80%E0%B8%A1%E0%B8%B2%E0%B8%99%E0%B9%8C%E0%B9%80%E0%B8%97%E0%B8%B4%E0%B8%99-%E0%B9%82%E0%B8%AD%E0%B9%80%E0%B8%8A%E0%B8%B4%E0%B9%88%E0%B8%99/61584716588683/"
+    footerEmail: str = "gltz.de@gmail.com"  # Footer contact - only email
+    # Social Links (separate section)
+    socialLinks: List[Dict[str, Any]] = [
+        {"id": "1", "platform": "facebook", "url": "https://www.facebook.com/people/%E0%B9%80%E0%B8%A1%E0%B8%B2%E0%B8%99%E0%B9%8C%E0%B9%80%E0%B8%97%E0%B8%B4%E0%B8%99-%E0%B9%82%E0%B8%AD%E0%B9%80%E0%B8%8A%E0%B8%B4%E0%B9%88%E0%B8%99/61584716588683/", "enabled": True},
+        {"id": "2", "platform": "instagram", "url": "", "enabled": False},
+        {"id": "3", "platform": "youtube", "url": "", "enabled": False},
+        {"id": "4", "platform": "tiktok", "url": "", "enabled": False},
+        {"id": "5", "platform": "twitter", "url": "", "enabled": False},
+    ]
+    # Legacy fields (for backward compatibility)
+    socialFacebook: str = ""
     socialEmail: str = "gltz.de@gmail.com"
     # Landing Page Teaser Cards
     teaserCards: List[Dict[str, Any]] = []
