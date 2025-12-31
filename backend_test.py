@@ -26,23 +26,29 @@ class GltzAdminAPITester:
             print(f"❌ {test_name} - FAILED: {details}")
         
     def make_request(self, method: str, endpoint: str, data: Dict = None, 
-                    expected_status: int = 200, headers: Dict = None) -> tuple:
+                    expected_status: int = 200, headers: Dict = None, params: Dict = None) -> tuple:
         """Make HTTP request and return success status and response"""
         url = f"{self.base_url}/{endpoint.lstrip('/')}"
         
         request_headers = {'Content-Type': 'application/json'}
         if headers:
             request_headers.update(headers)
-        if self.session_token:
-            request_headers['Authorization'] = f'Bearer {self.session_token}'
+            
+        # Add token as query parameter for admin endpoints
+        if self.admin_token and '/admin/' in endpoint:
+            if not params:
+                params = {}
+            params['token'] = self.admin_token
             
         try:
             if method.upper() == 'GET':
-                response = requests.get(url, headers=request_headers, timeout=10)
+                response = requests.get(url, headers=request_headers, params=params, timeout=10)
             elif method.upper() == 'POST':
-                response = requests.post(url, json=data, headers=request_headers, timeout=10)
+                response = requests.post(url, json=data, headers=request_headers, params=params, timeout=10)
+            elif method.upper() == 'PUT':
+                response = requests.put(url, json=data, headers=request_headers, params=params, timeout=10)
             elif method.upper() == 'DELETE':
-                response = requests.delete(url, headers=request_headers, timeout=10)
+                response = requests.delete(url, headers=request_headers, params=params, timeout=10)
             else:
                 return False, {"error": f"Unsupported method: {method}"}
                 
