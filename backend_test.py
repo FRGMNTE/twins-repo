@@ -342,6 +342,8 @@ class GltzAdminAPITester:
         self.test_admin_posts_crud()
         self.test_settings_management()
         self.test_navigation_management()  # Add navigation-specific tests
+        self.test_posts_with_publish_date_and_trash()  # Test posts with publish_date and trash
+        self.test_pages_soft_delete_and_restore()  # Test pages soft delete and restore
         
         # Print summary
         print("\n" + "=" * 50)
