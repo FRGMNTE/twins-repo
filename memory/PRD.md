@@ -1,7 +1,7 @@
 # gltz.de - Familienseite PRD
 
 ## Original Problem Statement
-Erweitere die importierte Bolt.new-Seite "twinfamilypage.zip" zu einer vollständigen, produktiven gltz.de-Familienseite mit Apple-Style Design, Kontaktformular, Twins-Art Galerie mit PayPal-Unterstützungs-Button, Admin-Bereich und DSGVO-Konformität.
+Erweitere die importierte Bolt.new-Seite "twinfamilypage.zip" zu einer vollständigen, produktiven gltz.de-Familienseite mit Mountain & Ocean Natur-Thema, Kontaktformular, Twins-Art Galerie mit PayPal-Unterstützungs-Button, Admin-Bereich und DSGVO-Konformität.
 
 ## User Personas
 1. **Junge Zwillingseltern** - Suchen praktische Tipps und Erfahrungsaustausch
@@ -9,7 +9,8 @@ Erweitere die importierte Bolt.new-Seite "twinfamilypage.zip" zu einer vollstän
 3. **Unterstützer/Fans** - Möchten das Familienprojekt finanziell unterstützen
 
 ## Core Requirements
-- Apple-Style minimalistisches Design (hell/dunkel)
+- Mountain & Ocean Natur-Design (Berge, Meere, Wälder, Wellen)
+- Celestial Switch: Sonne (hell) / Mond mit Sternen (dunkel)
 - Responsive Mobile-First Layout
 - DSGVO-konform (Cookie-Banner, Datenschutz, Impressum)
 - BITV 2.0 Barrierefreiheit (Alt-Texte, ARIA, Kontrast)
@@ -19,6 +20,13 @@ Erweitere die importierte Bolt.new-Seite "twinfamilypage.zip" zu einer vollstän
 ## What's Been Implemented (Dezember 2025)
 
 ### Phase 1 - MVP Complete ✅
+**Design - Mountain & Ocean Theme:**
+- Celestial Switch mit animierter Sonne (Strahlen) und Mond (Sterne)
+- Hero-Backgrounds: Berglandschaft (hell) / Ozean-Nacht (dunkel)
+- Natur-Icons: Mountain, Waves, Trees auf allen Seiten
+- Fraunces Serif Font für Headlines, Caveat für Handschrift-Akzente
+- Alpine Morning (hell) / Deep Ocean Night (dunkel) Farbpalette
+
 **Backend (FastAPI + MongoDB):**
 - `/api/contact` - Kontaktformular Speicherung
 - `/api/admin/request-code` - Admin-Login Code-Anforderung
@@ -28,18 +36,20 @@ Erweitere die importierte Bolt.new-Seite "twinfamilypage.zip" zu einer vollstän
 - `/api/seed` - Seed-Daten für Demo
 
 **Frontend (React + Tailwind):**
-- Home mit Hero, Teaser-Cards, Blog-Preview
-- Schwangerschaft & Geburt Seite
-- Baby-Alltag Seite
-- Tipps & Hacks mit Filter
+- Home mit Nature Hero, Teaser-Cards, Blog-Preview
+- Schwangerschaft & Geburt Seite (mit Berg-Hintergrund)
+- Baby-Alltag Seite (mit Wellen-Hintergrund)
+- Tipps & Hacks mit Filter (mit Wald-Hintergrund)
 - Twins-Art Galerie mit Lightbox und Tags
 - PayPal.me Unterstützungs-Button (paypal.me/gltzfamily)
 - Funktionales Kontaktformular
 - Admin-Bereich mit OTP-Login
-- Dark/Light Mode Toggle
 - Cookie-Banner (Opt-in)
 - Impressum (John D. Gold, Schützenstraße 38, 47829 Krefeld)
 - Datenschutz (DSGVO-konform)
+
+**Social Media:**
+- Facebook: https://www.facebook.com/people/เมาน์เทิน-โอเชิ่น/61584716588683/
 
 **Rechtliche Hinweise:**
 - Footer-Disclaimer: "Dies ist keine Spende im steuerlichen Sinne..."
@@ -75,8 +85,8 @@ Erweitere die importierte Bolt.new-Seite "twinfamilypage.zip" zu einer vollstän
 ## Key Files
 - `/app/backend/server.py` - API Endpoints
 - `/app/frontend/src/App.js` - Router & Layout
+- `/app/frontend/src/components/CelestialSwitch.js` - Sun/Moon Toggle
 - `/app/frontend/src/pages/` - Alle Seiten
-- `/app/frontend/src/components/` - UI Komponenten
 - `/app/frontend/src/context/ThemeContext.js` - Dark/Light Mode
 
 ## Admin Access
