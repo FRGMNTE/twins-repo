@@ -596,15 +596,53 @@ async def update_post(post_id: str, post: BlogPostCreate, token: str):
         updated['created_at'] = datetime.fromisoformat(updated['created_at'])
     if isinstance(updated.get('updated_at'), str):
         updated['updated_at'] = datetime.fromisoformat(updated['updated_at'])
+    if isinstance(updated.get('publish_date'), str):
+        updated['publish_date'] = datetime.fromisoformat(updated['publish_date'])
+    if 'publish_date' not in updated:
+        updated['publish_date'] = updated.get('created_at', datetime.now(timezone.utc))
     return BlogPost(**updated)
 
 @api_router.delete("/admin/posts/{post_id}")
-async def delete_post(post_id: str, token: str):
+async def delete_post(post_id: str, token: str, permanent: bool = False):
     if not await verify_admin_session(token):
         raise HTTPException(status_code=401, detail="Nicht autorisiert")
     
-    await db.blog_posts.delete_one({"id": post_id})
+    if permanent:
+        await db.blog_posts.delete_one({"id": post_id})
+    else:
+        await db.blog_posts.update_one(
+            {"id": post_id},
+            {"$set": {"status": "deleted", "deleted_at": datetime.now(timezone.utc).isoformat()}}
+        )
     return {"success": True}
+
+@api_router.post("/admin/posts/{post_id}/restore")
+async def restore_post(post_id: str, token: str):
+    if not await verify_admin_session(token):
+        raise HTTPException(status_code=401, detail="Nicht autorisiert")
+    
+    await db.blog_posts.update_one(
+        {"id": post_id},
+        {"$set": {"status": "draft", "deleted_at": None}}
+    )
+    return {"success": True}
+
+@api_router.get("/admin/posts/trash")
+async def get_trashed_posts(token: str):
+    if not await verify_admin_session(token):
+        raise HTTPException(status_code=401, detail="Nicht autorisiert")
+    
+    posts = await db.blog_posts.find({"status": "deleted"}, {"_id": 0}).to_list(100)
+    result = []
+    for p in posts:
+        if isinstance(p.get('created_at'), str):
+            p['created_at'] = datetime.fromisoformat(p['created_at'])
+        if isinstance(p.get('deleted_at'), str):
+            p['deleted_at'] = datetime.fromisoformat(p['deleted_at'])
+        if isinstance(p.get('publish_date'), str):
+            p['publish_date'] = datetime.fromisoformat(p['publish_date'])
+        result.append(p)
+    return result
 
 # ============== Legal Texts ==============
 
