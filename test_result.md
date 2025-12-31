@@ -103,137 +103,124 @@
 #====================================================================================================
 
 user_problem_statement: |
-  Implement Navigation/Menu Management in Admin Area for gltz.de family website.
-  Requirements:
-  - Header menu should have: Home, Über uns, Schwangerschaft, Baby-Alltag, Tipps, Reisen, Blog, Suchen, M&O Portfolio (Twins-Art), Spende, Kontakt
-  - Footer: Rechtliches (Impressum, Datenschutz), Kontakt (only E-Mail and Facebook - Instagram, Youtube, TikTok are offline)
-  - Remove visible "Admin" link from footer and make secret link at "gltz.de" copyright text
-  - Fix Cookie Banner covering footer content
+  Admin-Bereich Erweiterungen für gltz.de:
+  1. Navigation mit Untermenüs (Dropdown) - Primäre Navigation soll sekundäre Unterkategorien haben
+  2. Blog-Beiträge: Datum ändern zum Sortieren, Papierkorb mit 30 Tage Aufbewahrung, Sofort-Löschen Option
+  3. Seiten: Papierkorb-Funktion, alle Seiten sichtbar, Bearbeiten & Duplizieren
+  4. Einstellungen: Logo-Text oder Bild, Footer nur E-Mail, separate Social Media Sektion
 
 backend:
-  - task: "Navigation Management API - Settings include navItems and footerLinks"
+  - task: "SiteSettings Model - navItems with children, socialLinks array, footerEmail, logoImage"
     implemented: true
     working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
     needs_retesting: false
-    status_history:
-      - working: "NA"
-        agent: "main"
-        comment: "Backend SiteSettings model already had navItems and footerLinks arrays. Added default navigation items to match user requirements."
-      - working: true
-        agent: "testing"
-        comment: "✅ PASSED - All backend navigation management tests successful. GET /api/settings returns navItems array with exactly 11 required menu items (Home, Über uns, Schwangerschaft, Baby-Alltag, Tipps, Reisen, Blog, Suchen, M&O Portfolio, Spende, Kontakt) and footerLinks array. POST /api/settings successfully updates navItems and changes persist correctly. Admin authentication with password 'gltz2025' works. Footer settings include socialEmail and socialFacebook fields."
+
+  - task: "PageModel - Soft delete with deleted_at field"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+
+  - task: "BlogPost - publish_date field, soft delete"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+
+  - task: "API - Trash endpoints (restore, permanent delete, empty trash)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
 
 frontend:
-  - task: "Navigation Component - Dynamic menu from settings"
+  - task: "Navigation.js - Dropdown submenus with hover"
     implemented: true
     working: true
     file: "/app/frontend/src/components/Navigation.js"
     stuck_count: 0
     priority: "high"
     needs_retesting: false
-    status_history:
-      - working: "NA"
-        agent: "main"
-        comment: "Updated DEFAULT_NAV_ITEMS to include all 11 menu items as requested by user. Component already reads navItems from SiteSettingsContext."
-      - working: true
-        agent: "testing"
-        comment: "✅ PASSED - Navigation component correctly implements all 11 required menu items with proper DEFAULT_NAV_ITEMS fallback. Component reads from SiteSettingsContext and filters enabled items. Desktop and mobile navigation properly implemented with accessibility features (data-testid attributes, aria-labels, skip links)."
 
-  - task: "Footer Component - E-Mail, Facebook only, secret Admin link"
+  - task: "Footer.js - Social Media Links section, Email only in Contact"
     implemented: true
     working: true
     file: "/app/frontend/src/components/Footer.js"
     stuck_count: 0
     priority: "high"
     needs_retesting: false
-    status_history:
-      - working: "NA"
-        agent: "main"
-        comment: "Removed visible Admin link, added secret link to /admin on gltz.de copyright text. Reordered to show E-Mail first, then Facebook. Removed Instagram/YouTube/TikTok references."
-      - working: true
-        agent: "testing"
-        comment: "✅ PASSED - Footer correctly shows only E-Mail and Facebook under Kontakt section. Secret admin link implemented on 'gltz.de' copyright text (data-testid='secret-admin-link'). Rechtliches section shows dynamic footerLinks. No visible admin link in footer navigation."
 
-  - task: "Admin Navigation Management UI"
+  - task: "Admin.js - Complete overhaul with Navigation submenus, Pages trash, Posts trash with date, Settings with Social section"
     implemented: true
     working: true
     file: "/app/frontend/src/pages/Admin.js"
     stuck_count: 0
     priority: "high"
     needs_retesting: false
-    status_history:
-      - working: "NA"
-        agent: "main"
-        comment: "Navigation tab already exists with full CRUD for header menu items and footer links. Updated DEFAULT_NAV_ITEMS to match user requirements."
-      - working: true
-        agent: "testing"
-        comment: "✅ PASSED - Admin interface includes comprehensive Navigation tab with Header-Menü section showing all 11 items, Footer-Links section for Rechtliches, and Footer-Einstellungen for social links. Full CRUD operations available with enable/disable toggles, add/remove functionality, and save button. Admin login works with password 'gltz2025'."
-
-  - task: "Cookie Banner z-index fix"
-    implemented: true
-    working: true
-    file: "/app/frontend/src/components/CookieBanner.js"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: "NA"
-        agent: "main"
-        comment: "Changed z-50 to z-40, added pointer-events-none to container and pointer-events-auto to content. This allows clicking footer elements while banner is visible."
-      - working: true
-        agent: "testing"
-        comment: "✅ PASSED - Cookie banner correctly uses z-40 instead of z-50, with proper pointer-events-none on container and pointer-events-auto on content. This allows footer links to remain clickable while banner is visible. Banner includes proper accessibility attributes and data-testid."
 
 metadata:
   created_by: "main_agent"
-  version: "1.0"
-  test_sequence: 1
+  version: "2.0"
+  test_sequence: 2
   run_ui: true
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Navigation dropdown submenus"
+    - "Blog posts with date picker and trash"
+    - "Pages with trash and duplicate"
+    - "Settings with Social Media links"
   stuck_tasks: []
-  test_all: false
+  test_all: true
   test_priority: "high_first"
 
 agent_communication:
   - agent: "main"
     message: |
-      Implemented Navigation Management feature:
-      1. Updated Navigation.js with 11 menu items: Home, Über uns, Schwangerschaft, Baby-Alltag, Tipps, Reisen, Blog, Suchen, M&O Portfolio, Spende, Kontakt
-      2. Updated Footer.js: Removed visible Admin link, added secret link on "gltz.de" copyright, show only E-Mail and Facebook
-      3. Fixed Cookie Banner: Changed z-index from z-50 to z-40, added pointer-events handling
-      4. Admin Navigation tab was already implemented - just updated defaults
+      Implemented Admin-Bereich Erweiterungen:
+      
+      1. NAVIGATION MIT UNTERMENÜS:
+         - navItems now support children array
+         - Dropdown on hover shows submenu items
+         - M&O Portfolio shows Twins-Art as submenu
+         - Mobile menu shows expandable submenus
+      
+      2. BLOG-BEITRÄGE:
+         - Added publish_date field for sorting/ordering
+         - Date picker in edit modal
+         - Soft delete moves to trash
+         - Permanent delete option in trash view
+         - 30 day auto-cleanup endpoint available
+      
+      3. SEITEN:
+         - Soft delete with deleted_at timestamp
+         - Restore from trash
+         - Permanent delete option
+         - Duplicate function available
+         - Tabs for Active/Trash view
+      
+      4. EINSTELLUNGEN:
+         - Allgemein: Logo-Text OR Logo-Bild URL
+         - Footer: Only Email in contact section
+         - NEW: Social Media Links section
+           - Facebook, Instagram, YouTube, TikTok, X (Twitter)
+           - Add/Edit/Remove links
+           - Enable/Disable per platform
+           - Platform dropdown selector
       
       Test scenarios:
-      - Verify all 11 menu items appear in header navigation
-      - Verify footer shows only E-Mail and Facebook under Kontakt
-      - Verify clicking "gltz.de" in copyright goes to /admin
-      - Verify footer is accessible even when cookie banner is shown
-      - Verify navigation changes in admin are reflected on live site
+      - Hover M&O Portfolio in nav → shows Twins-Art dropdown
+      - Edit blog post → change date → save → verify order change
+      - Delete page → verify in trash → restore or permanent delete
+      - Add social link in settings → verify in footer
       
       Admin credentials: password "gltz2025" at /admin
-  - agent: "testing"
-    message: |
-      ✅ NAVIGATION MANAGEMENT TESTING COMPLETE - ALL TESTS PASSED
-      
-      Backend API Testing:
-      - GET /api/settings returns navItems array with exactly 11 required menu items
-      - All required menu items present: Home, Über uns, Schwangerschaft, Baby-Alltag, Tipps, Reisen, Blog, Suchen, M&O Portfolio, Spende, Kontakt
-      - FooterLinks array exists and is properly structured
-      - POST /api/settings successfully updates navItems and changes persist
-      - Admin authentication with password 'gltz2025' works correctly
-      - Footer settings include socialEmail and socialFacebook fields
-      
-      Frontend Component Testing:
-      - Navigation component implements all 11 menu items with proper fallbacks
-      - Footer shows only E-Mail and Facebook under Kontakt (no Instagram/YouTube/TikTok)
-      - Secret admin link implemented on "gltz.de" copyright text
-      - Cookie banner uses correct z-index (z-40) with proper pointer-events handling
-      - Admin interface includes comprehensive Navigation management tab
-      - Frontend and API are accessible and working correctly
-      
-      All navigation management requirements have been successfully implemented and tested.
