@@ -98,13 +98,14 @@ class PageModel(BaseModel):
     title: str
     slug: str
     content: str = ""
-    status: str = "draft"  # draft, live
+    status: str = "draft"  # draft, live, deleted
     heroImage: Optional[str] = None
     metaTitle: Optional[str] = None
     metaDescription: Optional[str] = None
     order: int = 0
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    deleted_at: Optional[datetime] = None  # For trash functionality
 
 class PageCreate(BaseModel):
     title: str
