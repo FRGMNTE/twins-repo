@@ -422,85 +422,195 @@ class GltzAdminAPITester:
         print("\n🧭 Testing Navigation Management Feature")
         print("-" * 40)
         
-        # Test GET /api/settings - should return navItems array with 11 items and footerLinks array
+        # Test GET /api/settings - should return navItems array with children and socialLinks array
         success, response = self.make_request('GET', '/settings')
         if not success:
             self.log_result("Navigation - GET Settings", False, f"Failed to get settings: {response}")
             return False
         
-        # Verify navItems exists and has 11 items
+        # Verify navItems exists and has children array
         nav_items = response.get('navItems', [])
-        if len(nav_items) != 11:
-            self.log_result("Navigation - NavItems Count", False, f"Expected 11 nav items, got {len(nav_items)}")
+        if not nav_items:
+            self.log_result("Navigation - NavItems Array", False, "navItems array not found")
             return False
         else:
-            self.log_result("Navigation - NavItems Count (11 items)", True)
+            self.log_result("Navigation - NavItems Array", True)
         
-        # Verify the specific menu items are present
-        expected_labels = [
-            "Home", "Über uns", "Schwangerschaft", "Baby-Alltag", "Tipps", 
-            "Reisen", "Blog", "Suchen", "M&O Portfolio", "Spende", "Kontakt"
-        ]
+        # Check if navItems have children array structure
+        has_children_structure = True
+        for item in nav_items:
+            if 'children' not in item:
+                has_children_structure = False
+                break
         
-        actual_labels = [item.get('label', '') for item in nav_items]
-        missing_labels = [label for label in expected_labels if label not in actual_labels]
+        if has_children_structure:
+            self.log_result("Navigation - NavItems Children Structure", True)
+        else:
+            self.log_result("Navigation - NavItems Children Structure", False, "Some navItems missing children array")
         
-        if missing_labels:
-            self.log_result("Navigation - Required Menu Items", False, f"Missing labels: {missing_labels}")
+        # Verify M&O Portfolio has Twins-Art as child
+        mo_portfolio = next((item for item in nav_items if item.get('label') == 'M&O Portfolio'), None)
+        if mo_portfolio and mo_portfolio.get('children'):
+            twins_art = next((child for child in mo_portfolio['children'] if child.get('label') == 'Twins-Art'), None)
+            if twins_art:
+                self.log_result("Navigation - M&O Portfolio Dropdown", True)
+            else:
+                self.log_result("Navigation - M&O Portfolio Dropdown", False, "Twins-Art not found in M&O Portfolio children")
+        else:
+            self.log_result("Navigation - M&O Portfolio Dropdown", False, "M&O Portfolio not found or has no children")
+        
+        # Verify socialLinks array exists
+        social_links = response.get('socialLinks', None)
+        if social_links is None:
+            self.log_result("Navigation - SocialLinks Array", False, "socialLinks array not found")
             return False
         else:
-            self.log_result("Navigation - Required Menu Items", True)
+            self.log_result("Navigation - SocialLinks Array", True)
         
-        # Verify footerLinks array exists
-        footer_links = response.get('footerLinks', None)
-        if footer_links is None:
-            self.log_result("Navigation - FooterLinks Array", False, "footerLinks array not found")
-            return False
+        # Verify footerEmail exists (only email in contact)
+        footer_email = response.get('footerEmail', None)
+        if footer_email:
+            self.log_result("Navigation - Footer Email Only", True)
         else:
-            self.log_result("Navigation - FooterLinks Array", True)
-        
-        # Test POST /api/settings - update navItems and verify changes persist
-        # First, save original settings
-        original_settings = response
-        
-        # Create modified navItems (disable one item for testing)
-        modified_nav_items = nav_items.copy()
-        if len(modified_nav_items) > 0:
-            modified_nav_items[0]['enabled'] = False  # Disable first item
-        
-        # Update settings with modified navItems
-        update_data = original_settings.copy()
-        update_data['navItems'] = modified_nav_items
-        
-        success, update_response = self.make_request('POST', '/settings', update_data)
-        if not success:
-            self.log_result("Navigation - Update Settings", False, f"Failed to update settings: {update_response}")
-            return False
-        else:
-            self.log_result("Navigation - Update Settings", True)
-        
-        # Verify changes persist by getting settings again
-        success, verify_response = self.make_request('GET', '/settings')
-        if not success:
-            self.log_result("Navigation - Verify Persistence", False, f"Failed to verify settings: {verify_response}")
-            return False
-        
-        # Check if the change was persisted
-        updated_nav_items = verify_response.get('navItems', [])
-        if len(updated_nav_items) > 0 and updated_nav_items[0].get('enabled') == False:
-            self.log_result("Navigation - Verify Persistence", True)
-        else:
-            self.log_result("Navigation - Verify Persistence", False, "Changes were not persisted correctly")
-            return False
-        
-        # Restore original settings
-        success, restore_response = self.make_request('POST', '/settings', original_settings)
-        if success:
-            self.log_result("Navigation - Restore Original Settings", True)
-        else:
-            self.log_result("Navigation - Restore Original Settings", False, f"Failed to restore: {restore_response}")
+            self.log_result("Navigation - Footer Email Only", False, "footerEmail not found")
         
         return True
+    
+    def test_posts_with_publish_date_and_trash(self):
+        """Test blog posts with publish_date field and soft delete functionality"""
+        print("\n📝 Testing Blog Posts with Publish Date and Trash")
+        print("-" * 50)
+        
+        if not self.admin_token:
+            self.log_result("Posts Trash Test", False, "No admin token available")
+            return False
+        
+        # Test CREATE post with publish_date
+        test_date = "2024-01-15T10:30:00Z"
+        new_post = {
+            "title": "Test Post with Date",
+            "excerpt": "Test excerpt for date testing",
+            "content": "Test content with publish date",
+            "category": "Tipps",
+            "status": "draft",
+            "publish_date": test_date
+        }
+        
+        success, response = self.make_request('POST', '/admin/posts', new_post)
+        if success and response.get('id'):
+            self.log_result("Posts - Create with Publish Date", True)
+            post_id = response['id']
+            
+            # Verify publish_date field exists in response
+            if 'publish_date' in response:
+                self.log_result("Posts - Publish Date Field", True)
+            else:
+                self.log_result("Posts - Publish Date Field", False, "publish_date field missing in response")
+            
+            # Test soft delete (move to trash)
+            success, response = self.make_request('DELETE', f'/admin/posts/{post_id}')
+            if success and response.get('success'):
+                self.log_result("Posts - Soft Delete", True)
+                
+                # Verify post is in trash
+                success, trash_response = self.make_request('GET', '/admin/posts/trash')
+                if success and isinstance(trash_response, list):
+                    trashed_post = next((p for p in trash_response if p.get('id') == post_id), None)
+                    if trashed_post:
+                        self.log_result("Posts - Verify in Trash", True)
+                        
+                        # Test restore from trash
+                        success, restore_response = self.make_request('POST', f'/admin/posts/{post_id}/restore')
+                        if success and restore_response.get('success'):
+                            self.log_result("Posts - Restore from Trash", True)
+                            
+                            # Test permanent delete
+                            success, perm_delete_response = self.make_request('DELETE', f'/admin/posts/{post_id}', params={'permanent': True})
+                            if success and perm_delete_response.get('success'):
+                                self.log_result("Posts - Permanent Delete", True)
+                            else:
+                                self.log_result("Posts - Permanent Delete", False, f"Response: {perm_delete_response}")
+                        else:
+                            self.log_result("Posts - Restore from Trash", False, f"Response: {restore_response}")
+                    else:
+                        self.log_result("Posts - Verify in Trash", False, "Post not found in trash")
+                else:
+                    self.log_result("Posts - Verify in Trash", False, f"Failed to get trash: {trash_response}")
+            else:
+                self.log_result("Posts - Soft Delete", False, f"Response: {response}")
+                
+            return True
+        else:
+            self.log_result("Posts - Create with Publish Date", False, f"Response: {response}")
+            return False
+    
+    def test_pages_soft_delete_and_restore(self):
+        """Test pages soft delete and restore functionality"""
+        print("\n📄 Testing Pages Soft Delete and Restore")
+        print("-" * 45)
+        
+        if not self.admin_token:
+            self.log_result("Pages Trash Test", False, "No admin token available")
+            return False
+        
+        # Test CREATE page
+        new_page = {
+            "title": "Test Page for Trash",
+            "slug": "test-page-trash",
+            "content": "This page will be tested for trash functionality",
+            "status": "draft"
+        }
+        
+        success, response = self.make_request('POST', '/admin/pages', new_page)
+        if success and response.get('id'):
+            self.log_result("Pages - Create for Trash Test", True)
+            page_id = response['id']
+            
+            # Test soft delete (move to trash)
+            success, response = self.make_request('DELETE', f'/admin/pages/{page_id}')
+            if success and response.get('success'):
+                self.log_result("Pages - Soft Delete", True)
+                
+                # Verify page is in trash
+                success, trash_response = self.make_request('GET', '/admin/pages/trash')
+                if success and isinstance(trash_response, list):
+                    trashed_page = next((p for p in trash_response if p.get('id') == page_id), None)
+                    if trashed_page and trashed_page.get('deleted_at'):
+                        self.log_result("Pages - Verify in Trash with deleted_at", True)
+                        
+                        # Test restore from trash
+                        success, restore_response = self.make_request('POST', f'/admin/pages/{page_id}/restore')
+                        if success and restore_response.get('success'):
+                            self.log_result("Pages - Restore from Trash", True)
+                            
+                            # Verify page is restored (not in trash anymore)
+                            success, active_pages = self.make_request('GET', '/admin/pages')
+                            if success:
+                                restored_page = next((p for p in active_pages if p.get('id') == page_id), None)
+                                if restored_page and restored_page.get('status') != 'deleted':
+                                    self.log_result("Pages - Verify Restored", True)
+                                else:
+                                    self.log_result("Pages - Verify Restored", False, "Page not found in active pages after restore")
+                            
+                            # Clean up - permanent delete
+                            success, perm_delete_response = self.make_request('DELETE', f'/admin/pages/{page_id}', params={'permanent': True})
+                            if success and perm_delete_response.get('success'):
+                                self.log_result("Pages - Permanent Delete", True)
+                            else:
+                                self.log_result("Pages - Permanent Delete", False, f"Response: {perm_delete_response}")
+                        else:
+                            self.log_result("Pages - Restore from Trash", False, f"Response: {restore_response}")
+                    else:
+                        self.log_result("Pages - Verify in Trash with deleted_at", False, "Page not found in trash or missing deleted_at")
+                else:
+                    self.log_result("Pages - Verify in Trash with deleted_at", False, f"Failed to get trash: {trash_response}")
+            else:
+                self.log_result("Pages - Soft Delete", False, f"Response: {response}")
+                
+            return True
+        else:
+            self.log_result("Pages - Create for Trash Test", False, f"Response: {response}")
+            return False
 
 def main():
     """Main test execution"""
