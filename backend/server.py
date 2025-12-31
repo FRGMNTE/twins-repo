@@ -290,6 +290,22 @@ async def increment_donations(token: str):
     )
     return {"success": True}
 
+# ============== Public Pages API ==============
+
+@api_router.get("/pages")
+async def get_public_pages():
+    """Get all live pages for public display"""
+    pages = await db.pages.find({"status": "live"}, {"_id": 0}).sort("order", 1).to_list(100)
+    return pages
+
+@api_router.get("/pages/{slug}")
+async def get_page_by_slug(slug: str):
+    """Get a single page by its slug"""
+    page = await db.pages.find_one({"slug": slug, "status": "live"}, {"_id": 0})
+    if not page:
+        raise HTTPException(status_code=404, detail="Seite nicht gefunden")
+    return page
+
 # ============== Pages CRUD ==============
 
 @api_router.get("/admin/pages", response_model=List[PageModel])
