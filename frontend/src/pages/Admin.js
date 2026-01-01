@@ -175,6 +175,12 @@ export default function Admin() {
   const [newImageTitle, setNewImageTitle] = useState('');
   const [newImageTags, setNewImageTags] = useState('');
   
+  // Static pages state
+  const [staticPages, setStaticPages] = useState([]);
+  const [editingStaticPage, setEditingStaticPage] = useState(null);
+  const [staticPageSourceMode, setStaticPageSourceMode] = useState(false);
+  const [staticPageSource, setStaticPageSource] = useState('');
+  
   // View state
   const [pagesView, setPagesView] = useState('active'); // active, trash
   const [postsView, setPostsView] = useState('active'); // active, trash
