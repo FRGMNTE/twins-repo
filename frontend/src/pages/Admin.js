@@ -1174,6 +1174,88 @@ export default function Admin() {
                         <Button onClick={handleSaveDatenschutz}><Save className="w-4 h-4 mr-1" /> Datenschutz speichern</Button>
                       </div>
                     </TabsContent>
+                    
+                    {/* Cookies Content */}
+                    <TabsContent value="cookies" className="space-y-6">
+                      {/* Intro */}
+                      <div className="p-4 rounded-xl border border-border bg-card space-y-4">
+                        <h3 className="font-semibold flex items-center gap-2"><FileText className="w-4 h-4" /> Allgemeine Texte</h3>
+                        <div className="space-y-4">
+                          <div>
+                            <Label htmlFor="cookies_intro">Einleitung</Label>
+                            <Textarea id="cookies_intro" rows={2} value={cookiesContent.intro_text} onChange={(e) => setCookiesContent(p => ({ ...p, intro_text: e.target.value }))} />
+                          </div>
+                          <div>
+                            <Label htmlFor="what_are_cookies">Was sind Cookies?</Label>
+                            <Textarea id="what_are_cookies" rows={2} value={cookiesContent.what_are_cookies} onChange={(e) => setCookiesContent(p => ({ ...p, what_are_cookies: e.target.value }))} />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Cookie Types */}
+                      <div className="p-4 rounded-xl border border-border bg-card space-y-4">
+                        <h3 className="font-semibold flex items-center gap-2"><Shield className="w-4 h-4" /> Cookie-Arten</h3>
+                        <div className="space-y-4">
+                          <div>
+                            <Label htmlFor="types_essential">Technisch notwendig</Label>
+                            <Textarea id="types_essential" rows={2} value={cookiesContent.types_essential} onChange={(e) => setCookiesContent(p => ({ ...p, types_essential: e.target.value }))} />
+                          </div>
+                          <div>
+                            <Label htmlFor="types_functional">Funktional</Label>
+                            <Textarea id="types_functional" rows={2} value={cookiesContent.types_functional} onChange={(e) => setCookiesContent(p => ({ ...p, types_functional: e.target.value }))} />
+                          </div>
+                          <div>
+                            <Label htmlFor="types_analytics">Analyse (wir nutzen keine)</Label>
+                            <Textarea id="types_analytics" rows={2} value={cookiesContent.types_analytics} onChange={(e) => setCookiesContent(p => ({ ...p, types_analytics: e.target.value }))} />
+                          </div>
+                          <div>
+                            <Label htmlFor="types_marketing">Marketing (wir nutzen keine)</Label>
+                            <Textarea id="types_marketing" rows={2} value={cookiesContent.types_marketing} onChange={(e) => setCookiesContent(p => ({ ...p, types_marketing: e.target.value }))} />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Our Cookies & Management */}
+                      <div className="p-4 rounded-xl border border-border bg-card space-y-4">
+                        <h3 className="font-semibold flex items-center gap-2"><Settings className="w-4 h-4" /> Verwaltung</h3>
+                        <div className="space-y-4">
+                          <div>
+                            <Label htmlFor="our_cookies">Unsere Cookies</Label>
+                            <Textarea id="our_cookies" rows={2} value={cookiesContent.our_cookies} onChange={(e) => setCookiesContent(p => ({ ...p, our_cookies: e.target.value }))} />
+                          </div>
+                          <div>
+                            <Label htmlFor="manage_cookies">Cookies verwalten</Label>
+                            <Textarea id="manage_cookies" rows={2} value={cookiesContent.manage_cookies} onChange={(e) => setCookiesContent(p => ({ ...p, manage_cookies: e.target.value }))} />
+                          </div>
+                          <div>
+                            <Label htmlFor="browser_settings">Browser-Einstellungen</Label>
+                            <Textarea id="browser_settings" rows={3} value={cookiesContent.browser_settings} onChange={(e) => setCookiesContent(p => ({ ...p, browser_settings: e.target.value }))} />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Contact & Date */}
+                      <div className="p-4 rounded-xl border border-border bg-card space-y-4">
+                        <h3 className="font-semibold flex items-center gap-2"><Mail className="w-4 h-4" /> Kontakt & Stand</h3>
+                        <div className="grid sm:grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="cookies_contact_email">Kontakt E-Mail</Label>
+                            <Input id="cookies_contact_email" value={cookiesContent.contact_email} onChange={(e) => setCookiesContent(p => ({ ...p, contact_email: e.target.value }))} />
+                          </div>
+                          <div>
+                            <Label htmlFor="cookies_last_updated">Stand (z.B. "Januar 2025")</Label>
+                            <Input id="cookies_last_updated" value={cookiesContent.last_updated} onChange={(e) => setCookiesContent(p => ({ ...p, last_updated: e.target.value }))} />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-between items-center">
+                        <a href="/cookies" target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline flex items-center gap-1">
+                          <ExternalLink className="w-3 h-3" /> Vorschau öffnen
+                        </a>
+                        <Button onClick={handleSaveCookies}><Save className="w-4 h-4 mr-1" /> Cookies speichern</Button>
+                      </div>
+                    </TabsContent>
                   </Tabs>
                 </motion.div>
               )}
