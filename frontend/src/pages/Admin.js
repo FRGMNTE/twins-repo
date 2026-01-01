@@ -8,7 +8,8 @@ import {
   ExternalLink, Facebook, Instagram, Youtube, AtSign, Layout, Layers,
   RotateCcw, Calendar, ImageIcon, Link2, Twitter, Code, Eye,
   Bold, Italic, List, ListOrdered, Heading1, Heading2, Heading3,
-  Quote, Link as LinkIcon, AlignLeft, AlignCenter, AlignRight, Newspaper
+  Quote, Link as LinkIcon, AlignLeft, AlignCenter, AlignRight, Newspaper,
+  ArrowRight
 } from 'lucide-react';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
