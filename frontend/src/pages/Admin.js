@@ -425,6 +425,34 @@ export default function Admin() {
       sections: prev.sections.filter((_, i) => i !== index)
     }));
   };
+  
+  // Landing page content handlers
+  const handleSaveLandingContent = async () => {
+    try {
+      let dataToSave = landingContent;
+      if (landingSourceMode) {
+        try {
+          dataToSave = JSON.parse(landingSource);
+        } catch (e) {
+          alert('Ungültiges JSON Format');
+          return;
+        }
+      }
+      await axios.put(`${API}/admin/landing-content?token=${token}`, dataToSave);
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus(''), 2000);
+      if (landingSourceMode) {
+        setLandingContent(dataToSave);
+      }
+      fetchAllData(token);
+    } catch (err) {
+      console.error('Error saving landing content:', err);
+    }
+  };
+  
+  const handleLandingFieldChange = (field, value) => {
+    setLandingContent(prev => ({ ...prev, [field]: value }));
+  };
 
   // Page handlers
   const handleSavePage = async () => {
