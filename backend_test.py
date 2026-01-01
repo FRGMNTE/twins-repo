@@ -716,6 +716,141 @@ class GltzAdminAPITester:
         else:
             self.log_result("Pages - Create for Trash Test", False, f"Response: {response}")
             return False
+    
+    def test_legal_pages_content(self):
+        """Test NEW Impressum and Datenschutz structured content endpoints"""
+        print("\n⚖️ Testing Legal Pages Content (Impressum & Datenschutz)")
+        print("-" * 60)
+        
+        # Test 1: Public Impressum endpoint (no auth required)
+        success, response = self.make_request('GET', '/page-content/impressum')
+        if success and 'provider_name' in response:
+            self.log_result("Legal Pages - Public Impressum Content", True, "Default impressum content loaded")
+            
+            # Verify expected fields exist
+            expected_fields = ['provider_name', 'provider_email', 'provider_street', 'provider_city', 
+                             'responsible_name', 'liability_content', 'copyright_text']
+            missing_fields = [field for field in expected_fields if field not in response]
+            if not missing_fields:
+                self.log_result("Legal Pages - Impressum Fields Complete", True)
+            else:
+                self.log_result("Legal Pages - Impressum Fields Complete", False, f"Missing fields: {missing_fields}")
+        else:
+            self.log_result("Legal Pages - Public Impressum Content", False, f"Response: {response}")
+        
+        # Test 2: Public Datenschutz endpoint (no auth required)
+        success, response = self.make_request('GET', '/page-content/datenschutz')
+        if success and 'responsible_name' in response:
+            self.log_result("Legal Pages - Public Datenschutz Content", True, "Default datenschutz content loaded")
+            
+            # Verify expected fields exist
+            expected_fields = ['responsible_name', 'responsible_email', 'intro_text', 'contact_form_text',
+                             'cookies_text', 'hosting_text', 'rights_text', 'paypal_text', 'last_updated']
+            missing_fields = [field for field in expected_fields if field not in response]
+            if not missing_fields:
+                self.log_result("Legal Pages - Datenschutz Fields Complete", True)
+            else:
+                self.log_result("Legal Pages - Datenschutz Fields Complete", False, f"Missing fields: {missing_fields}")
+        else:
+            self.log_result("Legal Pages - Public Datenschutz Content", False, f"Response: {response}")
+        
+        if not self.admin_token:
+            self.log_result("Legal Pages - Admin Tests", False, "No admin token available")
+            return False
+        
+        # Test 3: Admin Impressum GET endpoint (requires token)
+        success, response = self.make_request('GET', '/admin/page-content/impressum')
+        if success and 'provider_name' in response:
+            self.log_result("Legal Pages - Admin Get Impressum", True)
+        else:
+            self.log_result("Legal Pages - Admin Get Impressum", False, f"Response: {response}")
+        
+        # Test 4: Admin Datenschutz GET endpoint (requires token)
+        success, response = self.make_request('GET', '/admin/page-content/datenschutz')
+        if success and 'responsible_name' in response:
+            self.log_result("Legal Pages - Admin Get Datenschutz", True)
+        else:
+            self.log_result("Legal Pages - Admin Get Datenschutz", False, f"Response: {response}")
+        
+        # Test 5: Admin Impressum PUT endpoint (update content)
+        updated_impressum = {
+            "provider_name": "Test Company GmbH",
+            "provider_street": "Teststraße 123",
+            "provider_city": "12345 Teststadt",
+            "provider_country": "Deutschland",
+            "provider_phone": "0123 456789",
+            "provider_email": "test@example.com",
+            "responsible_name": "Max Mustermann",
+            "responsible_address": "Teststraße 123, 12345 Teststadt",
+            "liability_content": "Updated liability content for testing purposes.",
+            "liability_links": "Updated liability links content.",
+            "copyright_text": "Updated copyright text for testing.",
+            "dispute_text": "Updated dispute resolution text."
+        }
+        
+        success, response = self.make_request('PUT', '/admin/page-content/impressum', updated_impressum)
+        if success and response.get('success'):
+            self.log_result("Legal Pages - Admin Update Impressum", True)
+            
+            # Test 6: Verify changes persist (GET after PUT)
+            success, verify_response = self.make_request('GET', '/page-content/impressum')
+            if success and verify_response.get('provider_name') == 'Test Company GmbH':
+                self.log_result("Legal Pages - Impressum Changes Persist", True, "Updated content verified")
+            else:
+                self.log_result("Legal Pages - Impressum Changes Persist", False, f"Expected 'Test Company GmbH', got: {verify_response.get('provider_name')}")
+        else:
+            self.log_result("Legal Pages - Admin Update Impressum", False, f"Response: {response}")
+        
+        # Test 7: Admin Datenschutz PUT endpoint (update content)
+        updated_datenschutz = {
+            "responsible_name": "Test Data Controller",
+            "responsible_address": "Teststraße 123, 12345 Teststadt",
+            "responsible_email": "privacy@example.com",
+            "intro_text": "Updated privacy policy introduction for testing.",
+            "contact_form_text": "Updated contact form data processing text.",
+            "contact_form_purpose": "Updated purpose and legal basis.",
+            "cookies_text": "Updated cookies policy text.",
+            "hosting_text": "Updated hosting information.",
+            "rights_text": "Updated data subject rights information.",
+            "paypal_text": "Updated PayPal data processing information.",
+            "last_updated": "Januar 2025"
+        }
+        
+        success, response = self.make_request('PUT', '/admin/page-content/datenschutz', updated_datenschutz)
+        if success and response.get('success'):
+            self.log_result("Legal Pages - Admin Update Datenschutz", True)
+            
+            # Test 8: Verify changes persist (GET after PUT)
+            success, verify_response = self.make_request('GET', '/page-content/datenschutz')
+            if success and verify_response.get('responsible_name') == 'Test Data Controller':
+                self.log_result("Legal Pages - Datenschutz Changes Persist", True, "Updated content verified")
+            else:
+                self.log_result("Legal Pages - Datenschutz Changes Persist", False, f"Expected 'Test Data Controller', got: {verify_response.get('responsible_name')}")
+        else:
+            self.log_result("Legal Pages - Admin Update Datenschutz", False, f"Response: {response}")
+        
+        # Test 9: Test invalid token returns 401
+        # Temporarily use invalid token
+        original_token = self.admin_token
+        self.admin_token = "invalid_token_12345"
+        
+        success, response = self.make_request('GET', '/admin/page-content/impressum', expected_status=401)
+        if success:
+            self.log_result("Legal Pages - Invalid Token Returns 401", True, "Correctly rejected invalid token")
+        else:
+            self.log_result("Legal Pages - Invalid Token Returns 401", False, f"Expected 401, got: {response}")
+        
+        # Restore valid token
+        self.admin_token = original_token
+        
+        # Test 10: Verify all existing endpoints still work
+        success, response = self.make_request('GET', '/admin/stats')
+        if success and 'total_contacts' in response:
+            self.log_result("Legal Pages - Existing Endpoints Still Work", True, "Admin stats endpoint working")
+        else:
+            self.log_result("Legal Pages - Existing Endpoints Still Work", False, f"Admin stats failed: {response}")
+        
+        return True
 
 def main():
     """Main test execution"""
