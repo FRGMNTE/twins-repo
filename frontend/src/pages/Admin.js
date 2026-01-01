@@ -150,6 +150,19 @@ export default function Admin() {
     paypal_text: 'Wenn du unser Projekt über PayPal unterstützt, erfolgt die Datenverarbeitung durch PayPal (Europe) S.à.r.l. et Cie, S.C.A. gemäß deren Datenschutzbestimmungen. Wir erhalten von PayPal lediglich eine Bestätigung der Transaktion.',
     last_updated: 'Dezember 2025',
   });
+  const [cookiesContent, setCookiesContent] = useState({
+    intro_text: 'Diese Website verwendet Cookies, um dir die bestmögliche Nutzererfahrung zu bieten. Hier erfährst du, welche Cookies wir verwenden und wie du sie verwalten kannst.',
+    what_are_cookies: 'Cookies sind kleine Textdateien, die auf deinem Gerät gespeichert werden, wenn du eine Website besuchst. Sie helfen der Website, sich bestimmte Informationen zu merken.',
+    types_essential: 'Technisch notwendige Cookies sind für den Betrieb der Website erforderlich. Sie ermöglichen grundlegende Funktionen wie die Seitennavigation und den Zugang zu gesicherten Bereichen.',
+    types_functional: 'Funktionale Cookies ermöglichen es der Website, sich an deine Einstellungen zu erinnern, wie z.B. die Sprachauswahl oder die Theme-Einstellung (Hell/Dunkel-Modus).',
+    types_analytics: 'Analyse-Cookies helfen uns zu verstehen, wie Besucher mit der Website interagieren. Wir verwenden derzeit KEINE Analyse-Cookies.',
+    types_marketing: 'Marketing-Cookies werden verwendet, um Besucher über Websites hinweg zu verfolgen. Wir verwenden KEINE Marketing- oder Werbe-Cookies.',
+    our_cookies: 'Wir verwenden ausschließlich technisch notwendige und funktionale Cookies: cookie-consent (speichert deine Cookie-Einwilligung), theme (speichert deine Theme-Einstellung).',
+    manage_cookies: 'Du kannst Cookies in deinem Browser jederzeit löschen oder blockieren. Beachte jedoch, dass das Blockieren bestimmter Cookies die Funktionalität der Website beeinträchtigen kann.',
+    browser_settings: 'In den Einstellungen deines Browsers kannst du Cookies verwalten: Chrome: Einstellungen → Datenschutz und Sicherheit → Cookies. Firefox: Einstellungen → Datenschutz & Sicherheit. Safari: Einstellungen → Datenschutz. Edge: Einstellungen → Datenschutz, Suche und Dienste.',
+    contact_email: 'gltz.de@gmail.com',
+    last_updated: 'Januar 2025',
+  });
   
   // Modal states
   const [editingPage, setEditingPage] = useState(null);
