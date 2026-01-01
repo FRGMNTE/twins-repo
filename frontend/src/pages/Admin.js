@@ -656,6 +656,67 @@ export default function Admin() {
                 </motion.div>
               )}
 
+              {/* News Tab */}
+              {activeTab === 'news' && (
+                <motion.div key="news" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h1 className="text-2xl font-semibold">Nachrichten-Ticker</h1>
+                      <p className="text-sm text-muted-foreground">Verwalte die Nachrichten im Carousel auf der Landing Page</p>
+                    </div>
+                    <Button onClick={() => setEditingNews({ title: '', subtitle: '', image_url: '', link_url: '', link_type: 'internal', status: 'draft', order: 0 })}>
+                      <Plus className="w-4 h-4 mr-1" /> Neue Nachricht
+                    </Button>
+                  </div>
+
+                  {/* Info */}
+                  <div className="p-4 rounded-xl bg-secondary/50 border border-border">
+                    <p className="text-sm text-muted-foreground">
+                      <strong>Tipp:</strong> Nachrichten werden auf der Startseite als automatisches Carousel angezeigt (10 Sek. Intervall). 
+                      Besucher können auch manuell durch die Nachrichten navigieren.
+                    </p>
+                  </div>
+
+                  {/* News List */}
+                  {newsItems.length === 0 ? (
+                    <div className="text-center py-12 border border-dashed border-border rounded-xl">
+                      <Newspaper className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                      <p className="text-muted-foreground">Noch keine Nachrichten vorhanden.</p>
+                      <Button 
+                        variant="outline" 
+                        className="mt-4"
+                        onClick={() => setEditingNews({ title: '', subtitle: '', image_url: '', link_url: '', link_type: 'internal', status: 'draft', order: 0 })}
+                      >
+                        <Plus className="w-4 h-4 mr-1" /> Erste Nachricht erstellen
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {newsItems.map((news, index) => (
+                        <div key={news.id} className="flex items-center gap-4 p-4 border border-border rounded-xl bg-card">
+                          {news.image_url && (
+                            <img src={news.image_url} alt={news.title} className="w-16 h-16 rounded-lg object-cover shrink-0" />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Badge variant={news.status === 'live' ? 'default' : 'secondary'}>{news.status}</Badge>
+                              <span className="text-xs text-muted-foreground">#{index + 1}</span>
+                            </div>
+                            <p className="font-medium text-foreground truncate">{news.title}</p>
+                            {news.subtitle && <p className="text-sm text-muted-foreground truncate">{news.subtitle}</p>}
+                            {news.link_url && <p className="text-xs text-primary truncate">{news.link_url}</p>}
+                          </div>
+                          <div className="flex gap-1 shrink-0">
+                            <Button variant="ghost" size="sm" onClick={() => setEditingNews(news)}><Pencil className="w-4 h-4" /></Button>
+                            <Button variant="ghost" size="sm" onClick={() => setDeleteConfirm({ type: 'news', id: news.id, title: news.title })}><Trash2 className="w-4 h-4" /></Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </motion.div>
+              )}
+
               {/* Navigation Tab */}
               {activeTab === 'navigation' && (
                 <motion.div key="navigation" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6">
