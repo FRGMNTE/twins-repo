@@ -182,6 +182,11 @@ export default function Admin() {
   const [staticPageSourceMode, setStaticPageSourceMode] = useState(false);
   const [staticPageSource, setStaticPageSource] = useState('');
   
+  // Landing page content state
+  const [landingContent, setLandingContent] = useState(null);
+  const [landingSourceMode, setLandingSourceMode] = useState(false);
+  const [landingSource, setLandingSource] = useState('');
+  
   // View state
   const [pagesView, setPagesView] = useState('active'); // active, trash
   const [postsView, setPostsView] = useState('active'); // active, trash
