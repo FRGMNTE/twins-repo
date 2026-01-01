@@ -518,6 +518,7 @@ export default function Admin() {
               {[
                 { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
                 { id: 'landing', icon: Home, label: 'Landing Page' },
+                { id: 'news', icon: Newspaper, label: 'Nachrichten', badge: newsItems.filter(n => n.status === 'live').length },
                 { id: 'navigation', icon: Menu, label: 'Navigation' },
                 { id: 'pages', icon: FileText, label: 'Seiten' },
                 { id: 'gallery', icon: Image, label: 'Galerie' },
