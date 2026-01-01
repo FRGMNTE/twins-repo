@@ -1,34 +1,40 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { ArrowRight, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowRight, ChevronRight, ChevronLeft, Calendar, Newspaper, Heart, Baby, Plane, Palette } from 'lucide-react';
 import axios from 'axios';
 import { useTheme } from '../context/ThemeContext';
 import { useSiteSettings } from '../context/SiteSettingsContext';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-const DEFAULT_TEASER_CARDS = [
-  { id: '1', title: 'Schwangerschaft', description: 'Vorbereitung auf Zwillinge', link: '/schwangerschaft', enabled: true },
-  { id: '2', title: 'Baby-Alltag', description: 'Routinen & Tipps', link: '/baby-alltag', enabled: true },
-  { id: '3', title: 'Twins-Art', description: 'Familienkunst', link: '/twins-art', enabled: true },
+// Category cards with icons
+const CATEGORY_CARDS = [
+  { id: '1', title: 'Schwangerschaft', description: 'Zwillings-Schwangerschaft erleben', link: '/schwangerschaft', icon: Heart },
+  { id: '2', title: 'Baby-Alltag', description: 'Routinen & Herausforderungen', link: '/baby-alltag', icon: Baby },
+  { id: '3', title: 'Tipps & Tricks', description: 'Praktische Ratschläge', link: '/tipps', icon: ChevronRight },
+  { id: '4', title: 'Reisen', description: 'Unterwegs mit Zwillingen', link: '/reisen', icon: Plane },
+  { id: '5', title: 'M&O Portfolio', description: 'Unsere Kunstwerke', link: '/twins-art', icon: Palette },
 ];
 
 export default function Home() {
   const [blogPosts, setBlogPosts] = useState([]);
+  const [newsItems, setNewsItems] = useState([]);
+  const [currentNewsIndex, setCurrentNewsIndex] = useState(0);
   const { theme } = useTheme();
   const { settings } = useSiteSettings();
 
-  const teaserCards = (settings.teaserCards && settings.teaserCards.length > 0) 
-    ? settings.teaserCards.filter(card => card.enabled) 
-    : DEFAULT_TEASER_CARDS;
-
+  // Fetch data
   useEffect(() => {
     const fetchData = async () => {
       try {
         await axios.post(`${API}/seed`);
-        const response = await axios.get(`${API}/blog?limit=3`);
-        setBlogPosts(response.data);
+        const [blogRes, newsRes] = await Promise.all([
+          axios.get(`${API}/blog?limit=3`),
+          axios.get(`${API}/news`)
+        ]);
+        setBlogPosts(blogRes.data);
+        setNewsItems(newsRes.data);
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -36,43 +42,69 @@ export default function Home() {
     fetchData();
   }, []);
 
+  // News carousel auto-advance (10 seconds)
+  useEffect(() => {
+    if (newsItems.length <= 1) return;
+    
+    const timer = setInterval(() => {
+      setCurrentNewsIndex((prev) => (prev + 1) % newsItems.length);
+    }, 10000);
+
+    return () => clearInterval(timer);
+  }, [newsItems.length]);
+
+  const nextNews = useCallback(() => {
+    setCurrentNewsIndex((prev) => (prev + 1) % newsItems.length);
+  }, [newsItems.length]);
+
+  const prevNews = useCallback(() => {
+    setCurrentNewsIndex((prev) => (prev - 1 + newsItems.length) % newsItems.length);
+  }, [newsItems.length]);
+
+  const goToNews = useCallback((index) => {
+    setCurrentNewsIndex(index);
+  }, []);
+
   return (
     <main id="main-content">
-      {/* Hero Section */}
-      <section 
-        className="relative min-h-screen flex items-center justify-center overflow-hidden"
-        data-testid="hero-section"
-      >
-        {/* Background */}
+      {/* Hero Section - Professional Design */}
+      <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
+        {/* Background with Parallax Effect */}
         <div className="absolute inset-0">
           {theme === 'dark' ? (
             <div 
-              className="absolute inset-0 bg-cover bg-center"
-              style={{ 
-                backgroundImage: `url(${settings.darkBackground || 'https://images.unsplash.com/photo-1516572704891-60b47497c7b5?w=1920'})`,
-              }}
+              className="absolute inset-0 bg-cover bg-center bg-fixed"
+              style={{ backgroundImage: `url(${settings.darkBackground || 'https://images.unsplash.com/photo-1516572704891-60b47497c7b5?w=1920'})` }}
             >
-              <div className="absolute inset-0 bg-background/60" />
+              <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/60 to-background" />
             </div>
           ) : (
             <div 
-              className="absolute inset-0 bg-cover bg-center"
-              style={{ 
-                backgroundImage: `url(${settings.lightBackground || 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920'})`,
-              }}
+              className="absolute inset-0 bg-cover bg-center bg-fixed"
+              style={{ backgroundImage: `url(${settings.lightBackground || 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920'})` }}
             >
-              <div className="absolute inset-0 bg-background/70" />
+              <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/50 to-background" />
             </div>
           )}
         </div>
 
-        <div className="relative z-10 container-width text-center py-32">
+        <div className="relative z-10 container-width text-center py-20">
+          {/* Badge */}
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-foreground/10 backdrop-blur-sm border border-foreground/20 text-sm text-foreground mb-8"
+          >
+            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+            Willkommen bei unserer Familie
+          </motion.div>
+
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-5xl sm:text-6xl lg:text-8xl font-semibold text-foreground mb-6 tracking-tight"
-            data-testid="hero-title"
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="text-5xl sm:text-6xl lg:text-8xl font-bold text-foreground mb-6 tracking-tight"
           >
             {settings.heroTitle || 'gltz.de'}
           </motion.h1>
@@ -80,8 +112,8 @@ export default function Home() {
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-xl sm:text-2xl text-muted-foreground mb-4"
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="text-xl sm:text-2xl text-muted-foreground mb-4 font-light"
           >
             {settings.heroSubtitle || 'Unsere Reise mit Zwillingen'}
           </motion.p>
@@ -89,75 +121,205 @@ export default function Home() {
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-base text-muted-foreground mb-12 max-w-xl mx-auto"
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="text-base text-muted-foreground mb-12 max-w-2xl mx-auto leading-relaxed"
           >
-            {settings.heroDescription || 'Anonyme Tipps für junge Familien vom Niederrhein.'}
+            {settings.heroDescription || 'Anonyme Tipps, ehrliche Erfahrungen und kreative Momente – von einer Familie für Familien.'}
           </motion.p>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
             className="flex flex-col sm:flex-row gap-4 justify-center"
           >
-            <Link to="/tipps" className="btn-primary" data-testid="hero-cta">
-              Tipps entdecken
-              <ArrowRight className="w-4 h-4" />
+            <Link to="/ueber-uns" className="btn-primary group">
+              Uns kennenlernen
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
-            <Link to="/twins-art" className="btn-secondary">
-              Twins-Art ansehen
+            <Link to="/blog" className="btn-secondary">
+              Blog lesen
             </Link>
           </motion.div>
         </div>
+
+        {/* Scroll indicator */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1 }}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2"
+        >
+          <div className="w-6 h-10 rounded-full border-2 border-foreground/30 flex justify-center pt-2">
+            <motion.div
+              animate={{ y: [0, 8, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+              className="w-1.5 h-1.5 rounded-full bg-foreground/50"
+            />
+          </div>
+        </motion.div>
       </section>
 
-      {/* Teaser Grid */}
-      <section className="section-padding bg-background" data-testid="teaser-section">
-        <div className="container-width">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {teaserCards.map((teaser, index) => (
-              <motion.div
-                key={teaser.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-              >
-                <Link 
-                  to={teaser.link} 
-                  className="block group"
-                  data-testid={`teaser-card-${index}`}
-                >
-                  <div className="glass-card p-8 rounded-2xl h-full transition-all duration-200 hover:bg-secondary/50">
-                    <h3 className="text-2xl font-semibold text-foreground mb-2">
-                      {teaser.title}
-                    </h3>
-                    <p className="text-muted-foreground mb-4">
-                      {teaser.description}
-                    </p>
-                    <span className="text-sm text-foreground flex items-center gap-1 group-hover:gap-2 transition-all">
-                      Mehr erfahren <ChevronRight className="w-4 h-4" />
-                    </span>
+      {/* News Carousel Section */}
+      {newsItems.length > 0 && (
+        <section className="py-6 bg-foreground/5 border-y border-border">
+          <div className="container-width">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 text-sm font-medium text-foreground shrink-0">
+                <Newspaper className="w-4 h-4" />
+                <span className="hidden sm:inline">Aktuelles</span>
+              </div>
+              
+              <div className="flex-1 relative overflow-hidden">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={currentNewsIndex}
+                    initial={{ opacity: 0, x: 50 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -50 }}
+                    transition={{ duration: 0.3 }}
+                    className="flex items-center gap-4"
+                  >
+                    {newsItems[currentNewsIndex] && (
+                      <Link 
+                        to={newsItems[currentNewsIndex].link_url || '/blog'}
+                        className="flex items-center gap-4 group flex-1 min-w-0"
+                      >
+                        {newsItems[currentNewsIndex].image_url && (
+                          <img 
+                            src={newsItems[currentNewsIndex].image_url} 
+                            alt={newsItems[currentNewsIndex].title}
+                            className="w-12 h-12 rounded-lg object-cover shrink-0"
+                          />
+                        )}
+                        <div className="min-w-0">
+                          <p className="font-medium text-foreground truncate group-hover:text-primary transition-colors">
+                            {newsItems[currentNewsIndex].title}
+                          </p>
+                          {newsItems[currentNewsIndex].subtitle && (
+                            <p className="text-xs text-muted-foreground truncate">
+                              {newsItems[currentNewsIndex].subtitle}
+                            </p>
+                          )}
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground shrink-0" />
+                      </Link>
+                    )}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+
+              {/* Navigation */}
+              {newsItems.length > 1 && (
+                <div className="flex items-center gap-2 shrink-0">
+                  <button 
+                    onClick={prevNews}
+                    className="p-1.5 rounded-full hover:bg-foreground/10 transition-colors"
+                    aria-label="Vorherige Nachricht"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  
+                  <div className="flex gap-1">
+                    {newsItems.map((_, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => goToNews(idx)}
+                        className={`w-2 h-2 rounded-full transition-colors ${
+                          idx === currentNewsIndex ? 'bg-foreground' : 'bg-foreground/30'
+                        }`}
+                        aria-label={`Nachricht ${idx + 1}`}
+                      />
+                    ))}
                   </div>
-                </Link>
-              </motion.div>
-            ))}
+                  
+                  <button 
+                    onClick={nextNews}
+                    className="p-1.5 rounded-full hover:bg-foreground/10 transition-colors"
+                    aria-label="Nächste Nachricht"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Categories Section */}
+      <section className="section-padding bg-background">
+        <div className="container-width">
+          <div className="text-center mb-12">
+            <motion.h2 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-3xl sm:text-4xl font-semibold text-foreground mb-4"
+            >
+              Entdecke unsere Welt
+            </motion.h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Von der Schwangerschaft bis zum Alltag – hier teilen wir unsere Erfahrungen als Zwillingsfamilie.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {CATEGORY_CARDS.map((card, index) => {
+              const IconComponent = card.icon;
+              return (
+                <motion.div
+                  key={card.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                >
+                  <Link to={card.link} className="block group h-full">
+                    <div className="relative p-8 rounded-2xl border border-border bg-card hover:bg-secondary/50 transition-all duration-300 h-full overflow-hidden">
+                      {/* Icon */}
+                      <div className="w-12 h-12 rounded-xl bg-foreground/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <IconComponent className="w-6 h-6 text-foreground" />
+                      </div>
+                      
+                      <h3 className="text-xl font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
+                        {card.title}
+                      </h3>
+                      <p className="text-muted-foreground text-sm mb-4">
+                        {card.description}
+                      </p>
+                      
+                      <span className="inline-flex items-center text-sm font-medium text-foreground group-hover:gap-2 transition-all">
+                        Entdecken <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                      </span>
+                    </div>
+                  </Link>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* Blog Section */}
+      {/* Blog Preview Section */}
       {blogPosts.length > 0 && (
-        <section className="section-padding bg-secondary/30" data-testid="blog-teaser-section">
+        <section className="section-padding bg-secondary/30">
           <div className="container-width">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl sm:text-4xl font-semibold text-foreground mb-4">
-                Neueste Tipps
-              </h2>
-              <p className="text-muted-foreground">
-                Aus unserem Familienleben
-              </p>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-12">
+              <div>
+                <motion.h2 
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  className="text-3xl sm:text-4xl font-semibold text-foreground mb-2"
+                >
+                  Aus dem Blog
+                </motion.h2>
+                <p className="text-muted-foreground">Aktuelle Beiträge und Erfahrungen</p>
+              </div>
+              <Link to="/blog" className="btn-ghost shrink-0">
+                Alle Beiträge <ArrowRight className="w-4 h-4" />
+              </Link>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -168,58 +330,79 @@ export default function Home() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
-                  className="group cursor-pointer"
-                  data-testid={`blog-post-${index}`}
+                  className="group"
                 >
-                  {post.image_url && (
-                    <div className="aspect-video rounded-xl overflow-hidden mb-4">
-                      <img
-                        src={post.image_url}
-                        alt={post.title}
-                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
+                  <Link to={`/blog/${post.id}`} className="block">
+                    {post.image_url && (
+                      <div className="aspect-[16/10] rounded-xl overflow-hidden mb-4">
+                        <img
+                          src={post.image_url}
+                          alt={post.title}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                      </div>
+                    )}
+                    
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="text-xs font-medium text-primary uppercase tracking-wide">
+                        {post.category}
+                      </span>
+                      {post.publish_date && (
+                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          {new Date(post.publish_date).toLocaleDateString('de-DE', { day: 'numeric', month: 'short' })}
+                        </span>
+                      )}
                     </div>
-                  )}
-                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                    {post.category}
-                  </span>
-                  <h3 className="text-lg font-semibold text-foreground mt-1 mb-2 group-hover:text-muted-foreground transition-colors">
-                    {post.title}
-                  </h3>
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {post.excerpt}
-                  </p>
+                    
+                    <h3 className="text-lg font-semibold text-foreground mb-2 group-hover:text-primary transition-colors line-clamp-2">
+                      {post.title}
+                    </h3>
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                      {post.excerpt}
+                    </p>
+                  </Link>
                 </motion.article>
               ))}
-            </div>
-
-            <div className="text-center mt-12">
-              <Link to="/tipps" className="btn-ghost" data-testid="view-all-tips">
-                Alle Tipps <ChevronRight className="w-4 h-4" />
-              </Link>
             </div>
           </div>
         </section>
       )}
 
-      {/* CTA Section */}
-      <section className="section-padding bg-background">
-        <div className="container-width text-center">
-          <h2 className="text-3xl sm:text-4xl font-semibold text-foreground mb-4">
-            {settings.ctaTitle || 'Projekt unterstützen'}
-          </h2>
-          <p className="text-muted-foreground mb-8 max-w-md mx-auto">
-            {settings.ctaDescription || 'Die Kunst bringt Freude, Einnahmen bleiben 100% in der Familie.'}
-          </p>
-          <a
-            href={settings.paypalLink || 'https://paypal.me/gltzfamily'}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-primary"
-            data-testid="paypal-cta"
+      {/* Support CTA Section */}
+      <section className="section-padding bg-gradient-to-b from-background to-secondary/20">
+        <div className="container-width">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="max-w-2xl mx-auto text-center"
           >
-            {settings.ctaButtonText || 'Unterstützen'}
-          </a>
+            <div className="w-16 h-16 rounded-2xl bg-foreground/10 flex items-center justify-center mx-auto mb-6">
+              <Heart className="w-8 h-8 text-foreground" />
+            </div>
+            
+            <h2 className="text-3xl sm:text-4xl font-semibold text-foreground mb-4">
+              {settings.ctaTitle || 'Projekt unterstützen'}
+            </h2>
+            <p className="text-muted-foreground mb-8 leading-relaxed">
+              {settings.ctaDescription || 'Unsere Inhalte sind kostenlos und werden es bleiben. Wenn dir unsere Tipps helfen, freuen wir uns über eine kleine Unterstützung.'}
+            </p>
+            
+            <a
+              href={settings.paypalLink || 'https://paypal.me/gltzfamily'}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-primary inline-flex"
+            >
+              <Heart className="w-4 h-4 mr-2" />
+              {settings.ctaButtonText || 'Unterstützen'}
+            </a>
+            
+            <p className="text-xs text-muted-foreground mt-4">
+              {settings.donationDisclaimer || '100% freiwillig – keine Gegenleistung'}
+            </p>
+          </motion.div>
         </div>
       </section>
     </main>
