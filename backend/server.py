@@ -245,6 +245,22 @@ class DatenschutzContent(BaseModel):
     last_updated: str = "Dezember 2025"
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+# Cookies Page Content Model
+class CookiesContent(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    intro_text: str = "Diese Website verwendet Cookies, um dir die bestmögliche Nutzererfahrung zu bieten. Hier erfährst du, welche Cookies wir verwenden und wie du sie verwalten kannst."
+    what_are_cookies: str = "Cookies sind kleine Textdateien, die auf deinem Gerät gespeichert werden, wenn du eine Website besuchst. Sie helfen der Website, sich bestimmte Informationen zu merken."
+    types_essential: str = "Technisch notwendige Cookies sind für den Betrieb der Website erforderlich. Sie ermöglichen grundlegende Funktionen wie die Seitennavigation und den Zugang zu gesicherten Bereichen."
+    types_functional: str = "Funktionale Cookies ermöglichen es der Website, sich an deine Einstellungen zu erinnern, wie z.B. die Sprachauswahl oder die Theme-Einstellung (Hell/Dunkel-Modus)."
+    types_analytics: str = "Analyse-Cookies helfen uns zu verstehen, wie Besucher mit der Website interagieren. Wir verwenden derzeit KEINE Analyse-Cookies."
+    types_marketing: str = "Marketing-Cookies werden verwendet, um Besucher über Websites hinweg zu verfolgen. Wir verwenden KEINE Marketing- oder Werbe-Cookies."
+    our_cookies: str = "Wir verwenden ausschließlich technisch notwendige und funktionale Cookies: cookie-consent (speichert deine Cookie-Einwilligung), theme (speichert deine Theme-Einstellung)."
+    manage_cookies: str = "Du kannst Cookies in deinem Browser jederzeit löschen oder blockieren. Beachte jedoch, dass das Blockieren bestimmter Cookies die Funktionalität der Website beeinträchtigen kann."
+    browser_settings: str = "In den Einstellungen deines Browsers kannst du Cookies verwalten: Chrome: Einstellungen → Datenschutz und Sicherheit → Cookies. Firefox: Einstellungen → Datenschutz & Sicherheit. Safari: Einstellungen → Datenschutz. Edge: Einstellungen → Datenschutz, Suche und Dienste."
+    contact_email: str = "gltz.de@gmail.com"
+    last_updated: str = "Januar 2025"
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
 # ============== Auth Helpers ==============
 
 DEFAULT_PASSWORD = "gltz2025"  # Default password, should be changed
