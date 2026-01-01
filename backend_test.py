@@ -345,6 +345,7 @@ class GltzAdminAPITester:
         self.test_navigation_management()  # Add navigation-specific tests
         self.test_posts_with_publish_date_and_trash()  # Test posts with publish_date and trash
         self.test_pages_soft_delete_and_restore()  # Test pages soft delete and restore
+        self.test_legal_pages_content()  # Test new Impressum and Datenschutz endpoints
         
         # Print summary
         print("\n" + "=" * 50)
