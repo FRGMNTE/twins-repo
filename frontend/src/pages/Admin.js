@@ -225,7 +225,7 @@ export default function Admin() {
 
   const fetchAllData = async (t) => {
     try {
-      const [statsRes, pagesRes, galleryRes, contactsRes, postsRes, settingsRes, newsRes, impressumRes, datenschutzRes, cookiesRes, staticPagesRes] = await Promise.all([
+      const [statsRes, pagesRes, galleryRes, contactsRes, postsRes, settingsRes, newsRes, impressumRes, datenschutzRes, cookiesRes, staticPagesRes, landingRes] = await Promise.all([
         axios.get(`${API}/admin/stats?token=${t}`),
         axios.get(`${API}/admin/pages?token=${t}`),
         axios.get(`${API}/admin/gallery?token=${t}`),
