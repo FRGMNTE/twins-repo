@@ -15,6 +15,7 @@ import BabyAlltag from './pages/BabyAlltag';
 import Tipps from './pages/Tipps';
 import Reisen from './pages/Reisen';
 import Blog from './pages/Blog';
+import BlogPost from './pages/BlogPost';
 import Suchen from './pages/Suchen';
 import Spende from './pages/Spende';
 import TwinsArt from './pages/TwinsArt';
@@ -38,6 +39,7 @@ function App() {
               <Route path="/tipps" element={<Tipps />} />
               <Route path="/reisen" element={<Reisen />} />
               <Route path="/blog" element={<Blog />} />
+              <Route path="/blog/:id" element={<BlogPost />} />
               <Route path="/suchen" element={<Suchen />} />
               <Route path="/spende" element={<Spende />} />
               <Route path="/twins-art" element={<TwinsArt />} />
