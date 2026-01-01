@@ -153,7 +153,7 @@ export default function Home() {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="text-base text-muted-foreground mb-12 max-w-2xl mx-auto leading-relaxed"
           >
-            {settings.heroDescription || 'Anonyme Tipps, ehrliche Erfahrungen und kreative Momente – von einer Familie für Familien.'}
+            {lc.hero_description || settings.heroDescription || 'Anonyme Tipps, ehrliche Erfahrungen und kreative Momente – von einer Familie für Familien.'}
           </motion.p>
 
           <motion.div
@@ -162,13 +162,20 @@ export default function Home() {
             transition={{ duration: 0.6, delay: 0.4 }}
             className="flex flex-col sm:flex-row gap-4 justify-center"
           >
-            <Link to="/ueber-uns" className="btn-primary group">
-              Uns kennenlernen
+            <Link to={lc.hero_cta_link || "/ueber-uns"} className="btn-primary group">
+              {lc.hero_cta_text || "Uns kennenlernen"}
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
-            <Link to="/blog" className="btn-secondary">
-              Blog lesen
-            </Link>
+            {lc.hero_secondary_cta_text && (
+              <Link to={lc.hero_secondary_cta_link || "/blog"} className="btn-secondary">
+                {lc.hero_secondary_cta_text}
+              </Link>
+            )}
+            {!lc.hero_secondary_cta_text && (
+              <Link to="/blog" className="btn-secondary">
+                Blog lesen
+              </Link>
+            )}
           </motion.div>
         </div>
 
