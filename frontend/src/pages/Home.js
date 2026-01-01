@@ -71,26 +71,49 @@ export default function Home() {
     setCurrentNewsIndex(index);
   }, []);
 
+  // Landing content values with fallbacks
+  const lc = landingContent || {};
+  const heroEnabled = lc.hero_enabled !== false;
+  const featuresEnabled = lc.features_enabled !== false;
+  const newsEnabled = lc.news_enabled !== false;
+  const categoriesEnabled = lc.categories_enabled !== false;
+  const blogEnabled = lc.blog_enabled !== false;
+  const ctaEnabled = lc.cta_enabled !== false;
+
   return (
     <main id="main-content">
       {/* Hero Section - Professional Design */}
+      {heroEnabled && (
       <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
-        {/* Background with Parallax Effect */}
+        {/* Background with Parallax Effect or Video */}
         <div className="absolute inset-0">
-          {theme === 'dark' ? (
+          {lc.hero_background_type === 'video' && lc.hero_background_url ? (
+            <video 
+              className="absolute inset-0 w-full h-full object-cover"
+              autoPlay={lc.hero_video_autoplay !== false}
+              loop={lc.hero_video_loop !== false}
+              muted={lc.hero_video_muted !== false}
+              playsInline
+            >
+              <source src={lc.hero_background_url} type="video/mp4" />
+            </video>
+          ) : theme === 'dark' ? (
             <div 
               className="absolute inset-0 bg-cover bg-center bg-fixed"
-              style={{ backgroundImage: `url(${settings.darkBackground || 'https://images.unsplash.com/photo-1516572704891-60b47497c7b5?w=1920'})` }}
+              style={{ backgroundImage: `url(${lc.hero_background_type === 'image' && lc.hero_background_url ? lc.hero_background_url : (settings.darkBackground || 'https://images.unsplash.com/photo-1516572704891-60b47497c7b5?w=1920')})` }}
             >
               <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/60 to-background" />
             </div>
           ) : (
             <div 
               className="absolute inset-0 bg-cover bg-center bg-fixed"
-              style={{ backgroundImage: `url(${settings.lightBackground || 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920'})` }}
+              style={{ backgroundImage: `url(${lc.hero_background_type === 'image' && lc.hero_background_url ? lc.hero_background_url : (settings.lightBackground || 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920')})` }}
             >
               <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/50 to-background" />
             </div>
+          )}
+          {lc.hero_background_type === 'video' && (
+            <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/40 to-background" />
           )}
         </div>
 
@@ -103,7 +126,7 @@ export default function Home() {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-foreground/10 backdrop-blur-sm border border-foreground/20 text-sm text-foreground mb-8"
           >
             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            Willkommen bei unserer Familie
+            {lc.hero_label || settings.heroLabel || 'Willkommen bei unserer Familie'}
           </motion.div>
 
           <motion.h1
@@ -112,7 +135,7 @@ export default function Home() {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="text-5xl sm:text-6xl lg:text-8xl font-bold text-foreground mb-6 tracking-tight"
           >
-            {settings.heroTitle || 'gltz.de'}
+            {lc.hero_title || settings.heroTitle || 'gltz.de'}
           </motion.h1>
 
           <motion.p
@@ -121,7 +144,7 @@ export default function Home() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-xl sm:text-2xl text-muted-foreground mb-4 font-light"
           >
-            {settings.heroSubtitle || 'Unsere Reise mit Zwillingen'}
+            {lc.hero_subtitle || settings.heroSubtitle || 'Unsere Reise mit Zwillingen'}
           </motion.p>
 
           <motion.p
