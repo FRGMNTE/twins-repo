@@ -1341,6 +1341,88 @@ async def get_public_gallery():
         result.append(img)
     return result
 
+# ============== Search ==============
+
+@api_router.get("/search")
+async def search_content(q: str):
+    """Search across all content: pages, blog posts, gallery, and static pages"""
+    if not q or len(q) < 2:
+        return {"pages": [], "posts": [], "gallery": [], "static_pages": []}
+    
+    query_lower = q.lower()
+    
+    # Search in dynamic pages (created in admin)
+    pages = await db.pages.find({"status": "live"}, {"_id": 0}).to_list(100)
+    filtered_pages = [
+        p for p in pages 
+        if query_lower in p.get('title', '').lower() or 
+           query_lower in p.get('content', '').lower() or
+           query_lower in p.get('slug', '').lower()
+    ]
+    
+    # Search in blog posts
+    posts = await db.blog_posts.find({"status": "live"}, {"_id": 0}).to_list(100)
+    filtered_posts = [
+        p for p in posts 
+        if query_lower in p.get('title', '').lower() or 
+           query_lower in p.get('excerpt', '').lower() or
+           query_lower in p.get('category', '').lower() or
+           query_lower in p.get('content', '').lower()
+    ]
+    
+    # Search in gallery
+    images = await db.gallery_images.find({}, {"_id": 0}).to_list(100)
+    filtered_gallery = [
+        g for g in images 
+        if query_lower in g.get('title', '').lower() or 
+           any(query_lower in t.lower() for t in g.get('tags', []))
+    ]
+    
+    # Search in static pages (schwangerschaft, baby-alltag, tipps, etc.)
+    static_pages_db = await db.static_pages.find({}, {"_id": 0}).to_list(100)
+    
+    # Also include default static pages that might not be in DB yet
+    static_page_defaults = [
+        {"page_id": "schwangerschaft", "title": "Schwangerschaft", "hero_title": "Zwillings-Schwangerschaft", "hero_description": "Eine Zwillingsschwangerschaft ist besonders", "path": "/schwangerschaft"},
+        {"page_id": "baby-alltag", "title": "Baby-Alltag", "hero_title": "Leben mit Zwillingen", "hero_description": "Der Alltag mit zwei Babys ist intensiv", "path": "/baby-alltag"},
+        {"page_id": "tipps", "title": "Tipps & Tricks", "hero_title": "Praktische Ratschläge", "hero_description": "Gesammelte Weisheiten aus unserem Alltag", "path": "/tipps"},
+        {"page_id": "reisen", "title": "Reisen", "hero_title": "Unterwegs mit Zwillingen", "hero_description": "Reisen mit zwei kleinen Kindern", "path": "/reisen"},
+        {"page_id": "ueber-uns", "title": "Über uns", "hero_title": "Unsere Geschichte", "hero_description": "Wir sind eine junge Familie", "path": "/ueber-uns"},
+        {"page_id": "spende", "title": "Spende", "hero_title": "Projekt unterstützen", "hero_description": "Mit deiner Unterstützung", "path": "/spende"},
+    ]
+    
+    # Merge DB pages with defaults
+    static_pages_merged = {p['page_id']: p for p in static_page_defaults}
+    for p in static_pages_db:
+        static_pages_merged[p['page_id']] = {**static_pages_merged.get(p['page_id'], {}), **p}
+    
+    filtered_static = []
+    for page in static_pages_merged.values():
+        searchable_text = f"{page.get('title', '')} {page.get('hero_title', '')} {page.get('hero_description', '')} {page.get('hero_label', '')}".lower()
+        # Also search in sections
+        for section in page.get('sections', []):
+            searchable_text += f" {section.get('title', '')} {section.get('description', '')} {section.get('subtitle', '')}".lower()
+            for item in section.get('items', []):
+                if isinstance(item, str):
+                    searchable_text += f" {item}".lower()
+                elif isinstance(item, dict):
+                    searchable_text += f" {item.get('title', '')} {item.get('content', '')}".lower()
+        
+        if query_lower in searchable_text:
+            filtered_static.append({
+                "page_id": page.get('page_id'),
+                "title": page.get('hero_title') or page.get('title', ''),
+                "description": page.get('hero_description', ''),
+                "path": page.get('path', f"/{page.get('page_id', '')}")
+            })
+    
+    return {
+        "pages": filtered_pages,
+        "posts": filtered_posts,
+        "gallery": filtered_gallery,
+        "static_pages": filtered_static
+    }
+
 # ============== Public Blog ==============
 
 @api_router.get("/blog")
