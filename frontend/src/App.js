@@ -9,6 +9,15 @@ import Home from './pages/Home';
 import Kontakt from './pages/Kontakt';
 import Admin from './pages/Admin';
 import DynamicPage from './pages/DynamicPage';
+import UeberUns from './pages/UeberUns';
+import Schwangerschaft from './pages/Schwangerschaft';
+import BabyAlltag from './pages/BabyAlltag';
+import Tipps from './pages/Tipps';
+import Reisen from './pages/Reisen';
+import Blog from './pages/Blog';
+import Suchen from './pages/Suchen';
+import Spende from './pages/Spende';
+import TwinsArt from './pages/TwinsArt';
 import './App.css';
 
 function App() {
@@ -20,9 +29,19 @@ function App() {
             <Navigation />
             <Routes>
               <Route path="/" element={<Home />} />
+              <Route path="/ueber-uns" element={<UeberUns />} />
+              <Route path="/schwangerschaft" element={<Schwangerschaft />} />
+              <Route path="/baby-alltag" element={<BabyAlltag />} />
+              <Route path="/tipps" element={<Tipps />} />
+              <Route path="/reisen" element={<Reisen />} />
+              <Route path="/blog" element={<Blog />} />
+              <Route path="/suchen" element={<Suchen />} />
+              <Route path="/spende" element={<Spende />} />
+              <Route path="/twins-art" element={<TwinsArt />} />
+              <Route path="/mo-portfolio" element={<TwinsArt />} />
               <Route path="/kontakt" element={<Kontakt />} />
               <Route path="/admin" element={<Admin />} />
-              {/* All other pages are dynamic from database */}
+              {/* Dynamic pages from database (impressum, datenschutz, etc.) */}
               <Route path="/:slug" element={<DynamicPage />} />
             </Routes>
             <Footer />
