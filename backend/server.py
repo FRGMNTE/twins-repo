@@ -887,6 +887,74 @@ async def update_legal_text(text_type: str, token: str, content: str):
     )
     return {"success": True}
 
+# ============== Structured Page Content (Impressum, Datenschutz) ==============
+
+@api_router.get("/page-content/impressum")
+async def get_impressum_content():
+    """Get impressum content for public display"""
+    content = await db.page_content.find_one({"type": "impressum"}, {"_id": 0})
+    if content:
+        return content
+    return ImpressumContent().model_dump()
+
+@api_router.get("/admin/page-content/impressum")
+async def get_admin_impressum_content(token: str):
+    if not await verify_admin_session(token):
+        raise HTTPException(status_code=401, detail="Nicht autorisiert")
+    content = await db.page_content.find_one({"type": "impressum"}, {"_id": 0})
+    if content:
+        return content
+    return ImpressumContent().model_dump()
+
+@api_router.put("/admin/page-content/impressum")
+async def update_impressum_content(content: ImpressumContent, token: str):
+    if not await verify_admin_session(token):
+        raise HTTPException(status_code=401, detail="Nicht autorisiert")
+    
+    content_dict = content.model_dump()
+    content_dict["type"] = "impressum"
+    content_dict["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    await db.page_content.update_one(
+        {"type": "impressum"},
+        {"$set": content_dict},
+        upsert=True
+    )
+    return {"success": True}
+
+@api_router.get("/page-content/datenschutz")
+async def get_datenschutz_content():
+    """Get datenschutz content for public display"""
+    content = await db.page_content.find_one({"type": "datenschutz"}, {"_id": 0})
+    if content:
+        return content
+    return DatenschutzContent().model_dump()
+
+@api_router.get("/admin/page-content/datenschutz")
+async def get_admin_datenschutz_content(token: str):
+    if not await verify_admin_session(token):
+        raise HTTPException(status_code=401, detail="Nicht autorisiert")
+    content = await db.page_content.find_one({"type": "datenschutz"}, {"_id": 0})
+    if content:
+        return content
+    return DatenschutzContent().model_dump()
+
+@api_router.put("/admin/page-content/datenschutz")
+async def update_datenschutz_content(content: DatenschutzContent, token: str):
+    if not await verify_admin_session(token):
+        raise HTTPException(status_code=401, detail="Nicht autorisiert")
+    
+    content_dict = content.model_dump()
+    content_dict["type"] = "datenschutz"
+    content_dict["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    await db.page_content.update_one(
+        {"type": "datenschutz"},
+        {"$set": content_dict},
+        upsert=True
+    )
+    return {"success": True}
+
 # ============== Site Settings ==============
 
 @api_router.get("/settings", response_model=SiteSettings)
