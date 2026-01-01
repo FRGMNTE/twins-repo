@@ -429,3 +429,43 @@ agent_communication:
       
       📋 DYNAMIC PAGES SYSTEM STATUS: Fully operational and production-ready
       🎯 RECOMMENDATION: System is complete and working as specified
+  - agent: "main"
+    message: |
+      🔧 NEW FEATURES IMPLEMENTED - IMPRESSUM & DATENSCHUTZ REDESIGN
+      
+      ## CHANGES MADE:
+      
+      1. BACKEND API ADDITIONS:
+         - NEW: GET /api/page-content/impressum - Public endpoint for impressum content
+         - NEW: GET /api/page-content/datenschutz - Public endpoint for datenschutz content  
+         - NEW: GET /api/admin/page-content/impressum - Admin endpoint to fetch impressum
+         - NEW: GET /api/admin/page-content/datenschutz - Admin endpoint to fetch datenschutz
+         - NEW: PUT /api/admin/page-content/impressum - Admin endpoint to update impressum
+         - NEW: PUT /api/admin/page-content/datenschutz - Admin endpoint to update datenschutz
+         - NEW: ImpressumContent and DatenschutzContent Pydantic models
+      
+      2. FRONTEND CHANGES:
+         - REDESIGNED: /app/frontend/src/pages/Impressum.js - Professional design matching Schwangerschaft page
+         - REDESIGNED: /app/frontend/src/pages/Datenschutz.js - Professional design matching Schwangerschaft page
+         - NEW: "Rechtliches" tab in Admin panel for editing Impressum & Datenschutz content
+         - FIXED: Routes for /impressum and /datenschutz added to App.js
+         - Both pages now load content from database via API
+      
+      3. ADMIN PANEL:
+         - New "Rechtliches" sidebar tab
+         - Impressum editor with fields: Provider info, responsible person, legal texts
+         - Datenschutz editor with fields: Responsible person, all privacy policy sections
+         - Preview links to view changes
+         - Save functionality tested and working
+      
+      ## SCREENSHOTS VERIFIED:
+         ✅ Impressum page shows professional design with hero section and card layout
+         ✅ Datenschutz page shows professional design with hero section and card layout
+         ✅ Admin "Rechtliches" tab shows Impressum form fields
+         ✅ Admin Datenschutz tab shows privacy policy form fields
+         ✅ Content saves and loads correctly from database
+      
+      ## NEEDS TESTING:
+         - Full E2E testing of the new Impressum and Datenschutz pages
+         - Admin Rechtliches section functionality
+         - Save/Load cycle for both Impressum and Datenschutz content
