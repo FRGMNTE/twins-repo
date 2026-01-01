@@ -1226,6 +1226,13 @@ async def get_public_blog(limit: int = 10):
         result.append(p)
     return result
 
+@api_router.get("/blog/{post_id}")
+async def get_blog_post(post_id: str):
+    post = await db.blog_posts.find_one({"id": post_id, "status": "live"}, {"_id": 0})
+    if not post:
+        raise HTTPException(status_code=404, detail="Beitrag nicht gefunden")
+    return post
+
 # ============== Seed Data ==============
 
 @api_router.post("/seed")
