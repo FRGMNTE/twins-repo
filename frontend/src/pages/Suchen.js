@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Search as SearchIcon, FileText, Layers, Image, ArrowRight, X } from 'lucide-react';
+import { Search as SearchIcon, FileText, Layers, Image, X, FolderOpen } from 'lucide-react';
 import axios from 'axios';
 import { Input } from '../components/ui/input';
 
@@ -9,13 +9,13 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function Suchen() {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState({ pages: [], posts: [], gallery: [] });
+  const [results, setResults] = useState({ pages: [], posts: [], gallery: [], static_pages: [] });
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
 
   useEffect(() => {
-    if (!query.trim()) {
-      setResults({ pages: [], posts: [], gallery: [] });
+    if (!query.trim() || query.trim().length < 2) {
+      setResults({ pages: [], posts: [], gallery: [], static_pages: [] });
       setHasSearched(false);
       return;
     }
@@ -24,37 +24,11 @@ export default function Suchen() {
       setLoading(true);
       setHasSearched(true);
       try {
-        const [pagesRes, postsRes, galleryRes] = await Promise.all([
-          axios.get(`${API}/pages`),
-          axios.get(`${API}/blog`),
-          axios.get(`${API}/gallery`)
-        ]);
-
-        const q = query.toLowerCase();
-        
-        const filteredPages = pagesRes.data.filter(p => 
-          p.title.toLowerCase().includes(q) || 
-          (p.content && p.content.toLowerCase().includes(q))
-        );
-        
-        const filteredPosts = postsRes.data.filter(p => 
-          p.title.toLowerCase().includes(q) || 
-          p.excerpt.toLowerCase().includes(q) ||
-          p.category.toLowerCase().includes(q)
-        );
-        
-        const filteredGallery = galleryRes.data.filter(g => 
-          g.title.toLowerCase().includes(q) || 
-          (g.tags && g.tags.some(t => t.toLowerCase().includes(q)))
-        );
-
-        setResults({
-          pages: filteredPages,
-          posts: filteredPosts,
-          gallery: filteredGallery
-        });
+        const res = await axios.get(`${API}/search?q=${encodeURIComponent(query.trim())}`);
+        setResults(res.data);
       } catch (error) {
         console.error('Search error:', error);
+        setResults({ pages: [], posts: [], gallery: [], static_pages: [] });
       } finally {
         setLoading(false);
       }
@@ -63,7 +37,7 @@ export default function Suchen() {
     return () => clearTimeout(timer);
   }, [query]);
 
-  const totalResults = results.pages.length + results.posts.length + results.gallery.length;
+  const totalResults = results.pages.length + results.posts.length + results.gallery.length + results.static_pages.length;
 
   return (
     <main id="main-content" className="min-h-screen pt-20">
@@ -101,7 +75,13 @@ export default function Suchen() {
               )}
             </div>
             
-            {hasSearched && (
+            {query.trim().length === 1 && (
+              <p className="text-sm text-muted-foreground mt-4">
+                Bitte mindestens 2 Zeichen eingeben.
+              </p>
+            )}
+            
+            {hasSearched && query.trim().length >= 2 && (
               <p className="text-sm text-muted-foreground mt-4">
                 {loading ? 'Suche...' : `${totalResults} Ergebnis${totalResults !== 1 ? 'se' : ''} gefunden`}
               </p>
@@ -121,10 +101,33 @@ export default function Suchen() {
           ) : totalResults === 0 && !loading ? (
             <div className="text-center py-12">
               <p className="text-muted-foreground">Keine Ergebnisse für "{query}" gefunden.</p>
+              <p className="text-sm text-muted-foreground mt-2">Versuche einen anderen Suchbegriff.</p>
             </div>
           ) : (
             <div className="space-y-12">
-              {/* Pages */}
+              {/* Static Pages (Schwangerschaft, Alltag, etc.) */}
+              {results.static_pages.length > 0 && (
+                <div>
+                  <h2 className="flex items-center gap-2 text-lg font-semibold text-foreground mb-4">
+                    <FolderOpen className="w-5 h-5" /> Themenseiten ({results.static_pages.length})
+                  </h2>
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {results.static_pages.map((page) => (
+                      <Link
+                        key={page.page_id}
+                        to={page.path}
+                        className="p-5 rounded-xl border border-border hover:bg-secondary/50 hover:border-primary/30 transition-all group"
+                      >
+                        <h3 className="font-semibold text-foreground group-hover:text-primary mb-1">{page.title}</h3>
+                        <p className="text-sm text-muted-foreground line-clamp-2">{page.description}</p>
+                        <span className="text-xs text-primary mt-2 inline-block">{page.path}</span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Dynamic Pages */}
               {results.pages.length > 0 && (
                 <div>
                   <h2 className="flex items-center gap-2 text-lg font-semibold text-foreground mb-4">
@@ -160,7 +163,7 @@ export default function Suchen() {
                       >
                         {post.image_url && (
                           <div className="aspect-video rounded-xl overflow-hidden mb-3">
-                            <img src={post.image_url} alt={post.title} className="w-full h-full object-cover" />
+                            <img src={post.image_url} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                           </div>
                         )}
                         <span className="text-xs text-primary font-medium">{post.category}</span>
