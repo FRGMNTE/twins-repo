@@ -608,6 +608,7 @@ export default function Admin() {
                 { id: 'news', icon: Newspaper, label: 'Nachrichten', badge: newsItems.filter(n => n.status === 'live').length },
                 { id: 'navigation', icon: Menu, label: 'Navigation' },
                 { id: 'pages', icon: FileText, label: 'Seiten' },
+                { id: 'static-pages', icon: Layers, label: 'Seiten-Inhalte' },
                 { id: 'legal', icon: Shield, label: 'Rechtliches' },
                 { id: 'gallery', icon: Image, label: 'Galerie' },
                 { id: 'contacts', icon: Mail, label: 'Kontakte', badge: stats.unread_contacts },
