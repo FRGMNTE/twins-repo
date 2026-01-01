@@ -18,6 +18,8 @@ import Blog from './pages/Blog';
 import Suchen from './pages/Suchen';
 import Spende from './pages/Spende';
 import TwinsArt from './pages/TwinsArt';
+import Impressum from './pages/Impressum';
+import Datenschutz from './pages/Datenschutz';
 import './App.css';
 
 function App() {
@@ -40,8 +42,10 @@ function App() {
               <Route path="/twins-art" element={<TwinsArt />} />
               <Route path="/mo-portfolio" element={<TwinsArt />} />
               <Route path="/kontakt" element={<Kontakt />} />
+              <Route path="/impressum" element={<Impressum />} />
+              <Route path="/datenschutz" element={<Datenschutz />} />
               <Route path="/admin" element={<Admin />} />
-              {/* Dynamic pages from database (impressum, datenschutz, etc.) */}
+              {/* Dynamic pages from database */}
               <Route path="/:slug" element={<DynamicPage />} />
             </Routes>
             <Footer />
