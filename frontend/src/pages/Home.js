@@ -322,8 +322,65 @@ export default function Home() {
               </Link>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {blogPosts.map((post, index) => (
+            {/* Featured Latest Post */}
+            {blogPosts[0] && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="mb-12"
+              >
+                <Link to={`/blog/${blogPosts[0].id}`} className="group block">
+                  <div className="grid md:grid-cols-2 gap-8 p-6 rounded-2xl border border-border bg-card hover:border-primary/50 transition-colors">
+                    {blogPosts[0].image_url && (
+                      <div className="aspect-[16/10] rounded-xl overflow-hidden">
+                        <img
+                          src={blogPosts[0].image_url}
+                          alt={blogPosts[0].title}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                      </div>
+                    )}
+                    <div className="flex flex-col justify-center">
+                      <span className="inline-flex items-center gap-2 text-xs font-medium text-primary uppercase tracking-wide mb-3">
+                        <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                        Neuester Beitrag
+                      </span>
+                      <h3 className="text-2xl sm:text-3xl font-semibold text-foreground mb-4 group-hover:text-primary transition-colors">
+                        {blogPosts[0].title}
+                      </h3>
+                      {blogPosts[0].excerpt && (
+                        <p className="text-muted-foreground mb-4 line-clamp-3">
+                          {blogPosts[0].excerpt}
+                        </p>
+                      )}
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
+                        {blogPosts[0].category && (
+                          <span className="flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                            {blogPosts[0].category}
+                          </span>
+                        )}
+                        {blogPosts[0].publish_date && (
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            {new Date(blogPosts[0].publish_date).toLocaleDateString('de-DE')}
+                          </span>
+                        )}
+                      </div>
+                      <span className="inline-flex items-center text-sm font-medium text-foreground group-hover:text-primary">
+                        Weiterlesen <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              </motion.div>
+            )}
+
+            {/* Other Posts Grid */}
+            {blogPosts.length > 1 && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {blogPosts.slice(1).map((post, index) => (
                 <motion.article
                   key={post.id}
                   initial={{ opacity: 0, y: 20 }}
