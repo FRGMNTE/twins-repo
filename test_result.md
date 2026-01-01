@@ -206,6 +206,54 @@ backend:
         agent: "testing"
         comment: "✅ TESTED: All new legal pages endpoints working perfectly. Public endpoints GET /api/page-content/impressum and GET /api/page-content/datenschutz return structured content. Admin endpoints with token authentication working: GET/PUT /api/admin/page-content/impressum and GET/PUT /api/admin/page-content/datenschutz. All required fields present, data persistence verified, security working (401 for invalid tokens). 12/12 tests passed."
 
+  - task: "Impressum Page - Professional design with hero section and card layout"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/Impressum.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: Impressum page fully operational with professional design. Hero section shows 'RECHTLICHES' label and 'Impressum' title. All 6 card sections present: Angaben zum Anbieter, Verantwortlich für den Inhalt, Haftung für Inhalte, Haftung für Links, Urheberrecht, Streitschlichtung. Icons in headers, clickable phone/email links, gradient background, responsive design. Design consistency with Schwangerschaft page confirmed."
+
+  - task: "Datenschutz Page - Professional design with numbered sections and rights grid"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/Datenschutz.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: Datenschutz page fully operational with professional design. Hero section shows 'DATENSCHUTZ' label and 'Datenschutzerklärung' title. All 6 numbered sections (1-6) present, rights grid with 6 user rights, PayPal notice with special highlighting, 'Stand' date at bottom. 16 icons found, card-based layout, design consistency with Schwangerschaft page confirmed."
+
+  - task: "Admin Rechtliches Section - Edit functionality for Impressum and Datenschutz"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/Admin.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: Admin 'Rechtliches' section fully functional. Login with 'gltz2025' successful, Rechtliches tab accessible in sidebar. Impressum tab: provider name field, liability content field, save button, preview link all working. Datenschutz tab: responsible name field, intro text field, save button, preview link all working. Changes persist and appear on public pages immediately."
+
+  - task: "Footer Navigation Links - Impressum and Datenschutz links"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/Footer.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: Footer navigation links working correctly. RECHTLICHES section in footer contains working links to /impressum and /datenschutz. Both links navigate correctly and load page content without errors. Footer integration complete."
+
   - task: "API - Trash endpoints (restore, permanent delete, empty trash)"
     implemented: true
     working: true
