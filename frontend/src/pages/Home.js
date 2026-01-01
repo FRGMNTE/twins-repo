@@ -20,6 +20,7 @@ const CATEGORY_CARDS = [
 export default function Home() {
   const [blogPosts, setBlogPosts] = useState([]);
   const [newsItems, setNewsItems] = useState([]);
+  const [landingContent, setLandingContent] = useState(null);
   const [currentNewsIndex, setCurrentNewsIndex] = useState(0);
   const { theme } = useTheme();
   const { settings } = useSiteSettings();
@@ -29,12 +30,16 @@ export default function Home() {
     const fetchData = async () => {
       try {
         await axios.post(`${API}/seed`);
-        const [blogRes, newsRes] = await Promise.all([
-          axios.get(`${API}/blog?limit=3`),
-          axios.get(`${API}/news`)
+        const [blogRes, newsRes, landingRes] = await Promise.all([
+          axios.get(`${API}/blog?limit=4`),
+          axios.get(`${API}/news`),
+          axios.get(`${API}/landing-content`).catch(() => ({ data: null }))
         ]);
         setBlogPosts(blogRes.data);
         setNewsItems(newsRes.data);
+        if (landingRes.data) {
+          setLandingContent(landingRes.data);
+        }
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -42,16 +47,17 @@ export default function Home() {
     fetchData();
   }, []);
 
-  // News carousel auto-advance (10 seconds)
+  // News carousel auto-advance
   useEffect(() => {
     if (newsItems.length <= 1) return;
+    const interval = landingContent?.news_autoplay_interval || 10;
     
     const timer = setInterval(() => {
       setCurrentNewsIndex((prev) => (prev + 1) % newsItems.length);
-    }, 10000);
+    }, interval * 1000);
 
     return () => clearInterval(timer);
-  }, [newsItems.length]);
+  }, [newsItems.length, landingContent?.news_autoplay_interval]);
 
   const nextNews = useCallback(() => {
     setCurrentNewsIndex((prev) => (prev + 1) % newsItems.length);
