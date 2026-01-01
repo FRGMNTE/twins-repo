@@ -20,6 +20,7 @@ import Spende from './pages/Spende';
 import TwinsArt from './pages/TwinsArt';
 import Impressum from './pages/Impressum';
 import Datenschutz from './pages/Datenschutz';
+import Cookies from './pages/Cookies';
 import './App.css';
 
 function App() {
@@ -44,6 +45,7 @@ function App() {
               <Route path="/kontakt" element={<Kontakt />} />
               <Route path="/impressum" element={<Impressum />} />
               <Route path="/datenschutz" element={<Datenschutz />} />
+              <Route path="/cookies" element={<Cookies />} />
               <Route path="/admin" element={<Admin />} />
               {/* Dynamic pages from database */}
               <Route path="/:slug" element={<DynamicPage />} />
