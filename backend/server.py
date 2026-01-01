@@ -208,6 +208,43 @@ class LegalText(BaseModel):
     content: str
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+# Structured Page Content Models for editable design pages
+class ImpressumContent(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    # Provider info
+    provider_name: str = "John D. Gold"
+    provider_street: str = "Schützenstraße 38"
+    provider_city: str = "47829 Krefeld"
+    provider_country: str = "Deutschland"
+    provider_phone: str = "01575 731 2560"
+    provider_email: str = "gltz.de@gmail.com"
+    # Responsible person
+    responsible_name: str = "John D. Gold"
+    responsible_address: str = "Schützenstraße 38, 47829 Krefeld"
+    # Legal texts
+    liability_content: str = "Die Inhalte unserer Seiten wurden mit größter Sorgfalt erstellt. Für die Richtigkeit, Vollständigkeit und Aktualität der Inhalte können wir jedoch keine Gewähr übernehmen."
+    liability_links: str = "Unser Angebot enthält Links zu externen Webseiten Dritter, auf deren Inhalte wir keinen Einfluss haben."
+    copyright_text: str = "Die durch die Seitenbetreiber erstellten Inhalte und Werke auf diesen Seiten unterliegen dem deutschen Urheberrecht."
+    dispute_text: str = "Wir sind nicht bereit oder verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen."
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class DatenschutzContent(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    # Responsible person
+    responsible_name: str = "John D. Gold"
+    responsible_address: str = "Schützenstraße 38, 47829 Krefeld"
+    responsible_email: str = "gltz.de@gmail.com"
+    # Section texts
+    intro_text: str = "Der Schutz deiner persönlichen Daten ist uns wichtig. Diese Datenschutzerklärung informiert dich darüber, welche Daten wir erheben und wie wir sie verwenden."
+    contact_form_text: str = "Wenn du uns über das Kontaktformular kontaktierst, werden Name, E-Mail, Thema und Nachricht erhoben."
+    contact_form_purpose: str = "Zweck: Bearbeitung deiner Anfrage. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO. Speicherdauer: Bis zur Erledigung, maximal 2 Jahre."
+    cookies_text: str = "Wir verwenden nur technisch notwendige Cookies für den Betrieb dieser Website (z.B. für Dark/Light Mode Einstellungen)."
+    hosting_text: str = "Diese Website wird bei einem externen Dienstleister gehostet. Die Verarbeitung erfolgt auf Grundlage unserer berechtigten Interessen."
+    rights_text: str = "Du hast jederzeit das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung, Datenübertragbarkeit und Widerspruch."
+    paypal_text: str = "Wenn du unser Projekt über PayPal unterstützt, erfolgt die Datenverarbeitung durch PayPal gemäß deren Datenschutzbestimmungen."
+    last_updated: str = "Dezember 2025"
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
 # ============== Auth Helpers ==============
 
 DEFAULT_PASSWORD = "gltz2025"  # Default password, should be changed
