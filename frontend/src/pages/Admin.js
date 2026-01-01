@@ -1287,15 +1287,72 @@ export default function Admin() {
         </DialogContent>
       </Dialog>
 
+      {/* News Edit Modal */}
+      <Dialog open={!!editingNews} onOpenChange={() => setEditingNews(null)}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader><DialogTitle>{editingNews?.id ? 'Nachricht bearbeiten' : 'Neue Nachricht'}</DialogTitle></DialogHeader>
+          {editingNews && (
+            <div className="space-y-4">
+              <div>
+                <Label className="text-xs">Überschrift *</Label>
+                <Input value={editingNews.title} onChange={(e) => setEditingNews({...editingNews, title: e.target.value})} className="mt-1" placeholder="Neuer Blog-Beitrag online!" />
+              </div>
+              <div>
+                <Label className="text-xs">Untertitel (optional)</Label>
+                <Input value={editingNews.subtitle || ''} onChange={(e) => setEditingNews({...editingNews, subtitle: e.target.value})} className="mt-1" placeholder="Kurze Beschreibung..." />
+              </div>
+              <div>
+                <Label className="text-xs">Bild-URL *</Label>
+                <Input value={editingNews.image_url} onChange={(e) => setEditingNews({...editingNews, image_url: e.target.value})} className="mt-1" placeholder="https://..." />
+                {editingNews.image_url && <img src={editingNews.image_url} alt="Preview" className="mt-2 h-20 w-20 rounded-lg object-cover" />}
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-xs">Link-Typ</Label>
+                  <Select value={editingNews.link_type} onValueChange={(v) => setEditingNews({...editingNews, link_type: v})}>
+                    <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="internal">Interne Seite</SelectItem>
+                      <SelectItem value="blog">Blog-Beitrag</SelectItem>
+                      <SelectItem value="external">Externer Link</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs">Status</Label>
+                  <Select value={editingNews.status} onValueChange={(v) => setEditingNews({...editingNews, status: v})}>
+                    <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="draft">Entwurf</SelectItem>
+                      <SelectItem value="live">Live</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div>
+                <Label className="text-xs">Link-URL</Label>
+                <Input value={editingNews.link_url || ''} onChange={(e) => setEditingNews({...editingNews, link_url: e.target.value})} className="mt-1" placeholder="/blog oder https://..." />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingNews(null)}>Abbrechen</Button>
+            <Button onClick={handleSaveNews} disabled={!editingNews?.title || !editingNews?.image_url}>Speichern</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Delete Confirmation */}
       <AlertDialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {deleteConfirm?.type?.includes('permanent') ? 'Endgültig löschen?' : 'In Papierkorb verschieben?'}
+              {deleteConfirm?.type === 'news' ? 'Nachricht löschen?' : deleteConfirm?.type?.includes('permanent') ? 'Endgültig löschen?' : 'In Papierkorb verschieben?'}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {deleteConfirm?.type?.includes('permanent') 
+              {deleteConfirm?.type === 'news'
+                ? `"${deleteConfirm?.title}" wird unwiderruflich gelöscht.`
+                : deleteConfirm?.type?.includes('permanent') 
                 ? `"${deleteConfirm?.title}" wird endgültig gelöscht und kann nicht wiederhergestellt werden.`
                 : `"${deleteConfirm?.title}" wird in den Papierkorb verschoben. Du kannst es innerhalb von 30 Tagen wiederherstellen.`
               }
@@ -1304,6 +1361,7 @@ export default function Admin() {
           <AlertDialogFooter>
             <AlertDialogCancel>Abbrechen</AlertDialogCancel>
             <AlertDialogAction onClick={() => {
+              if (deleteConfirm.type === 'news') handleDeleteNews(deleteConfirm.id);
               if (deleteConfirm.type === 'page') handleDeletePage(deleteConfirm.id, false);
               if (deleteConfirm.type === 'page-permanent') handleDeletePage(deleteConfirm.id, true);
               if (deleteConfirm.type === 'post') handleDeletePost(deleteConfirm.id, false);
