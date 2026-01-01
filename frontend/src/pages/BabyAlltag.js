@@ -1,157 +1,152 @@
 import { motion } from 'framer-motion';
-import { Heart, Moon, Utensils, Play, Calendar, Bath, Smile, Waves } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { Clock, Moon, Utensils, Baby, Heart, Repeat, ArrowRight, Lightbulb } from 'lucide-react';
+
+const DAILY_ROUTINE = [
+  { time: '06:00', activity: 'Aufwachen & erste Flasche/Stillen', icon: Moon },
+  { time: '08:00', activity: 'Frühstück & Spielzeit', icon: Utensils },
+  { time: '10:00', activity: 'Vormittags-Schläfchen', icon: Moon },
+  { time: '12:00', activity: 'Mittagessen & Wickeln', icon: Utensils },
+  { time: '14:00', activity: 'Nachmittags-Schläfchen', icon: Moon },
+  { time: '16:00', activity: 'Spielzeit & Spaziergang', icon: Baby },
+  { time: '18:00', activity: 'Abendessen & Baden', icon: Utensils },
+  { time: '19:30', activity: 'Gute-Nacht-Routine', icon: Moon },
+];
+
+const SURVIVAL_TIPS = [
+  {
+    icon: Repeat,
+    title: 'Synchronisieren',
+    desc: 'Versuche, beide Babys gleichzeitig zu füttern und schlafen zu legen. Das spart Zeit und Energie.',
+  },
+  {
+    icon: Clock,
+    title: 'Routine etablieren',
+    desc: 'Eine feste Tagesstruktur hilft allen – den Babys und den Eltern.',
+  },
+  {
+    icon: Heart,
+    title: 'Hilfe annehmen',
+    desc: 'Scheue dich nicht, Hilfe von Familie und Freunden anzunehmen.',
+  },
+  {
+    icon: Lightbulb,
+    title: 'Praktisch denken',
+    desc: 'Doppelte Ausstattung an strategischen Orten – Wickelstation oben und unten.',
+  },
+];
 
 export default function BabyAlltag() {
-  const topics = [
-    {
-      icon: Moon,
-      title: 'Schlaf-Routinen',
-      description: 'Wie wir beide Babys gleichzeitig zum Schlafen bringen und durchschlafen fördern.',
-      tips: ['Feste Schlafenszeiten', 'Abendrituale', 'Getrennte oder gemeinsame Betten'],
-    },
-    {
-      icon: Utensils,
-      title: 'Füttern',
-      description: 'Tandem-Stillen, Flasche geben und die ersten Breimahlzeiten mit zwei Babys.',
-      tips: ['Stillkissen nutzen', 'Zeitversetzt füttern', 'Partner einbeziehen'],
-    },
-    {
-      icon: Play,
-      title: 'Spielideen',
-      description: 'Altersgerechte Aktivitäten, die beide Zwillinge beschäftigen und fördern.',
-      tips: ['Bodenspielzeit', 'Sensorische Erfahrungen', 'Vorlesen'],
-    },
-    {
-      icon: Calendar,
-      title: 'Tagesstruktur',
-      description: 'Ein fester Rhythmus hilft der ganzen Familie – so gestalten wir unseren Tag.',
-      tips: ['Morgenroutine', 'Mittagsschlaf', 'Abendritual'],
-    },
-    {
-      icon: Bath,
-      title: 'Pflege & Baden',
-      description: 'Praktische Tipps für Wickeln, Baden und Anziehen von zwei Babys.',
-      tips: ['Wickelstation organisieren', 'Zusammen baden', 'Kleidung vorbereiten'],
-    },
-    {
-      icon: Smile,
-      title: 'Selbstfürsorge',
-      description: 'Warum Pausen wichtig sind und wie wir Zeit für uns finden.',
-      tips: ['Hilfe annehmen', 'Kurze Auszeiten', 'Partner-Zeit'],
-    },
-  ];
-
   return (
-    <main id="main-content" className="pt-20">
+    <main id="main-content" className="min-h-screen pt-20">
       {/* Hero */}
-      <section className="section-padding bg-gradient-to-b from-sky-50 dark:from-slate-900 to-background relative overflow-hidden" data-testid="baby-alltag-page">
-        <div className="absolute top-10 left-10 opacity-10">
-          <Waves className="w-64 h-64 text-primary" />
-        </div>
-        <div className="container-width relative z-10">
+      <section className="section-padding bg-gradient-to-b from-secondary/50 to-background">
+        <div className="container-width">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center max-w-3xl mx-auto"
+            className="max-w-3xl"
           >
-            <Heart className="w-16 h-16 text-[hsl(var(--twins-art))] mx-auto mb-6" />
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-foreground mb-6 tracking-tight">
-              Baby-Alltag
+            <span className="text-sm font-medium text-primary uppercase tracking-wide">Baby-Alltag</span>
+            <h1 className="text-4xl sm:text-5xl font-bold text-foreground mt-4 mb-6">
+              Leben mit Zwillingen
             </h1>
-            <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
-              Der Alltag mit Zwillingen ist eine Herausforderung – aber auch voller wunderbarer Momente. 
-              Hier teilen wir, was bei uns funktioniert.
+            <p className="text-lg text-muted-foreground leading-relaxed">
+              Der Alltag mit zwei Babys ist intensiv, aber auch wunderschön. 
+              Hier zeigen wir, wie wir unseren Tag strukturieren und welche Tipps uns helfen.
             </p>
           </motion.div>
         </div>
       </section>
 
-      {/* Topics Grid */}
+      {/* Daily Routine */}
       <section className="section-padding bg-background">
         <div className="container-width">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {topics.map((topic, index) => (
+          <h2 className="text-3xl font-semibold text-foreground text-center mb-4">
+            <Clock className="inline-block w-8 h-8 mr-2 -mt-1" />
+            Unser Tagesablauf
+          </h2>
+          <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
+            Ein typischer Tag mit unseren Zwillingen – natürlich ist jeder Tag anders, 
+            aber diese Routine gibt uns Struktur.
+          </p>
+
+          <div className="max-w-2xl mx-auto">
+            <div className="relative">
+              {/* Timeline Line */}
+              <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-border" />
+              
+              {DAILY_ROUTINE.map((item, index) => (
+                <motion.div
+                  key={item.time}
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.05 }}
+                  className="relative flex items-center gap-6 py-4"
+                >
+                  {/* Time Dot */}
+                  <div className="w-16 shrink-0 text-right">
+                    <span className="text-sm font-semibold text-foreground">{item.time}</span>
+                  </div>
+                  
+                  {/* Icon */}
+                  <div className="w-10 h-10 rounded-full bg-background border-2 border-foreground/20 flex items-center justify-center z-10">
+                    <item.icon className="w-4 h-4 text-foreground" />
+                  </div>
+                  
+                  {/* Content */}
+                  <div className="flex-1 p-4 rounded-xl bg-secondary/30 border border-border">
+                    <p className="text-foreground">{item.activity}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Survival Tips */}
+      <section className="section-padding bg-secondary/30">
+        <div className="container-width">
+          <h2 className="text-3xl font-semibold text-foreground text-center mb-12">Überlebenstipps</h2>
+          
+          <div className="grid sm:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            {SURVIVAL_TIPS.map((tip, index) => (
               <motion.div
-                key={topic.title}
-                initial={{ opacity: 0, y: 30 }}
+                key={tip.title}
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                whileHover={{ y: -8 }}
-                className="glass-card p-8 rounded-3xl"
+                transition={{ delay: index * 0.1 }}
+                className="p-6 rounded-2xl bg-background border border-border"
               >
-                <div className="inline-flex items-center justify-center w-14 h-14 bg-primary/10 rounded-2xl mb-6">
-                  <topic.icon className="w-7 h-7 text-primary" />
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-foreground/10 flex items-center justify-center shrink-0">
+                    <tip.icon className="w-6 h-6 text-foreground" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-foreground mb-2">{tip.title}</h3>
+                    <p className="text-sm text-muted-foreground">{tip.desc}</p>
+                  </div>
                 </div>
-                <h3 className="text-xl font-semibold text-foreground mb-3">
-                  {topic.title}
-                </h3>
-                <p className="text-muted-foreground mb-4">
-                  {topic.description}
-                </p>
-                <ul className="space-y-2">
-                  {topic.tips.map((tip) => (
-                    <li key={tip} className="text-sm text-muted-foreground flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 bg-primary rounded-full" />
-                      {tip}
-                    </li>
-                  ))}
-                </ul>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Image Section */}
-      <section className="section-padding bg-card">
-        <div className="container-width">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="max-w-4xl mx-auto"
-          >
-            <div className="relative rounded-3xl overflow-hidden">
-              <img
-                src="https://images.unsplash.com/photo-1744424705160-c2a32b5dc4e3?w=1200"
-                alt="Glückliche Babys auf einer Decke liegend"
-                className="w-full h-64 sm:h-96 object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end">
-                <div className="p-8">
-                  <h3 className="text-2xl font-bold text-white mb-2">
-                    Jeder Tag ist ein Abenteuer
-                  </h3>
-                  <p className="text-white/80">
-                    Mit Zwillingen erlebt man alles doppelt – auch die Freude.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
       {/* CTA */}
       <section className="section-padding bg-background">
         <div className="container-width text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-6">
-              Brauchst du individuelle Tipps?
-            </h2>
-            <Link to="/kontakt" className="btn-primary">
-              Schreib uns
-            </Link>
-          </motion.div>
+          <Lightbulb className="w-12 h-12 text-foreground mx-auto mb-4" />
+          <h2 className="text-2xl font-semibold text-foreground mb-4">Mehr praktische Tipps</h2>
+          <p className="text-muted-foreground mb-8 max-w-md mx-auto">
+            Entdecke weitere hilfreiche Ratschläge für den Zwillingsalltag.
+          </p>
+          <Link to="/tipps" className="btn-primary">
+            Zu den Tipps <ArrowRight className="w-4 h-4" />
+          </Link>
         </div>
       </section>
     </main>
