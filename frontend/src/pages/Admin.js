@@ -337,6 +337,16 @@ export default function Admin() {
       console.error('Error saving datenschutz:', err);
     }
   };
+  
+  const handleSaveCookies = async () => {
+    try {
+      await axios.put(`${API}/admin/page-content/cookies?token=${token}`, cookiesContent);
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus(''), 2000);
+    } catch (err) {
+      console.error('Error saving cookies:', err);
+    }
+  };
 
   // Page handlers
   const handleSavePage = async () => {
