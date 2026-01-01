@@ -781,73 +781,252 @@ export default function Admin() {
               {activeTab === 'landing' && (
                 <motion.div key="landing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6">
                   <div className="flex items-center justify-between">
-                    <h1 className="text-2xl font-semibold">Landing Page</h1>
-                    <Button onClick={() => handleSaveSettings(false)}>
-                      {saveStatus === 'saved' ? <><Check className="w-4 h-4 mr-1" /> Gespeichert</> : <><Save className="w-4 h-4 mr-1" /> Speichern</>}
-                    </Button>
+                    <div>
+                      <h1 className="text-2xl font-semibold">Landing Page</h1>
+                      <p className="text-sm text-muted-foreground">Bearbeiten Sie alle Bereiche der Startseite</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button variant="outline" onClick={() => {
+                        if (!landingSourceMode) {
+                          setLandingSource(JSON.stringify(landingContent, null, 2));
+                        } else {
+                          try {
+                            setLandingContent(JSON.parse(landingSource));
+                          } catch (e) {
+                            alert('Ungültiges JSON');
+                            return;
+                          }
+                        }
+                        setLandingSourceMode(!landingSourceMode);
+                      }}>
+                        <Code className="w-4 h-4 mr-1" /> {landingSourceMode ? 'Visual Editor' : 'Quellcode'}
+                      </Button>
+                      <Button onClick={handleSaveLandingContent}>
+                        {saveStatus === 'saved' ? <><Check className="w-4 h-4 mr-1" /> Gespeichert</> : <><Save className="w-4 h-4 mr-1" /> Speichern</>}
+                      </Button>
+                    </div>
                   </div>
+                  
+                  <a href="/" target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline flex items-center gap-1">
+                    <ExternalLink className="w-3 h-3" /> Vorschau öffnen
+                  </a>
 
-                  <Accordion type="multiple" defaultValue={['hero']} className="space-y-4">
-                    <AccordionItem value="hero" className="border rounded-xl px-4">
-                      <AccordionTrigger className="py-4">
-                        <div className="flex items-center gap-2">
-                          <Layout className="w-5 h-5" />
-                          <span className="font-semibold">Hero-Bereich</span>
-                        </div>
-                      </AccordionTrigger>
-                      <AccordionContent className="pb-4 space-y-4">
-                        <div className="grid sm:grid-cols-2 gap-4">
-                          <div>
-                            <Label className="text-xs">Überschrift</Label>
-                            <Input value={settings.heroTitle || ''} onChange={(e) => setSettings({...settings, heroTitle: e.target.value})} className="mt-1" />
+                  {landingSourceMode ? (
+                    <div className="p-4 rounded-xl border border-border bg-card">
+                      <Label className="mb-2 block">JSON Quellcode</Label>
+                      <Textarea 
+                        className="font-mono text-xs min-h-[600px]" 
+                        value={landingSource}
+                        onChange={(e) => setLandingSource(e.target.value)}
+                      />
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Hier können Sie den kompletten JSON-Code der Landing Page bearbeiten.
+                      </p>
+                    </div>
+                  ) : landingContent ? (
+                    <Accordion type="multiple" defaultValue={['hero', 'sections']} className="space-y-4">
+                      {/* Hero Section */}
+                      <AccordionItem value="hero" className="border rounded-xl px-4">
+                        <AccordionTrigger className="py-4">
+                          <div className="flex items-center gap-2">
+                            <Layout className="w-5 h-5" />
+                            <span className="font-semibold">Hero-Bereich</span>
+                            <Badge variant={landingContent.hero_enabled ? 'default' : 'secondary'} className="ml-2">
+                              {landingContent.hero_enabled ? 'An' : 'Aus'}
+                            </Badge>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="pb-4 space-y-4">
+                          <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg">
+                            <Label>Hero-Bereich anzeigen</Label>
+                            <Button size="sm" variant={landingContent.hero_enabled ? 'default' : 'outline'} onClick={() => handleLandingFieldChange('hero_enabled', !landingContent.hero_enabled)}>
+                              {landingContent.hero_enabled ? 'Ein' : 'Aus'}
+                            </Button>
+                          </div>
+                          
+                          <div className="grid sm:grid-cols-2 gap-4">
+                            <div>
+                              <Label className="text-xs">Label (klein)</Label>
+                              <Input value={landingContent.hero_label || ''} onChange={(e) => handleLandingFieldChange('hero_label', e.target.value)} className="mt-1" />
+                            </div>
+                            <div>
+                              <Label className="text-xs">Titel (groß)</Label>
+                              <Input value={landingContent.hero_title || ''} onChange={(e) => handleLandingFieldChange('hero_title', e.target.value)} className="mt-1" />
+                            </div>
+                          </div>
+                          <div className="grid sm:grid-cols-2 gap-4">
+                            <div>
+                              <Label className="text-xs">Untertitel</Label>
+                              <Input value={landingContent.hero_subtitle || ''} onChange={(e) => handleLandingFieldChange('hero_subtitle', e.target.value)} className="mt-1" />
+                            </div>
+                            <div>
+                              <Label className="text-xs">CTA Button Text</Label>
+                              <Input value={landingContent.hero_cta_text || ''} onChange={(e) => handleLandingFieldChange('hero_cta_text', e.target.value)} className="mt-1" />
+                            </div>
                           </div>
                           <div>
-                            <Label className="text-xs">Untertitel</Label>
-                            <Input value={settings.heroSubtitle || ''} onChange={(e) => setSettings({...settings, heroSubtitle: e.target.value})} className="mt-1" />
+                            <Label className="text-xs">Beschreibung</Label>
+                            <Textarea value={landingContent.hero_description || ''} onChange={(e) => handleLandingFieldChange('hero_description', e.target.value)} className="mt-1" rows={2} />
                           </div>
-                        </div>
-                        <div>
-                          <Label className="text-xs">Beschreibung</Label>
-                          <Textarea value={settings.heroDescription || ''} onChange={(e) => setSettings({...settings, heroDescription: e.target.value})} className="mt-1" rows={2} />
-                        </div>
-                        <div className="grid sm:grid-cols-2 gap-4">
-                          <div>
-                            <Label className="text-xs">Hintergrund (Hell)</Label>
-                            <Input value={settings.lightBackground || ''} onChange={(e) => setSettings({...settings, lightBackground: e.target.value})} className="mt-1" placeholder="https://..." />
+                          <div className="grid sm:grid-cols-2 gap-4">
+                            <div>
+                              <Label className="text-xs">CTA Link</Label>
+                              <Input value={landingContent.hero_cta_link || ''} onChange={(e) => handleLandingFieldChange('hero_cta_link', e.target.value)} className="mt-1" placeholder="/ueber-uns" />
+                            </div>
+                            <div>
+                              <Label className="text-xs">Zweiter CTA Text (optional)</Label>
+                              <Input value={landingContent.hero_secondary_cta_text || ''} onChange={(e) => handleLandingFieldChange('hero_secondary_cta_text', e.target.value)} className="mt-1" />
+                            </div>
                           </div>
-                          <div>
-                            <Label className="text-xs">Hintergrund (Dunkel)</Label>
-                            <Input value={settings.darkBackground || ''} onChange={(e) => setSettings({...settings, darkBackground: e.target.value})} className="mt-1" placeholder="https://..." />
+                          
+                          {/* Video/Background Settings */}
+                          <div className="p-4 bg-secondary/30 rounded-lg space-y-4">
+                            <h4 className="font-medium text-sm">Hintergrund / Video</h4>
+                            <div className="grid sm:grid-cols-3 gap-4">
+                              <div>
+                                <Label className="text-xs">Typ</Label>
+                                <Select value={landingContent.hero_background_type || 'none'} onValueChange={(v) => handleLandingFieldChange('hero_background_type', v)}>
+                                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="none">Keiner</SelectItem>
+                                    <SelectItem value="image">Bild</SelectItem>
+                                    <SelectItem value="video">Video</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              {landingContent.hero_background_type !== 'none' && (
+                                <div className="sm:col-span-2">
+                                  <Label className="text-xs">{landingContent.hero_background_type === 'video' ? 'Video URL' : 'Bild URL'}</Label>
+                                  <Input value={landingContent.hero_background_url || ''} onChange={(e) => handleLandingFieldChange('hero_background_url', e.target.value)} className="mt-1" placeholder="https://..." />
+                                </div>
+                              )}
+                            </div>
+                            {landingContent.hero_background_type === 'video' && (
+                              <div className="flex flex-wrap gap-4">
+                                <div className="flex items-center gap-2">
+                                  <input type="checkbox" id="autoplay" checked={landingContent.hero_video_autoplay !== false} onChange={(e) => handleLandingFieldChange('hero_video_autoplay', e.target.checked)} />
+                                  <Label htmlFor="autoplay" className="text-xs">Autoplay</Label>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <input type="checkbox" id="loop" checked={landingContent.hero_video_loop !== false} onChange={(e) => handleLandingFieldChange('hero_video_loop', e.target.checked)} />
+                                  <Label htmlFor="loop" className="text-xs">Loop</Label>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <input type="checkbox" id="muted" checked={landingContent.hero_video_muted !== false} onChange={(e) => handleLandingFieldChange('hero_video_muted', e.target.checked)} />
+                                  <Label htmlFor="muted" className="text-xs">Stumm</Label>
+                                </div>
+                              </div>
+                            )}
                           </div>
-                        </div>
-                      </AccordionContent>
-                    </AccordionItem>
+                        </AccordionContent>
+                      </AccordionItem>
 
-                    <AccordionItem value="cta" className="border rounded-xl px-4">
-                      <AccordionTrigger className="py-4">
-                        <div className="flex items-center gap-2">
-                          <Users className="w-5 h-5" />
-                          <span className="font-semibold">Call-to-Action (Spenden)</span>
-                        </div>
-                      </AccordionTrigger>
-                      <AccordionContent className="pb-4 space-y-4">
-                        <div className="grid sm:grid-cols-2 gap-4">
-                          <div>
-                            <Label className="text-xs">Überschrift</Label>
-                            <Input value={settings.ctaTitle || ''} onChange={(e) => setSettings({...settings, ctaTitle: e.target.value})} className="mt-1" />
+                      {/* Sections On/Off */}
+                      <AccordionItem value="sections" className="border rounded-xl px-4">
+                        <AccordionTrigger className="py-4">
+                          <div className="flex items-center gap-2">
+                            <Layers className="w-5 h-5" />
+                            <span className="font-semibold">Bereiche Ein/Aus</span>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="pb-4 space-y-3">
+                          {[
+                            { key: 'features_enabled', label: 'Features/Was erwartet dich', title: 'features_title' },
+                            { key: 'news_enabled', label: 'News-Ticker/Aktuelles', title: 'news_title' },
+                            { key: 'categories_enabled', label: 'Kategorien/Entdecken', title: 'categories_title' },
+                            { key: 'blog_enabled', label: 'Blog-Vorschau', title: 'blog_title' },
+                            { key: 'cta_enabled', label: 'Spenden CTA', title: 'cta_title' },
+                          ].map((section) => (
+                            <div key={section.key} className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg">
+                              <div className="flex-1">
+                                <Label className="text-sm">{section.label}</Label>
+                                {section.title && (
+                                  <Input 
+                                    value={landingContent[section.title] || ''} 
+                                    onChange={(e) => handleLandingFieldChange(section.title, e.target.value)} 
+                                    className="mt-1 h-8 text-sm" 
+                                    placeholder="Titel..."
+                                  />
+                                )}
+                              </div>
+                              <Button size="sm" variant={landingContent[section.key] ? 'default' : 'outline'} className="ml-4 shrink-0" onClick={() => handleLandingFieldChange(section.key, !landingContent[section.key])}>
+                                {landingContent[section.key] ? 'Ein' : 'Aus'}
+                              </Button>
+                            </div>
+                          ))}
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      {/* Blog Settings */}
+                      <AccordionItem value="blog" className="border rounded-xl px-4">
+                        <AccordionTrigger className="py-4">
+                          <div className="flex items-center gap-2">
+                            <FileText className="w-5 h-5" />
+                            <span className="font-semibold">Blog-Einstellungen</span>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="pb-4 space-y-4">
+                          <div className="grid sm:grid-cols-2 gap-4">
+                            <div>
+                              <Label className="text-xs">Blog Untertitel</Label>
+                              <Input value={landingContent.blog_subtitle || ''} onChange={(e) => handleLandingFieldChange('blog_subtitle', e.target.value)} className="mt-1" />
+                            </div>
+                            <div>
+                              <Label className="text-xs">Max. Beiträge anzeigen</Label>
+                              <Input type="number" value={landingContent.blog_max_posts || 4} onChange={(e) => handleLandingFieldChange('blog_max_posts', parseInt(e.target.value))} className="mt-1" min={1} max={10} />
+                            </div>
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      {/* CTA Settings */}
+                      <AccordionItem value="cta" className="border rounded-xl px-4">
+                        <AccordionTrigger className="py-4">
+                          <div className="flex items-center gap-2">
+                            <Heart className="w-5 h-5" />
+                            <span className="font-semibold">Spenden CTA</span>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="pb-4 space-y-4">
+                          <div className="grid sm:grid-cols-2 gap-4">
+                            <div>
+                              <Label className="text-xs">CTA Button Text</Label>
+                              <Input value={landingContent.cta_button_text || ''} onChange={(e) => handleLandingFieldChange('cta_button_text', e.target.value)} className="mt-1" />
+                            </div>
+                            <div>
+                              <Label className="text-xs">CTA Button Link</Label>
+                              <Input value={landingContent.cta_button_link || ''} onChange={(e) => handleLandingFieldChange('cta_button_link', e.target.value)} className="mt-1" />
+                            </div>
                           </div>
                           <div>
-                            <Label className="text-xs">Button-Text</Label>
-                            <Input value={settings.ctaButtonText || ''} onChange={(e) => setSettings({...settings, ctaButtonText: e.target.value})} className="mt-1" />
+                            <Label className="text-xs">CTA Beschreibung</Label>
+                            <Textarea value={landingContent.cta_description || ''} onChange={(e) => handleLandingFieldChange('cta_description', e.target.value)} className="mt-1" rows={2} />
                           </div>
-                        </div>
-                        <div>
-                          <Label className="text-xs">PayPal.me Link</Label>
-                          <Input value={settings.paypalLink || ''} onChange={(e) => setSettings({...settings, paypalLink: e.target.value})} className="mt-1" />
-                        </div>
-                      </AccordionContent>
-                    </AccordionItem>
-                  </Accordion>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      {/* News Settings */}
+                      <AccordionItem value="news-settings" className="border rounded-xl px-4">
+                        <AccordionTrigger className="py-4">
+                          <div className="flex items-center gap-2">
+                            <Newspaper className="w-5 h-5" />
+                            <span className="font-semibold">News-Ticker Einstellungen</span>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="pb-4 space-y-4">
+                          <div>
+                            <Label className="text-xs">Autoplay Intervall (Sekunden)</Label>
+                            <Input type="number" value={landingContent.news_autoplay_interval || 10} onChange={(e) => handleLandingFieldChange('news_autoplay_interval', parseInt(e.target.value))} className="mt-1" min={3} max={30} />
+                          </div>
+                          <p className="text-xs text-muted-foreground">Die News-Inhalte selbst verwalten Sie unter dem Tab "Nachrichten".</p>
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
+                  ) : (
+                    <div className="text-center py-12 border border-dashed border-border rounded-xl">
+                      <p className="text-muted-foreground">Landing Page Inhalt wird geladen...</p>
+                    </div>
+                  )}
                 </motion.div>
               )}
 
