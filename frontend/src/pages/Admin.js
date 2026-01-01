@@ -355,6 +355,63 @@ export default function Admin() {
       console.error('Error saving cookies:', err);
     }
   };
+  
+  // Static page handlers
+  const handleEditStaticPage = (pageId) => {
+    const page = staticPages.find(p => p.page_id === pageId);
+    if (page) {
+      setEditingStaticPage({ ...page });
+      setStaticPageSource(JSON.stringify(page, null, 2));
+      setStaticPageSourceMode(false);
+    }
+  };
+  
+  const handleSaveStaticPage = async () => {
+    try {
+      let dataToSave = editingStaticPage;
+      if (staticPageSourceMode) {
+        try {
+          dataToSave = JSON.parse(staticPageSource);
+        } catch (e) {
+          alert('Ungültiges JSON Format');
+          return;
+        }
+      }
+      await axios.put(`${API}/admin/static-pages/${dataToSave.page_id}?token=${token}`, dataToSave);
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus(''), 2000);
+      setEditingStaticPage(null);
+      fetchAllData(token);
+    } catch (err) {
+      console.error('Error saving static page:', err);
+    }
+  };
+  
+  const handleStaticPageFieldChange = (field, value) => {
+    setEditingStaticPage(prev => ({ ...prev, [field]: value }));
+  };
+  
+  const handleStaticPageSectionChange = (index, field, value) => {
+    setEditingStaticPage(prev => {
+      const sections = [...(prev.sections || [])];
+      sections[index] = { ...sections[index], [field]: value };
+      return { ...prev, sections };
+    });
+  };
+  
+  const handleAddStaticPageSection = () => {
+    setEditingStaticPage(prev => ({
+      ...prev,
+      sections: [...(prev.sections || []), { id: Date.now().toString(), title: '', subtitle: '', description: '', image_url: '', link_url: '', link_text: '', items: [] }]
+    }));
+  };
+  
+  const handleRemoveStaticPageSection = (index) => {
+    setEditingStaticPage(prev => ({
+      ...prev,
+      sections: prev.sections.filter((_, i) => i !== index)
+    }));
+  };
 
   // Page handlers
   const handleSavePage = async () => {
