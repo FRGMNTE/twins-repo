@@ -5,6 +5,7 @@ import { useSiteSettings } from '../context/SiteSettingsContext';
 const DEFAULT_FOOTER_LINKS = [
   { id: '1', label: 'Impressum', path: '/impressum', enabled: true },
   { id: '2', label: 'Datenschutz', path: '/datenschutz', enabled: true },
+  { id: '3', label: 'Cookies', path: '/cookies', enabled: true },
 ];
 
 const SOCIAL_ICONS = {
