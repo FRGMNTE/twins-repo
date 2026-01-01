@@ -1022,9 +1022,10 @@ export default function Admin() {
                   </div>
                   
                   <Tabs defaultValue="impressum" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2 mb-6">
+                    <TabsList className="grid w-full grid-cols-3 mb-6">
                       <TabsTrigger value="impressum">Impressum</TabsTrigger>
                       <TabsTrigger value="datenschutz">Datenschutz</TabsTrigger>
+                      <TabsTrigger value="cookies">Cookies</TabsTrigger>
                     </TabsList>
                     
                     {/* Impressum Content */}
