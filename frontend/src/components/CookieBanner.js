@@ -33,7 +33,7 @@ export default function CookieBanner() {
       data-testid="cookie-banner"
     >
       <div className="container-width pointer-events-auto">
-        <div className="glass-card rounded-2xl p-6 sm:p-8 relative shadow-lg">
+        <div className="bg-card border border-border rounded-2xl p-6 sm:p-8 relative shadow-xl">
           <button
             onClick={handleDecline}
             className="absolute top-4 right-4 p-2 rounded-full hover:bg-accent transition-colors"
