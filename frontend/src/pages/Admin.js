@@ -299,6 +299,27 @@ export default function Admin() {
       console.error('Error saving settings:', err);
     }
   };
+  
+  // Legal content handlers (Impressum, Datenschutz)
+  const handleSaveImpressum = async () => {
+    try {
+      await axios.put(`${API}/admin/page-content/impressum?token=${token}`, impressumContent);
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus(''), 2000);
+    } catch (err) {
+      console.error('Error saving impressum:', err);
+    }
+  };
+  
+  const handleSaveDatenschutz = async () => {
+    try {
+      await axios.put(`${API}/admin/page-content/datenschutz?token=${token}`, datenschutzContent);
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus(''), 2000);
+    } catch (err) {
+      console.error('Error saving datenschutz:', err);
+    }
+  };
 
   // Page handlers
   const handleSavePage = async () => {
