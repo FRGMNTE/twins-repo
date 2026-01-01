@@ -236,7 +236,8 @@ export default function Admin() {
         axios.get(`${API}/admin/page-content/impressum?token=${t}`).catch(() => ({ data: null })),
         axios.get(`${API}/admin/page-content/datenschutz?token=${t}`).catch(() => ({ data: null })),
         axios.get(`${API}/admin/page-content/cookies?token=${t}`).catch(() => ({ data: null })),
-        axios.get(`${API}/admin/static-pages?token=${t}`).catch(() => ({ data: [] }))
+        axios.get(`${API}/admin/static-pages?token=${t}`).catch(() => ({ data: [] })),
+        axios.get(`${API}/admin/landing-content?token=${t}`).catch(() => ({ data: null }))
       ]);
       setStats(statsRes.data);
       setPages(pagesRes.data.filter(p => p.status !== 'deleted'));
@@ -247,6 +248,12 @@ export default function Admin() {
       setTrashedPosts(postsRes.data.filter(p => p.status === 'deleted'));
       setNewsItems(newsRes.data);
       setStaticPages(staticPagesRes.data || []);
+      
+      // Set landing content
+      if (landingRes.data) {
+        setLandingContent(landingRes.data);
+        setLandingSource(JSON.stringify(landingRes.data, null, 2));
+      }
       
       // Set legal content if available
       if (impressumRes.data) {
