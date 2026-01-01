@@ -986,6 +986,170 @@ export default function Admin() {
                 </motion.div>
               )}
 
+              {/* Legal Tab (Impressum, Datenschutz) */}
+              {activeTab === 'legal' && (
+                <motion.div key="legal" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <h1 className="text-2xl font-semibold">Rechtliches</h1>
+                    {saveStatus && <Badge variant="secondary" className="gap-1"><Check className="w-3 h-3" /> Gespeichert</Badge>}
+                  </div>
+                  
+                  <Tabs defaultValue="impressum" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2 mb-6">
+                      <TabsTrigger value="impressum">Impressum</TabsTrigger>
+                      <TabsTrigger value="datenschutz">Datenschutz</TabsTrigger>
+                    </TabsList>
+                    
+                    {/* Impressum Content */}
+                    <TabsContent value="impressum" className="space-y-6">
+                      {/* Provider Info */}
+                      <div className="p-4 rounded-xl border border-border bg-card space-y-4">
+                        <h3 className="font-semibold flex items-center gap-2"><Users className="w-4 h-4" /> Angaben zum Anbieter</h3>
+                        <div className="grid sm:grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="provider_name">Name</Label>
+                            <Input id="provider_name" value={impressumContent.provider_name} onChange={(e) => setImpressumContent(p => ({ ...p, provider_name: e.target.value }))} />
+                          </div>
+                          <div>
+                            <Label htmlFor="provider_street">Straße</Label>
+                            <Input id="provider_street" value={impressumContent.provider_street} onChange={(e) => setImpressumContent(p => ({ ...p, provider_street: e.target.value }))} />
+                          </div>
+                          <div>
+                            <Label htmlFor="provider_city">PLZ & Stadt</Label>
+                            <Input id="provider_city" value={impressumContent.provider_city} onChange={(e) => setImpressumContent(p => ({ ...p, provider_city: e.target.value }))} />
+                          </div>
+                          <div>
+                            <Label htmlFor="provider_country">Land</Label>
+                            <Input id="provider_country" value={impressumContent.provider_country} onChange={(e) => setImpressumContent(p => ({ ...p, provider_country: e.target.value }))} />
+                          </div>
+                          <div>
+                            <Label htmlFor="provider_phone">Telefon</Label>
+                            <Input id="provider_phone" value={impressumContent.provider_phone} onChange={(e) => setImpressumContent(p => ({ ...p, provider_phone: e.target.value }))} />
+                          </div>
+                          <div>
+                            <Label htmlFor="provider_email">E-Mail</Label>
+                            <Input id="provider_email" value={impressumContent.provider_email} onChange={(e) => setImpressumContent(p => ({ ...p, provider_email: e.target.value }))} />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Responsible Person */}
+                      <div className="p-4 rounded-xl border border-border bg-card space-y-4">
+                        <h3 className="font-semibold flex items-center gap-2"><Shield className="w-4 h-4" /> Verantwortlich für den Inhalt</h3>
+                        <div className="grid sm:grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="responsible_name">Name</Label>
+                            <Input id="responsible_name" value={impressumContent.responsible_name} onChange={(e) => setImpressumContent(p => ({ ...p, responsible_name: e.target.value }))} />
+                          </div>
+                          <div>
+                            <Label htmlFor="responsible_address">Adresse</Label>
+                            <Input id="responsible_address" value={impressumContent.responsible_address} onChange={(e) => setImpressumContent(p => ({ ...p, responsible_address: e.target.value }))} />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Legal Texts */}
+                      <div className="p-4 rounded-xl border border-border bg-card space-y-4">
+                        <h3 className="font-semibold flex items-center gap-2"><FileText className="w-4 h-4" /> Haftungsausschluss Texte</h3>
+                        <div className="space-y-4">
+                          <div>
+                            <Label htmlFor="liability_content">Haftung für Inhalte</Label>
+                            <Textarea id="liability_content" rows={3} value={impressumContent.liability_content} onChange={(e) => setImpressumContent(p => ({ ...p, liability_content: e.target.value }))} />
+                          </div>
+                          <div>
+                            <Label htmlFor="liability_links">Haftung für Links</Label>
+                            <Textarea id="liability_links" rows={3} value={impressumContent.liability_links} onChange={(e) => setImpressumContent(p => ({ ...p, liability_links: e.target.value }))} />
+                          </div>
+                          <div>
+                            <Label htmlFor="copyright_text">Urheberrecht</Label>
+                            <Textarea id="copyright_text" rows={3} value={impressumContent.copyright_text} onChange={(e) => setImpressumContent(p => ({ ...p, copyright_text: e.target.value }))} />
+                          </div>
+                          <div>
+                            <Label htmlFor="dispute_text">Streitschlichtung</Label>
+                            <Textarea id="dispute_text" rows={2} value={impressumContent.dispute_text} onChange={(e) => setImpressumContent(p => ({ ...p, dispute_text: e.target.value }))} />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-between items-center">
+                        <a href="/impressum" target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline flex items-center gap-1">
+                          <ExternalLink className="w-3 h-3" /> Vorschau öffnen
+                        </a>
+                        <Button onClick={handleSaveImpressum}><Save className="w-4 h-4 mr-1" /> Impressum speichern</Button>
+                      </div>
+                    </TabsContent>
+                    
+                    {/* Datenschutz Content */}
+                    <TabsContent value="datenschutz" className="space-y-6">
+                      {/* Responsible Person */}
+                      <div className="p-4 rounded-xl border border-border bg-card space-y-4">
+                        <h3 className="font-semibold flex items-center gap-2"><Shield className="w-4 h-4" /> Verantwortlicher</h3>
+                        <div className="grid sm:grid-cols-3 gap-4">
+                          <div>
+                            <Label htmlFor="ds_responsible_name">Name</Label>
+                            <Input id="ds_responsible_name" value={datenschutzContent.responsible_name} onChange={(e) => setDatenschutzContent(p => ({ ...p, responsible_name: e.target.value }))} />
+                          </div>
+                          <div>
+                            <Label htmlFor="ds_responsible_address">Adresse</Label>
+                            <Input id="ds_responsible_address" value={datenschutzContent.responsible_address} onChange={(e) => setDatenschutzContent(p => ({ ...p, responsible_address: e.target.value }))} />
+                          </div>
+                          <div>
+                            <Label htmlFor="ds_responsible_email">E-Mail</Label>
+                            <Input id="ds_responsible_email" value={datenschutzContent.responsible_email} onChange={(e) => setDatenschutzContent(p => ({ ...p, responsible_email: e.target.value }))} />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Sections */}
+                      <div className="p-4 rounded-xl border border-border bg-card space-y-4">
+                        <h3 className="font-semibold flex items-center gap-2"><FileText className="w-4 h-4" /> Datenschutz-Texte</h3>
+                        <div className="space-y-4">
+                          <div>
+                            <Label htmlFor="intro_text">Einleitung</Label>
+                            <Textarea id="intro_text" rows={2} value={datenschutzContent.intro_text} onChange={(e) => setDatenschutzContent(p => ({ ...p, intro_text: e.target.value }))} />
+                          </div>
+                          <div>
+                            <Label htmlFor="contact_form_text">Kontaktformular - Beschreibung</Label>
+                            <Textarea id="contact_form_text" rows={2} value={datenschutzContent.contact_form_text} onChange={(e) => setDatenschutzContent(p => ({ ...p, contact_form_text: e.target.value }))} />
+                          </div>
+                          <div>
+                            <Label htmlFor="contact_form_purpose">Kontaktformular - Zweck & Rechtsgrundlage</Label>
+                            <Textarea id="contact_form_purpose" rows={2} value={datenschutzContent.contact_form_purpose} onChange={(e) => setDatenschutzContent(p => ({ ...p, contact_form_purpose: e.target.value }))} />
+                          </div>
+                          <div>
+                            <Label htmlFor="cookies_text">Cookies</Label>
+                            <Textarea id="cookies_text" rows={2} value={datenschutzContent.cookies_text} onChange={(e) => setDatenschutzContent(p => ({ ...p, cookies_text: e.target.value }))} />
+                          </div>
+                          <div>
+                            <Label htmlFor="hosting_text">Hosting</Label>
+                            <Textarea id="hosting_text" rows={2} value={datenschutzContent.hosting_text} onChange={(e) => setDatenschutzContent(p => ({ ...p, hosting_text: e.target.value }))} />
+                          </div>
+                          <div>
+                            <Label htmlFor="rights_text">Deine Rechte</Label>
+                            <Textarea id="rights_text" rows={2} value={datenschutzContent.rights_text} onChange={(e) => setDatenschutzContent(p => ({ ...p, rights_text: e.target.value }))} />
+                          </div>
+                          <div>
+                            <Label htmlFor="paypal_text">PayPal Hinweis</Label>
+                            <Textarea id="paypal_text" rows={2} value={datenschutzContent.paypal_text} onChange={(e) => setDatenschutzContent(p => ({ ...p, paypal_text: e.target.value }))} />
+                          </div>
+                          <div>
+                            <Label htmlFor="last_updated">Stand (z.B. "Dezember 2025")</Label>
+                            <Input id="last_updated" value={datenschutzContent.last_updated} onChange={(e) => setDatenschutzContent(p => ({ ...p, last_updated: e.target.value }))} />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-between items-center">
+                        <a href="/datenschutz" target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline flex items-center gap-1">
+                          <ExternalLink className="w-3 h-3" /> Vorschau öffnen
+                        </a>
+                        <Button onClick={handleSaveDatenschutz}><Save className="w-4 h-4 mr-1" /> Datenschutz speichern</Button>
+                      </div>
+                    </TabsContent>
+                  </Tabs>
+                </motion.div>
+              )}
+
               {/* Gallery Tab */}
               {activeTab === 'gallery' && (
                 <motion.div key="gallery" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
