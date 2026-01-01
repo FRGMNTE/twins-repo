@@ -1326,6 +1326,213 @@ export default function Admin() {
                 </motion.div>
               )}
 
+              {/* Static Pages Tab */}
+              {activeTab === 'static-pages' && (
+                <motion.div key="static-pages" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h1 className="text-2xl font-semibold">Seiten-Inhalte</h1>
+                      <p className="text-sm text-muted-foreground">Bearbeiten Sie Titel, Texte, Bilder und Links der Design-Seiten</p>
+                    </div>
+                    {saveStatus && <Badge variant="secondary" className="gap-1"><Check className="w-3 h-3" /> Gespeichert</Badge>}
+                  </div>
+                  
+                  {!editingStaticPage ? (
+                    // Page list
+                    <div className="grid gap-4">
+                      {[
+                        { id: 'schwangerschaft', name: 'Schwangerschaft', path: '/schwangerschaft' },
+                        { id: 'baby-alltag', name: 'Baby-Alltag', path: '/baby-alltag' },
+                        { id: 'tipps', name: 'Tipps & Tricks', path: '/tipps' },
+                        { id: 'reisen', name: 'Reisen', path: '/reisen' },
+                        { id: 'ueber-uns', name: 'Über uns', path: '/ueber-uns' },
+                        { id: 'spende', name: 'Spende', path: '/spende' },
+                        { id: 'suchen', name: 'Suchen', path: '/suchen' },
+                      ].map((page) => {
+                        const pageData = staticPages.find(p => p.page_id === page.id) || {};
+                        return (
+                          <div key={page.id} className="p-4 rounded-xl border border-border bg-card flex items-center justify-between">
+                            <div className="flex-1">
+                              <h3 className="font-medium text-foreground">{page.name}</h3>
+                              <p className="text-sm text-muted-foreground">{pageData.hero_title || 'Standardinhalt'}</p>
+                              <p className="text-xs text-muted-foreground mt-1">{page.path}</p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <a href={page.path} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-sm flex items-center gap-1">
+                                <ExternalLink className="w-3 h-3" /> Vorschau
+                              </a>
+                              <Button size="sm" onClick={() => handleEditStaticPage(page.id)}>
+                                <Pencil className="w-4 h-4 mr-1" /> Bearbeiten
+                              </Button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    // Edit page form
+                    <div className="space-y-6">
+                      <div className="flex items-center justify-between">
+                        <Button variant="outline" onClick={() => setEditingStaticPage(null)}>
+                          <X className="w-4 h-4 mr-1" /> Zurück
+                        </Button>
+                        <div className="flex items-center gap-2">
+                          <Button variant="outline" onClick={() => {
+                            if (!staticPageSourceMode) {
+                              setStaticPageSource(JSON.stringify(editingStaticPage, null, 2));
+                            } else {
+                              try {
+                                setEditingStaticPage(JSON.parse(staticPageSource));
+                              } catch (e) {
+                                alert('Ungültiges JSON');
+                                return;
+                              }
+                            }
+                            setStaticPageSourceMode(!staticPageSourceMode);
+                          }}>
+                            <Code className="w-4 h-4 mr-1" /> {staticPageSourceMode ? 'Visual Editor' : 'Quellcode'}
+                          </Button>
+                          <Button onClick={handleSaveStaticPage}>
+                            <Save className="w-4 h-4 mr-1" /> Speichern
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      {staticPageSourceMode ? (
+                        // Source code editor
+                        <div className="p-4 rounded-xl border border-border bg-card">
+                          <Label className="mb-2 block">JSON Quellcode</Label>
+                          <Textarea 
+                            className="font-mono text-xs min-h-[500px]" 
+                            value={staticPageSource}
+                            onChange={(e) => setStaticPageSource(e.target.value)}
+                          />
+                          <p className="text-xs text-muted-foreground mt-2">
+                            Hier können Sie den kompletten JSON-Code der Seite bearbeiten. Vorsicht: Ungültiges JSON führt zu Fehlern.
+                          </p>
+                        </div>
+                      ) : (
+                        // Visual editor
+                        <>
+                          {/* Hero Section */}
+                          <div className="p-4 rounded-xl border border-border bg-card space-y-4">
+                            <h3 className="font-semibold flex items-center gap-2"><FileText className="w-4 h-4" /> Hero-Bereich</h3>
+                            <div className="grid sm:grid-cols-2 gap-4">
+                              <div>
+                                <Label>Label (klein, oben)</Label>
+                                <Input value={editingStaticPage.hero_label || ''} onChange={(e) => handleStaticPageFieldChange('hero_label', e.target.value)} placeholder="z.B. Schwangerschaft" />
+                              </div>
+                              <div>
+                                <Label>Titel (groß)</Label>
+                                <Input value={editingStaticPage.hero_title || ''} onChange={(e) => handleStaticPageFieldChange('hero_title', e.target.value)} placeholder="z.B. Zwillings-Schwangerschaft" />
+                              </div>
+                            </div>
+                            <div>
+                              <Label>Beschreibung</Label>
+                              <Textarea rows={3} value={editingStaticPage.hero_description || ''} onChange={(e) => handleStaticPageFieldChange('hero_description', e.target.value)} placeholder="Einführungstext für die Seite..." />
+                            </div>
+                            <div>
+                              <Label>Hero-Bild URL (optional)</Label>
+                              <Input value={editingStaticPage.hero_image || ''} onChange={(e) => handleStaticPageFieldChange('hero_image', e.target.value)} placeholder="https://..." />
+                            </div>
+                          </div>
+                          
+                          {/* Sections */}
+                          <div className="p-4 rounded-xl border border-border bg-card space-y-4">
+                            <div className="flex items-center justify-between">
+                              <h3 className="font-semibold flex items-center gap-2"><Layers className="w-4 h-4" /> Abschnitte</h3>
+                              <Button size="sm" variant="outline" onClick={handleAddStaticPageSection}>
+                                <Plus className="w-4 h-4 mr-1" /> Abschnitt hinzufügen
+                              </Button>
+                            </div>
+                            
+                            {(editingStaticPage.sections || []).map((section, index) => (
+                              <div key={section.id || index} className="p-4 bg-secondary/30 rounded-lg space-y-3">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm font-medium">Abschnitt {index + 1}</span>
+                                  <Button size="sm" variant="ghost" onClick={() => handleRemoveStaticPageSection(index)}>
+                                    <Trash2 className="w-4 h-4 text-destructive" />
+                                  </Button>
+                                </div>
+                                <div className="grid sm:grid-cols-2 gap-3">
+                                  <div>
+                                    <Label className="text-xs">Titel</Label>
+                                    <Input value={section.title || ''} onChange={(e) => handleStaticPageSectionChange(index, 'title', e.target.value)} />
+                                  </div>
+                                  <div>
+                                    <Label className="text-xs">Untertitel</Label>
+                                    <Input value={section.subtitle || ''} onChange={(e) => handleStaticPageSectionChange(index, 'subtitle', e.target.value)} />
+                                  </div>
+                                </div>
+                                <div>
+                                  <Label className="text-xs">Beschreibung</Label>
+                                  <Textarea rows={2} value={section.description || ''} onChange={(e) => handleStaticPageSectionChange(index, 'description', e.target.value)} />
+                                </div>
+                                <div className="grid sm:grid-cols-2 gap-3">
+                                  <div>
+                                    <Label className="text-xs">Bild URL</Label>
+                                    <Input value={section.image_url || ''} onChange={(e) => handleStaticPageSectionChange(index, 'image_url', e.target.value)} placeholder="https://..." />
+                                  </div>
+                                  <div>
+                                    <Label className="text-xs">Link URL</Label>
+                                    <Input value={section.link_url || ''} onChange={(e) => handleStaticPageSectionChange(index, 'link_url', e.target.value)} placeholder="/seite oder https://..." />
+                                  </div>
+                                </div>
+                                <div>
+                                  <Label className="text-xs">Link Text</Label>
+                                  <Input value={section.link_text || ''} onChange={(e) => handleStaticPageSectionChange(index, 'link_text', e.target.value)} placeholder="Mehr erfahren" />
+                                </div>
+                                <div>
+                                  <Label className="text-xs">Aufzählungspunkte (JSON Array)</Label>
+                                  <Input 
+                                    value={JSON.stringify(section.items || [])} 
+                                    onChange={(e) => {
+                                      try {
+                                        handleStaticPageSectionChange(index, 'items', JSON.parse(e.target.value));
+                                      } catch {}
+                                    }} 
+                                    placeholder='["Punkt 1", "Punkt 2"]' 
+                                  />
+                                </div>
+                              </div>
+                            ))}
+                            
+                            {(!editingStaticPage.sections || editingStaticPage.sections.length === 0) && (
+                              <p className="text-sm text-muted-foreground text-center py-4">Noch keine Abschnitte. Klicken Sie auf "Abschnitt hinzufügen".</p>
+                            )}
+                          </div>
+                          
+                          {/* CTA Section */}
+                          <div className="p-4 rounded-xl border border-border bg-card space-y-4">
+                            <h3 className="font-semibold flex items-center gap-2"><ArrowRight className="w-4 h-4" /> Call-to-Action</h3>
+                            <div className="grid sm:grid-cols-2 gap-4">
+                              <div>
+                                <Label>CTA Titel</Label>
+                                <Input value={editingStaticPage.cta_title || ''} onChange={(e) => handleStaticPageFieldChange('cta_title', e.target.value)} placeholder="Mehr erfahren" />
+                              </div>
+                              <div>
+                                <Label>CTA Link</Label>
+                                <Input value={editingStaticPage.cta_link || ''} onChange={(e) => handleStaticPageFieldChange('cta_link', e.target.value)} placeholder="/kontakt" />
+                              </div>
+                            </div>
+                            <div className="grid sm:grid-cols-2 gap-4">
+                              <div>
+                                <Label>CTA Beschreibung</Label>
+                                <Input value={editingStaticPage.cta_description || ''} onChange={(e) => handleStaticPageFieldChange('cta_description', e.target.value)} />
+                              </div>
+                              <div>
+                                <Label>CTA Button Text</Label>
+                                <Input value={editingStaticPage.cta_link_text || ''} onChange={(e) => handleStaticPageFieldChange('cta_link_text', e.target.value)} placeholder="Jetzt starten" />
+                              </div>
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </motion.div>
+              )}
+
               {/* Gallery Tab */}
               {activeTab === 'gallery' && (
                 <motion.div key="gallery" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
