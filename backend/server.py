@@ -170,6 +170,64 @@ class NewsItemCreate(BaseModel):
     status: str = "draft"
     order: int = 0
 
+# Landing Page Content Model (fully customizable)
+class LandingPageSection(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    type: str  # hero, features, news, categories, blog, cta, custom
+    enabled: bool = True
+    title: str = ""
+    subtitle: str = ""
+    content: str = ""
+    background_type: str = "none"  # none, color, image, video
+    background_value: str = ""  # hex color, image URL, or video URL
+    items: list = []
+    settings: dict = {}
+
+class LandingPageContent(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    # Hero Section
+    hero_enabled: bool = True
+    hero_label: str = "Willkommen bei unserer Familie"
+    hero_title: str = "Das Zwillings-Abenteuer"
+    hero_subtitle: str = "Ehrliche Einblicke in unser Leben mit zwei Babys"
+    hero_description: str = "Wir teilen unsere Erfahrungen, Tipps und die kleinen Kunstwerke unserer Zwillinge M & O."
+    hero_cta_text: str = "Unsere Geschichte"
+    hero_cta_link: str = "/ueber-uns"
+    hero_secondary_cta_text: str = ""
+    hero_secondary_cta_link: str = ""
+    hero_background_type: str = "none"  # none, image, video
+    hero_background_url: str = ""
+    hero_video_autoplay: bool = True
+    hero_video_loop: bool = True
+    hero_video_muted: bool = True
+    # Features Section
+    features_enabled: bool = True
+    features_title: str = "Was dich hier erwartet"
+    features_items: list = []
+    # News Section
+    news_enabled: bool = True
+    news_title: str = "Aktuelles"
+    news_autoplay_interval: int = 10  # seconds
+    # Categories Section
+    categories_enabled: bool = True
+    categories_title: str = "Entdecken"
+    # Blog Section
+    blog_enabled: bool = True
+    blog_title: str = "Aus dem Blog"
+    blog_subtitle: str = "Aktuelle Beiträge und Erfahrungen"
+    blog_max_posts: int = 4
+    # CTA Section
+    cta_enabled: bool = True
+    cta_title: str = "Möchtest du uns unterstützen?"
+    cta_description: str = "Mit deiner Hilfe können wir dieses Projekt weiterführen."
+    cta_button_text: str = "Unterstützen"
+    cta_button_link: str = "/spende"
+    # Custom sections
+    custom_sections: list = []
+    # Metadata
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
 class BlogPost(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
