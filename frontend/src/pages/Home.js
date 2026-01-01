@@ -195,15 +195,16 @@ export default function Home() {
           </div>
         </motion.div>
       </section>
+      )}
 
       {/* News Carousel Section */}
-      {newsItems.length > 0 && (
+      {newsEnabled && newsItems.length > 0 && (
         <section className="py-6 bg-foreground/5 border-y border-border">
           <div className="container-width">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2 text-sm font-medium text-foreground shrink-0">
                 <Newspaper className="w-4 h-4" />
-                <span className="hidden sm:inline">Aktuelles</span>
+                <span className="hidden sm:inline">{lc.news_title || 'Aktuelles'}</span>
               </div>
               
               <div className="flex-1 relative overflow-hidden">
