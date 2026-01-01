@@ -171,13 +171,14 @@ export default function Admin() {
 
   const fetchAllData = async (t) => {
     try {
-      const [statsRes, pagesRes, galleryRes, contactsRes, postsRes, settingsRes] = await Promise.all([
+      const [statsRes, pagesRes, galleryRes, contactsRes, postsRes, settingsRes, newsRes] = await Promise.all([
         axios.get(`${API}/admin/stats?token=${t}`),
         axios.get(`${API}/admin/pages?token=${t}`),
         axios.get(`${API}/admin/gallery?token=${t}`),
         axios.get(`${API}/admin/contacts?token=${t}`),
         axios.get(`${API}/admin/posts?token=${t}`),
-        axios.get(`${API}/settings`)
+        axios.get(`${API}/settings`),
+        axios.get(`${API}/admin/news?token=${t}`)
       ]);
       setStats(statsRes.data);
       setPages(pagesRes.data.filter(p => p.status !== 'deleted'));
@@ -186,6 +187,7 @@ export default function Admin() {
       setContacts(contactsRes.data);
       setPosts(postsRes.data.filter(p => p.status !== 'deleted'));
       setTrashedPosts(postsRes.data.filter(p => p.status === 'deleted'));
+      setNewsItems(newsRes.data);
       
       const fetchedSettings = settingsRes.data;
       setSettings({
@@ -200,6 +202,27 @@ export default function Admin() {
     } catch (err) {
       console.error('Error fetching data:', err);
     }
+  };
+
+  // News handlers
+  const handleSaveNews = async () => {
+    try {
+      if (editingNews.id && newsItems.find(n => n.id === editingNews.id)) {
+        await axios.put(`${API}/admin/news/${editingNews.id}?token=${token}`, editingNews);
+      } else {
+        await axios.post(`${API}/admin/news?token=${token}`, editingNews);
+      }
+      setEditingNews(null);
+      fetchAllData(token);
+    } catch (err) {
+      console.error('Error saving news:', err);
+    }
+  };
+
+  const handleDeleteNews = async (id) => {
+    await axios.delete(`${API}/admin/news/${id}?token=${token}`);
+    setDeleteConfirm(null);
+    fetchAllData(token);
   };
 
   const handleLogin = async (e) => {
