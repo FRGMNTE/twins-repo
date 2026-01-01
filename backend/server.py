@@ -146,6 +146,30 @@ class ContactFormInput(BaseModel):
     thema: str
     nachricht: str
 
+# News/Announcements Model for Landing Page
+class NewsItem(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    title: str
+    subtitle: Optional[str] = None
+    image_url: str
+    link_url: Optional[str] = None  # URL to redirect when clicked
+    link_type: str = "internal"  # internal, external, blog, page
+    status: str = "draft"  # draft, live
+    order: int = 0
+    start_date: Optional[datetime] = None  # Optional: show only after this date
+    end_date: Optional[datetime] = None  # Optional: hide after this date
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class NewsItemCreate(BaseModel):
+    title: str
+    subtitle: Optional[str] = None
+    image_url: str
+    link_url: Optional[str] = None
+    link_type: str = "internal"
+    status: str = "draft"
+    order: int = 0
+
 class BlogPost(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
