@@ -421,7 +421,8 @@ export default function Home() {
                   </Link>
                 </motion.article>
               ))}
-            </div>
+              </div>
+            )}
           </div>
         </section>
       )}
