@@ -219,7 +219,7 @@ export default function Admin() {
 
   const fetchAllData = async (t) => {
     try {
-      const [statsRes, pagesRes, galleryRes, contactsRes, postsRes, settingsRes, newsRes, impressumRes, datenschutzRes, cookiesRes] = await Promise.all([
+      const [statsRes, pagesRes, galleryRes, contactsRes, postsRes, settingsRes, newsRes, impressumRes, datenschutzRes, cookiesRes, staticPagesRes] = await Promise.all([
         axios.get(`${API}/admin/stats?token=${t}`),
         axios.get(`${API}/admin/pages?token=${t}`),
         axios.get(`${API}/admin/gallery?token=${t}`),
@@ -229,7 +229,8 @@ export default function Admin() {
         axios.get(`${API}/admin/news?token=${t}`),
         axios.get(`${API}/admin/page-content/impressum?token=${t}`).catch(() => ({ data: null })),
         axios.get(`${API}/admin/page-content/datenschutz?token=${t}`).catch(() => ({ data: null })),
-        axios.get(`${API}/admin/page-content/cookies?token=${t}`).catch(() => ({ data: null }))
+        axios.get(`${API}/admin/page-content/cookies?token=${t}`).catch(() => ({ data: null })),
+        axios.get(`${API}/admin/static-pages?token=${t}`).catch(() => ({ data: [] }))
       ]);
       setStats(statsRes.data);
       setPages(pagesRes.data.filter(p => p.status !== 'deleted'));
@@ -239,6 +240,7 @@ export default function Admin() {
       setPosts(postsRes.data.filter(p => p.status !== 'deleted'));
       setTrashedPosts(postsRes.data.filter(p => p.status === 'deleted'));
       setNewsItems(newsRes.data);
+      setStaticPages(staticPagesRes.data || []);
       
       // Set legal content if available
       if (impressumRes.data) {
