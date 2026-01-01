@@ -971,6 +971,40 @@ async def update_datenschutz_content(content: DatenschutzContent, token: str):
     )
     return {"success": True}
 
+# Cookies Page Endpoints
+@api_router.get("/page-content/cookies")
+async def get_cookies_content():
+    """Get cookies content for public display"""
+    content = await db.page_content.find_one({"type": "cookies"}, {"_id": 0})
+    if content:
+        return content
+    return CookiesContent().model_dump()
+
+@api_router.get("/admin/page-content/cookies")
+async def get_admin_cookies_content(token: str):
+    if not await verify_admin_session(token):
+        raise HTTPException(status_code=401, detail="Nicht autorisiert")
+    content = await db.page_content.find_one({"type": "cookies"}, {"_id": 0})
+    if content:
+        return content
+    return CookiesContent().model_dump()
+
+@api_router.put("/admin/page-content/cookies")
+async def update_cookies_content(content: CookiesContent, token: str):
+    if not await verify_admin_session(token):
+        raise HTTPException(status_code=401, detail="Nicht autorisiert")
+    
+    content_dict = content.model_dump()
+    content_dict["type"] = "cookies"
+    content_dict["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    await db.page_content.update_one(
+        {"type": "cookies"},
+        {"$set": content_dict},
+        upsert=True
+    )
+    return {"success": True}
+
 # ============== Site Settings ==============
 
 @api_router.get("/settings", response_model=SiteSettings)
