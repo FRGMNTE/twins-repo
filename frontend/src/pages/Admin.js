@@ -112,6 +112,7 @@ export default function Admin() {
   const [contacts, setContacts] = useState([]);
   const [posts, setPosts] = useState([]);
   const [trashedPosts, setTrashedPosts] = useState([]);
+  const [newsItems, setNewsItems] = useState([]);
   const [settings, setSettings] = useState({
     navItems: DEFAULT_NAV_ITEMS,
     footerLinks: DEFAULT_FOOTER_LINKS,
@@ -125,6 +126,7 @@ export default function Admin() {
   const [editingPage, setEditingPage] = useState(null);
   const [editingPost, setEditingPost] = useState(null);
   const [editingImage, setEditingImage] = useState(null);
+  const [editingNews, setEditingNews] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [showNewImageModal, setShowNewImageModal] = useState(false);
   const [newImageUrl, setNewImageUrl] = useState('');
