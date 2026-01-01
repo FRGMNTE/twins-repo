@@ -122,6 +122,35 @@ export default function Admin() {
     logoImage: '',
   });
   
+  // Legal page content states (Impressum, Datenschutz)
+  const [impressumContent, setImpressumContent] = useState({
+    provider_name: 'John D. Gold',
+    provider_street: 'Schützenstraße 38',
+    provider_city: '47829 Krefeld',
+    provider_country: 'Deutschland',
+    provider_phone: '01575 731 2560',
+    provider_email: 'gltz.de@gmail.com',
+    responsible_name: 'John D. Gold',
+    responsible_address: 'Schützenstraße 38, 47829 Krefeld',
+    liability_content: 'Die Inhalte unserer Seiten wurden mit größter Sorgfalt erstellt. Für die Richtigkeit, Vollständigkeit und Aktualität der Inhalte können wir jedoch keine Gewähr übernehmen. Als Diensteanbieter sind wir gemäß § 7 Abs.1 TMG für eigene Inhalte auf diesen Seiten nach den allgemeinen Gesetzen verantwortlich.',
+    liability_links: 'Unser Angebot enthält Links zu externen Webseiten Dritter, auf deren Inhalte wir keinen Einfluss haben. Deshalb können wir für diese fremden Inhalte auch keine Gewähr übernehmen. Für die Inhalte der verlinkten Seiten ist stets der jeweilige Anbieter oder Betreiber der Seiten verantwortlich.',
+    copyright_text: 'Die durch die Seitenbetreiber erstellten Inhalte und Werke auf diesen Seiten unterliegen dem deutschen Urheberrecht. Beiträge Dritter sind als solche gekennzeichnet. Die Vervielfältigung, Bearbeitung, Verbreitung und jede Art der Verwertung außerhalb der Grenzen des Urheberrechtes bedürfen der schriftlichen Zustimmung des jeweiligen Autors bzw. Erstellers.',
+    dispute_text: 'Wir sind nicht bereit oder verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.',
+  });
+  const [datenschutzContent, setDatenschutzContent] = useState({
+    responsible_name: 'John D. Gold',
+    responsible_address: 'Schützenstraße 38, 47829 Krefeld',
+    responsible_email: 'gltz.de@gmail.com',
+    intro_text: 'Der Schutz deiner persönlichen Daten ist uns wichtig. Diese Datenschutzerklärung informiert dich darüber, welche Daten wir erheben und wie wir sie verwenden.',
+    contact_form_text: 'Wenn du uns über das Kontaktformular kontaktierst, werden Name, E-Mail, Thema und Nachricht erhoben.',
+    contact_form_purpose: 'Zweck: Bearbeitung deiner Anfrage. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO. Speicherdauer: Bis zur Erledigung, maximal 2 Jahre.',
+    cookies_text: 'Wir verwenden nur technisch notwendige Cookies für den Betrieb dieser Website (z.B. für Dark/Light Mode Einstellungen). Es werden keine Tracking- oder Werbe-Cookies eingesetzt.',
+    hosting_text: 'Diese Website wird bei einem externen Dienstleister gehostet. Die Verarbeitung erfolgt auf Grundlage unserer berechtigten Interessen an einer effizienten und sicheren Bereitstellung unserer Website (Art. 6 Abs. 1 lit. f DSGVO).',
+    rights_text: 'Du hast jederzeit das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung, Datenübertragbarkeit und Widerspruch.',
+    paypal_text: 'Wenn du unser Projekt über PayPal unterstützt, erfolgt die Datenverarbeitung durch PayPal (Europe) S.à.r.l. et Cie, S.C.A. gemäß deren Datenschutzbestimmungen. Wir erhalten von PayPal lediglich eine Bestätigung der Transaktion.',
+    last_updated: 'Dezember 2025',
+  });
+  
   // Modal states
   const [editingPage, setEditingPage] = useState(null);
   const [editingPost, setEditingPost] = useState(null);
