@@ -261,6 +261,36 @@ class CookiesContent(BaseModel):
     last_updated: str = "Januar 2025"
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+# Static Page Content Model (for Schwangerschaft, BabyAlltag, Tipps, etc.)
+class StaticPageSection(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    title: str
+    subtitle: str = ""
+    description: str = ""
+    image_url: str = ""
+    link_url: str = ""
+    link_text: str = ""
+    items: list = []  # For lists of points, tips, etc.
+
+class StaticPageContent(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    page_id: str  # schwangerschaft, baby-alltag, tipps, reisen, ueber-uns, spende, suchen
+    # Hero section
+    hero_label: str = ""
+    hero_title: str = ""
+    hero_description: str = ""
+    hero_image: str = ""
+    # Sections (flexible array of content blocks)
+    sections: list[StaticPageSection] = []
+    # CTA section
+    cta_title: str = ""
+    cta_description: str = ""
+    cta_link: str = ""
+    cta_link_text: str = ""
+    # Metadata
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
 # ============== Auth Helpers ==============
 
 DEFAULT_PASSWORD = "gltz2025"  # Default password, should be changed
