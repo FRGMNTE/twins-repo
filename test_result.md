@@ -194,6 +194,18 @@ backend:
         agent: "testing"
         comment: "✅ TESTED: BlogPost model has publish_date field for sorting/ordering. Soft delete moves posts to trash with deleted_at timestamp. Restore and permanent delete functionality working. Fixed minor validation issue in update_post endpoint."
 
+  - task: "Legal Pages Content - Structured Impressum and Datenschutz endpoints"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: All new legal pages endpoints working perfectly. Public endpoints GET /api/page-content/impressum and GET /api/page-content/datenschutz return structured content. Admin endpoints with token authentication working: GET/PUT /api/admin/page-content/impressum and GET/PUT /api/admin/page-content/datenschutz. All required fields present, data persistence verified, security working (401 for invalid tokens). 12/12 tests passed."
+
   - task: "API - Trash endpoints (restore, permanent delete, empty trash)"
     implemented: true
     working: true
