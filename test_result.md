@@ -317,12 +317,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Navigation dropdown submenus"
-    - "Blog posts with date picker and trash"
-    - "Pages with trash and duplicate"
-    - "Settings with Social Media links"
+    - "Legal pages testing complete"
   stuck_tasks: []
-  test_all: true
+  test_all: false
   test_priority: "high_first"
 
 agent_communication:
