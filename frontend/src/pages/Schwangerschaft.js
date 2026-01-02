@@ -80,6 +80,11 @@ export default function Schwangerschaft() {
   const ctaDescription = content?.cta_description || 'Erfahre, wie das Leben mit Zwillingen nach der Geburt aussieht.';
   const ctaLink = content?.cta_link || '/baby-alltag';
   const ctaLinkText = content?.cta_link_text || 'Zum Baby-Alltag';
+  
+  // Background settings
+  const bgEnabled = content?.background_enabled !== false;
+  const bgType = content?.background_type || 'default';
+  const bgUrl = content?.background_url || '';
 
   if (loading) {
     return (
@@ -92,25 +97,16 @@ export default function Schwangerschaft() {
   }
 
   return (
-    <main id="main-content" className="min-h-screen pt-20">
-      {/* Hero */}
-      <section className="section-padding bg-gradient-to-b from-secondary/50 to-background">
-        <div className="container-width">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="max-w-3xl"
-          >
-            <span className="text-sm font-medium text-primary uppercase tracking-wide">{heroLabel}</span>
-            <h1 className="text-4xl sm:text-5xl font-bold text-foreground mt-4 mb-6">
-              {heroTitle}
-            </h1>
-            <p className="text-lg text-muted-foreground leading-relaxed">
-              {heroDescription}
-            </p>
-          </motion.div>
-        </div>
-      </section>
+    <main id="main-content" className="min-h-screen">
+      {/* Hero with Background */}
+      <PageHero
+        label={heroLabel}
+        title={heroTitle}
+        description={heroDescription}
+        backgroundType={bgEnabled ? bgType : 'none'}
+        backgroundUrl={bgUrl}
+        overlay={0.5}
+      />
 
       {/* Trimester Timeline */}
       <section className="section-padding bg-background">
