@@ -63,6 +63,30 @@ export default function Home() {
     return () => clearInterval(timer);
   }, [newsItems.length, landingContent?.news_autoplay_interval]);
 
+  // Gallery carousel auto-advance (every 10 seconds)
+  useEffect(() => {
+    const carouselImages = getCarouselImages();
+    if (carouselImages.length <= 1) return;
+    const interval = landingContent?.gallery_autoplay_interval || 10;
+    
+    const timer = setInterval(() => {
+      setCurrentGalleryIndex((prev) => (prev + 1) % carouselImages.length);
+    }, interval * 1000);
+
+    return () => clearInterval(timer);
+  }, [galleryImages, landingContent?.gallery_carousel_images, landingContent?.gallery_autoplay_interval]);
+
+  // Get carousel images - either selected ones or all gallery images
+  const getCarouselImages = useCallback(() => {
+    if (landingContent?.gallery_carousel_images?.length > 0) {
+      // Use selected images from admin
+      const selectedIds = landingContent.gallery_carousel_images;
+      return galleryImages.filter(img => selectedIds.includes(img.id));
+    }
+    // Default: use all gallery images
+    return galleryImages;
+  }, [galleryImages, landingContent?.gallery_carousel_images]);
+
   const nextNews = useCallback(() => {
     setCurrentNewsIndex((prev) => (prev + 1) % newsItems.length);
   }, [newsItems.length]);
