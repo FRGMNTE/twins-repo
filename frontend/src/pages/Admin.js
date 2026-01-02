@@ -2070,7 +2070,16 @@ export default function Admin() {
                       </div>
                       <div>
                         <Label className="text-xs flex items-center gap-1"><AtSign className="w-3 h-3" /> Kontakt E-Mail</Label>
-                        <Input value={settings.footerEmail || ''} onChange={(e) => setSettings({...settings, footerEmail: e.target.value})} className="mt-1" placeholder="kontakt@beispiel.de" />
+                        <Input value={settings.contactEmail || ''} onChange={(e) => setSettings({...settings, contactEmail: e.target.value})} className="mt-1" placeholder="kontakt@beispiel.de" />
+                      </div>
+                      <div>
+                        <Label className="text-xs">Kontakt Telefon (optional)</Label>
+                        <Input value={settings.contactPhone || ''} onChange={(e) => setSettings({...settings, contactPhone: e.target.value})} className="mt-1" placeholder="+49 123 456789" />
+                      </div>
+                      <div className="sm:col-span-2">
+                        <Label className="text-xs">Kontakt Anschrift (optional)</Label>
+                        <Textarea value={settings.contactAddress || ''} onChange={(e) => setSettings({...settings, contactAddress: e.target.value})} className="mt-1" rows={2} placeholder="Musterstraße 1&#10;12345 Musterstadt" />
+                        <p className="text-xs text-muted-foreground mt-1">Mehrzeilig möglich. Erscheint im Footer unter "Kontakt".</p>
                       </div>
                     </div>
 
