@@ -80,25 +80,51 @@ export default function Footer() {
               </div>
             )}
 
-            {/* Kontakt - nur E-Mail */}
-            {footerEmail && (
-              <div>
-                <h4 className="text-xs font-semibold text-foreground mb-3 uppercase tracking-wide">
-                  Kontakt
-                </h4>
-                <ul className="space-y-2">
+            {/* Kontakt - Kontaktformular + erweiterte Kontaktdaten */}
+            <div>
+              <h4 className="text-xs font-semibold text-foreground mb-3 uppercase tracking-wide">
+                Kontakt
+              </h4>
+              <ul className="space-y-2">
+                <li className="leading-tight">
+                  <Link 
+                    to="/kontakt"
+                    className="text-xs text-muted-foreground hover:text-foreground transition-colors inline-block"
+                    data-testid="footer-kontakt"
+                  >
+                    Kontaktformular
+                  </Link>
+                </li>
+                {/* Extended contact info from settings */}
+                {settings.contactAddress && (
+                  <li className="leading-tight">
+                    <span className="text-xs text-muted-foreground whitespace-pre-line">
+                      {settings.contactAddress}
+                    </span>
+                  </li>
+                )}
+                {settings.contactPhone && (
                   <li className="leading-tight">
                     <a 
-                      href={`mailto:${footerEmail}`}
+                      href={`tel:${settings.contactPhone.replace(/\s/g, '')}`}
                       className="text-xs text-muted-foreground hover:text-foreground transition-colors inline-block"
-                      data-testid="footer-email"
                     >
-                      E-Mail
+                      {settings.contactPhone}
                     </a>
                   </li>
-                </ul>
-              </div>
-            )}
+                )}
+                {settings.contactEmail && (
+                  <li className="leading-tight">
+                    <a 
+                      href={`mailto:${settings.contactEmail}`}
+                      className="text-xs text-muted-foreground hover:text-foreground transition-colors inline-block"
+                    >
+                      {settings.contactEmail}
+                    </a>
+                  </li>
+                )}
+              </ul>
+            </div>
 
             {/* Social Links - Nur Icon ODER Text (konfigurierbar) */}
             {enabledSocialLinks.length > 0 && (
