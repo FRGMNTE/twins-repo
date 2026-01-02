@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Heart, Gift, Coffee, Star, CheckCircle } from 'lucide-react';
 import { useSiteSettings } from '../context/SiteSettingsContext';
 import axios from 'axios';
+import { PageHero } from '../components/PageBackground';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -41,6 +42,11 @@ export default function Spende() {
   ];
 
   const ICONS = { Coffee, Star, Heart, Gift, CheckCircle };
+  
+  // Background settings
+  const bgEnabled = content?.background_enabled !== false;
+  const bgType = content?.background_type || 'default';
+  const bgUrl = content?.background_url || '';
 
   if (loading) {
     return (
@@ -53,11 +59,15 @@ export default function Spende() {
   }
 
   return (
-    <main id="main-content" className="min-h-screen pt-20">
-      {/* Hero */}
-      <section className="section-padding bg-gradient-to-b from-secondary/50 to-background">
-        <div className="container-width">
-          <motion.div
+    <main id="main-content" className="min-h-screen">
+      <PageHero
+        label={heroLabel}
+        title={heroTitle}
+        description={heroDescription}
+        backgroundType={bgEnabled ? bgType : 'none'}
+        backgroundUrl={bgUrl}
+        overlay={0.5}
+      />
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="max-w-3xl mx-auto text-center"
