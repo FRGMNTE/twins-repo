@@ -2324,12 +2324,49 @@ export default function Admin() {
               if (deleteConfirm.type === 'post') handleDeletePost(deleteConfirm.id, false);
               if (deleteConfirm.type === 'post-permanent') handleDeletePost(deleteConfirm.id, true);
               if (deleteConfirm.type === 'image') handleDeleteImage(deleteConfirm.id);
+              if (deleteConfirm.type === 'static-page') handleDeleteStaticPage(deleteConfirm.id);
             }}>
-              {deleteConfirm?.type?.includes('permanent') ? 'Endgültig löschen' : 'In Papierkorb'}
+              {deleteConfirm?.type === 'static-page' ? 'Löschen' : deleteConfirm?.type?.includes('permanent') ? 'Endgültig löschen' : 'In Papierkorb'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* New Static Page Modal */}
+      <Dialog open={showNewStaticPageModal} onOpenChange={setShowNewStaticPageModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Neue Seite erstellen</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Seiten-Titel</Label>
+              <Input 
+                value={newStaticPageTitle} 
+                onChange={(e) => setNewStaticPageTitle(e.target.value)} 
+                placeholder="z.B. Unsere Tipps" 
+              />
+            </div>
+            <div>
+              <Label>Seiten-ID (URL-Pfad)</Label>
+              <Input 
+                value={newStaticPageId} 
+                onChange={(e) => setNewStaticPageId(e.target.value)} 
+                placeholder="z.B. unsere-tipps" 
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Nur Kleinbuchstaben und Bindestriche. Die Seite wird unter /{newStaticPageId || 'seiten-id'} erreichbar sein.
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowNewStaticPageModal(false)}>Abbrechen</Button>
+            <Button onClick={handleCreateStaticPage}>
+              <Plus className="w-4 h-4 mr-1" /> Seite erstellen
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </main>
   );
 }
