@@ -150,7 +150,7 @@ export default function Navigation() {
 
       <nav
         className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
-          isScrolled ? 'glass border-b border-border' : 'bg-transparent'
+          isScrolled ? 'bg-background/90 backdrop-blur-md border-b border-border' : 'bg-background border-b border-border'
         }`}
         role="navigation"
         aria-label="Hauptnavigation"

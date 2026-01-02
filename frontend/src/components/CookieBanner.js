@@ -55,7 +55,7 @@ export default function CookieBanner() {
                   {/* Content */}
                   <div className="flex-1 min-w-0">
                     <h3 className="text-base font-semibold text-foreground mb-1">
-                      🍪 Cookie-Hinweis
+                      Cookie-Hinweis
                     </h3>
                     <p className="text-sm text-muted-foreground leading-relaxed">
                       Wir nutzen nur <strong>technisch notwendige Cookies</strong> für den Betrieb dieser Website. 
