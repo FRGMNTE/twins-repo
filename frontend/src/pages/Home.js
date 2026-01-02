@@ -20,8 +20,10 @@ const CATEGORY_CARDS = [
 export default function Home() {
   const [blogPosts, setBlogPosts] = useState([]);
   const [newsItems, setNewsItems] = useState([]);
+  const [galleryImages, setGalleryImages] = useState([]);
   const [landingContent, setLandingContent] = useState(null);
   const [currentNewsIndex, setCurrentNewsIndex] = useState(0);
+  const [currentGalleryIndex, setCurrentGalleryIndex] = useState(0);
   const { theme } = useTheme();
   const { settings } = useSiteSettings();
 
@@ -30,13 +32,15 @@ export default function Home() {
     const fetchData = async () => {
       try {
         await axios.post(`${API}/seed`);
-        const [blogRes, newsRes, landingRes] = await Promise.all([
+        const [blogRes, newsRes, landingRes, galleryRes] = await Promise.all([
           axios.get(`${API}/blog?limit=4`),
           axios.get(`${API}/news`),
-          axios.get(`${API}/landing-content`).catch(() => ({ data: null }))
+          axios.get(`${API}/landing-content`).catch(() => ({ data: null })),
+          axios.get(`${API}/gallery`).catch(() => ({ data: [] }))
         ]);
         setBlogPosts(blogRes.data);
         setNewsItems(newsRes.data);
+        setGalleryImages(galleryRes.data || []);
         if (landingRes.data) {
           setLandingContent(landingRes.data);
         }
