@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Search as SearchIcon, FileText, Layers, Image, X, FolderOpen } from 'lucide-react';
 import axios from 'axios';
 import { Input } from '../components/ui/input';
+import { PageHero } from '../components/PageBackground';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -40,14 +41,35 @@ export default function Suchen() {
   const totalResults = results.pages.length + results.posts.length + results.gallery.length + results.static_pages.length;
 
   return (
-    <main id="main-content" className="min-h-screen pt-20">
-      {/* Search Hero */}
-      <section className="section-padding bg-gradient-to-b from-secondary/50 to-background">
-        <div className="container-width">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="max-w-2xl mx-auto text-center"
+    <main id="main-content" className="min-h-screen">
+      <PageHero
+        label="Suche"
+        title="Inhalte durchsuchen"
+        description=""
+        backgroundType="default"
+        overlay={0.5}
+      >
+        {/* Search Input */}
+        <div className="relative mt-8 max-w-xl">
+          <SearchIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+          <Input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Was suchst du? (z.B. Zwilling, Schlaf, Tipps...)"
+            className="pl-12 pr-10 py-4 text-lg rounded-full border-2"
+            autoFocus
+          />
+          {query && (
+            <button
+              onClick={() => setQuery('')}
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 p-1 hover:bg-secondary rounded-full"
+            >
+              <X className="w-4 h-4 text-muted-foreground" />
+            </button>
+          )}
+        </div>
+      </PageHero>
           >
             <span className="text-sm font-medium text-primary uppercase tracking-wide">Suche</span>
             <h1 className="text-4xl sm:text-5xl font-bold text-foreground mt-4 mb-6">
