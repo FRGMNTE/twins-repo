@@ -58,7 +58,8 @@
   "scripts": {
     "start": "craco start",
     "build": "craco build",
-    "test": "craco test"
+    "test": "craco test",
+    "deploy": "yarn build && echo 'Build erstellt! Lade den Inhalt von /build/ auf Hostinger hoch.'"
   },
   "browserslist": {
     "production": [
