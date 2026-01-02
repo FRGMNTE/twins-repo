@@ -313,6 +313,12 @@ class StaticPageContent(BaseModel):
     hero_title: str = ""
     hero_description: str = ""
     hero_image: str = ""
+    # Background settings
+    background_enabled: bool = True
+    background_type: str = "image"  # none, image, video
+    background_url: str = ""
+    background_overlay: float = 0.4  # 0-1 opacity for overlay
+    # Sections
     sections: list[StaticPageSection] = []
     cta_title: str = ""
     cta_description: str = ""
