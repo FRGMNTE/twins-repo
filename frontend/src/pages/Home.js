@@ -492,6 +492,110 @@ export default function Home() {
         </section>
       )}
 
+      {/* Gallery Carousel Section */}
+      {(landingContent?.gallery_carousel_enabled !== false) && getCarouselImages().length > 0 && (
+        <section className="section-padding bg-secondary/30">
+          <div className="container-width">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center mb-8"
+            >
+              <div className="inline-flex items-center gap-2 text-sm font-medium text-primary uppercase tracking-wide mb-4">
+                <Image className="w-4 h-4" />
+                {landingContent?.gallery_carousel_title || 'Galerie'}
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-semibold text-foreground">
+                {landingContent?.gallery_carousel_subtitle || 'Einblicke in unseren Alltag'}
+              </h2>
+            </motion.div>
+
+            {/* Carousel */}
+            <div className="relative">
+              <div className="aspect-[21/9] sm:aspect-[3/1] rounded-2xl overflow-hidden relative bg-secondary">
+                <AnimatePresence mode="wait">
+                  {getCarouselImages()[currentGalleryIndex] && (
+                    <motion.img
+                      key={currentGalleryIndex}
+                      src={getCarouselImages()[currentGalleryIndex].url}
+                      alt={getCarouselImages()[currentGalleryIndex].title || 'Galerie Bild'}
+                      initial={{ opacity: 0, scale: 1.05 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.7 }}
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                  )}
+                </AnimatePresence>
+
+                {/* Caption Overlay */}
+                {getCarouselImages()[currentGalleryIndex]?.title && (
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-6">
+                    <p className="text-white font-medium text-lg">
+                      {getCarouselImages()[currentGalleryIndex].title}
+                    </p>
+                    {getCarouselImages()[currentGalleryIndex].caption && (
+                      <p className="text-white/80 text-sm mt-1">
+                        {getCarouselImages()[currentGalleryIndex].caption}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Navigation Arrows */}
+                {getCarouselImages().length > 1 && (
+                  <>
+                    <button
+                      onClick={() => setCurrentGalleryIndex((prev) => (prev - 1 + getCarouselImages().length) % getCarouselImages().length)}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/30 hover:bg-black/50 text-white transition-colors"
+                      aria-label="Vorheriges Bild"
+                    >
+                      <ChevronLeft className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => setCurrentGalleryIndex((prev) => (prev + 1) % getCarouselImages().length)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/30 hover:bg-black/50 text-white transition-colors"
+                      aria-label="Nächstes Bild"
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
+                  </>
+                )}
+              </div>
+
+              {/* Dots Indicator */}
+              {getCarouselImages().length > 1 && (
+                <div className="flex justify-center gap-2 mt-4">
+                  {getCarouselImages().map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setCurrentGalleryIndex(idx)}
+                      className={`w-2.5 h-2.5 rounded-full transition-all ${
+                        idx === currentGalleryIndex 
+                          ? 'bg-foreground w-8' 
+                          : 'bg-foreground/30 hover:bg-foreground/50'
+                      }`}
+                      aria-label={`Bild ${idx + 1}`}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Link to full gallery */}
+            <div className="text-center mt-6">
+              <Link 
+                to="/twins-art" 
+                className="inline-flex items-center text-sm font-medium text-foreground hover:text-primary transition-colors"
+              >
+                Alle Bilder ansehen <ArrowRight className="w-4 h-4 ml-1" />
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Support CTA Section */}
       <section className="section-padding bg-gradient-to-b from-background to-secondary/20">
         <div className="container-width">
