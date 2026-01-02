@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from '../components/ui/select';
 import { Label } from '../components/ui/label';
+import { PageHero } from '../components/PageBackground';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -58,23 +59,17 @@ export default function Kontakt() {
   };
 
   return (
-    <main id="main-content" className="pt-14">
-      <section className="section-padding" data-testid="contact-page">
+    <main id="main-content" className="min-h-screen">
+      <PageHero
+        label="Kontakt"
+        title="Schreib uns"
+        description="Fragen zu Zwillingen-Alltag? Wir sind Eltern wie du."
+        backgroundType="default"
+        overlay={0.5}
+      />
+      
+      <section className="section-padding bg-background" data-testid="contact-page">
         <div className="container-width">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-12"
-          >
-            <h1 className="text-4xl sm:text-5xl font-semibold text-foreground mb-4 tracking-tight">
-              Kontakt
-            </h1>
-            <p className="text-lg text-muted-foreground max-w-md mx-auto">
-              Fragen zu Zwillingen-Alltag? Wir sind Eltern wie du.
-            </p>
-          </motion.div>
-
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
