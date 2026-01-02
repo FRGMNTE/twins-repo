@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Facebook, Instagram, Youtube, Twitter } from 'lucide-react';
+import { Facebook, Instagram, Youtube, Twitter, ExternalLink } from 'lucide-react';
 import { useSiteSettings } from '../context/SiteSettingsContext';
 
 const DEFAULT_FOOTER_LINKS = [
@@ -14,6 +14,14 @@ const SOCIAL_ICONS = {
   youtube: Youtube,
   twitter: Twitter,
   tiktok: () => <span className="text-xs font-bold">TT</span>,
+};
+
+const SOCIAL_NAMES = {
+  facebook: 'Facebook',
+  instagram: 'Instagram',
+  youtube: 'YouTube',
+  tiktok: 'TikTok',
+  twitter: 'X (Twitter)',
 };
 
 export default function Footer() {
@@ -53,10 +61,10 @@ export default function Footer() {
                 </h4>
                 <ul className="space-y-2">
                   {footerLinks.map((link) => (
-                    <li key={link.id}>
+                    <li key={link.id} className="leading-tight">
                       <Link 
                         to={link.path} 
-                        className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                        className="text-xs text-muted-foreground hover:text-foreground transition-colors inline-block"
                         data-testid={`footer-${link.label.toLowerCase()}`}
                       >
                         {link.label}
@@ -74,10 +82,10 @@ export default function Footer() {
                   Kontakt
                 </h4>
                 <ul className="space-y-2">
-                  <li>
+                  <li className="leading-tight">
                     <a 
                       href={`mailto:${footerEmail}`}
-                      className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                      className="text-xs text-muted-foreground hover:text-foreground transition-colors inline-block"
                       data-testid="footer-email"
                     >
                       E-Mail
@@ -87,7 +95,7 @@ export default function Footer() {
               </div>
             )}
 
-            {/* Social Links */}
+            {/* Social Links - Nur Icon ODER Text (konfigurierbar) */}
             {enabledSocialLinks.length > 0 && (
               <div>
                 <h4 className="text-xs font-semibold text-foreground mb-3 uppercase tracking-wide">
@@ -96,25 +104,21 @@ export default function Footer() {
                 <ul className="space-y-2">
                   {enabledSocialLinks.map((link) => {
                     const IconComponent = SOCIAL_ICONS[link.platform] || Facebook;
-                    const platformName = {
-                      facebook: 'Facebook',
-                      instagram: 'Instagram',
-                      youtube: 'YouTube',
-                      tiktok: 'TikTok',
-                      twitter: 'X (Twitter)',
-                    }[link.platform] || link.platform;
+                    const platformName = SOCIAL_NAMES[link.platform] || link.platform;
+                    const showIcon = link.displayMode !== 'text';
+                    const showText = link.displayMode !== 'icon';
 
                     return (
-                      <li key={link.id}>
+                      <li key={link.id} className="leading-tight">
                         <a 
                           href={link.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                          className="text-xs text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1.5"
                           data-testid={`footer-${link.platform}`}
                         >
-                          <IconComponent className="w-3 h-3" />
-                          {platformName}
+                          {showIcon && <IconComponent className="w-3.5 h-3.5 flex-shrink-0" />}
+                          {showText && <span>{platformName}</span>}
                         </a>
                       </li>
                     );
