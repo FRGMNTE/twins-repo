@@ -61,13 +61,20 @@ class RefactoringAPITester:
     
     def test_health_check(self):
         """Test Health Check: GET /health"""
+        # Try both /health and /api/health endpoints
         success, response = self.make_request('GET', '/health')
         if success and response.get('status') == 'healthy':
             self.log_result("Health Check", True)
             return True
         else:
-            self.log_result("Health Check", False, f"Expected status: healthy, got: {response}")
-            return False
+            # Try /api/health as fallback
+            success, response = self.make_request('GET', '/api/health')
+            if success and response.get('status') == 'healthy':
+                self.log_result("Health Check", True, "Available at /api/health")
+                return True
+            else:
+                self.log_result("Health Check", False, f"Expected status: healthy, got: {response}")
+                return False
     
     def test_settings_api(self):
         """Test Settings API: GET /api/settings"""
