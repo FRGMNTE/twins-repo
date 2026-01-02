@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Lightbulb, Baby, Moon, ShoppingBag, Heart, Users, Car, Home, ChevronDown, ArrowRight } from 'lucide-react';
 import axios from 'axios';
+import { PageHero } from '../components/PageBackground';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -59,6 +60,11 @@ export default function Tipps() {
   const ctaDescription = content?.cta_description || 'Wir freuen uns über Erfahrungen von anderen Zwillingseltern.';
   const ctaLink = content?.cta_link || '/kontakt';
   const ctaLinkText = content?.cta_link_text || 'Kontakt aufnehmen';
+  
+  // Background settings
+  const bgEnabled = content?.background_enabled !== false;
+  const bgType = content?.background_type || 'default';
+  const bgUrl = content?.background_url || '';
 
   if (loading) {
     return (
@@ -71,13 +77,15 @@ export default function Tipps() {
   }
 
   return (
-    <main id="main-content" className="min-h-screen pt-20">
-      <section className="section-padding bg-gradient-to-b from-secondary/50 to-background">
-        <div className="container-width">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-3xl">
-            <span className="text-sm font-medium text-primary uppercase tracking-wide">{heroLabel}</span>
-            <h1 className="text-4xl sm:text-5xl font-bold text-foreground mt-4 mb-6">{heroTitle}</h1>
-            <p className="text-lg text-muted-foreground leading-relaxed">{heroDescription}</p>
+    <main id="main-content" className="min-h-screen">
+      <PageHero
+        label={heroLabel}
+        title={heroTitle}
+        description={heroDescription}
+        backgroundType={bgEnabled ? bgType : 'none'}
+        backgroundUrl={bgUrl}
+        overlay={0.5}
+      />
           </motion.div>
         </div>
       </section>
