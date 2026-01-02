@@ -68,19 +68,6 @@ export default function Spende() {
         backgroundUrl={bgUrl}
         overlay={0.5}
       />
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="max-w-3xl mx-auto text-center"
-          >
-            <div className="w-16 h-16 rounded-2xl bg-foreground/10 flex items-center justify-center mx-auto mb-6">
-              <Heart className="w-8 h-8 text-foreground" />
-            </div>
-            <span className="text-sm font-medium text-primary uppercase tracking-wide">{heroLabel}</span>
-            <h1 className="text-4xl sm:text-5xl font-bold text-foreground mt-4 mb-6">{heroTitle}</h1>
-            <p className="text-lg text-muted-foreground leading-relaxed">{heroDescription}</p>
-          </motion.div>
-        </div>
-      </section>
 
       {/* How to Support */}
       <section className="section-padding bg-background">
