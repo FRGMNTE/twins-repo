@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, ChevronRight, ChevronLeft, Calendar, Newspaper, Heart, Baby, Plane, Palette } from 'lucide-react';
+import { ArrowRight, ChevronRight, ChevronLeft, Calendar, Newspaper, Heart, Baby, Plane, Palette, Image } from 'lucide-react';
 import axios from 'axios';
 import { useTheme } from '../context/ThemeContext';
 import { useSiteSettings } from '../context/SiteSettingsContext';
