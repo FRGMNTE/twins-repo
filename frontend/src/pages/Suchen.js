@@ -75,23 +75,17 @@ export default function Suchen() {
       <section className="section-padding bg-background">
         <div className="container-width">
           {query.trim().length === 1 && (
-              <p className="text-sm text-muted-foreground mt-4">
-                Bitte mindestens 2 Zeichen eingeben.
-              </p>
-            )}
-            
-            {hasSearched && query.trim().length >= 2 && (
-              <p className="text-sm text-muted-foreground mt-4">
-                {loading ? 'Suche...' : `${totalResults} Ergebnis${totalResults !== 1 ? 'se' : ''} gefunden`}
-              </p>
-            )}
-          </motion.div>
-        </div>
-      </section>
+            <p className="text-sm text-muted-foreground mb-4">
+              Bitte mindestens 2 Zeichen eingeben.
+            </p>
+          )}
+          
+          {hasSearched && query.trim().length >= 2 && (
+            <p className="text-sm text-muted-foreground mb-4">
+              {loading ? 'Suche...' : `${totalResults} Ergebnis${totalResults !== 1 ? 'se' : ''} gefunden`}
+            </p>
+          )}
 
-      {/* Results */}
-      <section className="section-padding bg-background">
-        <div className="container-width">
           {!hasSearched ? (
             <div className="text-center py-12">
               <SearchIcon className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
