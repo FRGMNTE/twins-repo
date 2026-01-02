@@ -3,6 +3,9 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Heart, Calendar, AlertCircle, CheckCircle, Baby, ArrowRight, Clock, Activity } from 'lucide-react';
 import axios from 'axios';
+import { PageHero } from '../components/PageBackground';
+import { useTheme } from '../context/ThemeContext';
+import { useSiteSettings } from '../context/SiteSettingsContext';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
