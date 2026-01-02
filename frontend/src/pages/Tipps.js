@@ -86,9 +86,6 @@ export default function Tipps() {
         backgroundUrl={bgUrl}
         overlay={0.5}
       />
-          </motion.div>
-        </div>
-      </section>
 
       <section className="section-padding bg-background">
         <div className="container-width">
