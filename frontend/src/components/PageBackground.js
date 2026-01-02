@@ -90,6 +90,7 @@ export default function PageBackground({
 
 /**
  * PageHero - Hero-Sektion mit professionellem Hintergrund
+ * Mit sanftem Gradient-Übergang wie bei der Landing Page
  */
 export function PageHero({
   label,
@@ -98,6 +99,7 @@ export function PageHero({
   backgroundType = 'default',
   backgroundUrl = '',
   overlay = 0.5,
+  gradientStrength = 'normal', // 'light', 'normal', 'strong'
   children
 }) {
   const { theme } = useTheme();
@@ -113,6 +115,26 @@ export function PageHero({
 
   const isVideo = backgroundType === 'video' && backgroundUrl;
   const hasBackground = backgroundType !== 'none' && bgUrl;
+
+  // Gradient classes based on strength
+  const getGradientClasses = () => {
+    const baseGradient = theme === 'dark' 
+      ? 'from-black via-black/60 to-background'
+      : 'from-white via-white/60 to-background';
+    
+    switch (gradientStrength) {
+      case 'light':
+        return theme === 'dark'
+          ? 'from-black/50 via-black/30 to-background'
+          : 'from-white/50 via-white/30 to-background';
+      case 'strong':
+        return theme === 'dark'
+          ? 'from-black/90 via-black/70 to-background'
+          : 'from-white/90 via-white/70 to-background';
+      default:
+        return baseGradient;
+    }
+  };
 
   return (
     <section className="relative min-h-[50vh] flex items-center overflow-hidden">
@@ -131,19 +153,20 @@ export function PageHero({
             </video>
           ) : (
             <div 
-              className="absolute inset-0 w-full h-full bg-cover bg-center bg-fixed"
+              className="absolute inset-0 w-full h-full bg-cover bg-center"
               style={{ backgroundImage: `url(${bgUrl})` }}
             />
           )}
           
-          {/* Gradient Overlay */}
+          {/* Smooth Gradient Overlay - wie bei Landing Page */}
           <div 
-            className={`absolute inset-0 ${
-              theme === 'dark' 
-                ? 'bg-gradient-to-b from-black/70 via-black/50 to-background' 
-                : 'bg-gradient-to-b from-white/70 via-white/50 to-background'
-            }`}
+            className={`absolute inset-0 bg-gradient-to-b ${getGradientClasses()}`}
             style={{ opacity: overlay > 0 ? 1 : 0 }}
+          />
+          
+          {/* Additional fade at bottom for seamless transition */}
+          <div 
+            className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent"
           />
         </div>
       )}
