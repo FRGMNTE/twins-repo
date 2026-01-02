@@ -1036,6 +1036,61 @@ export default function Admin() {
                         </AccordionContent>
                       </AccordionItem>
 
+                      {/* Gallery Carousel Settings */}
+                      <AccordionItem value="gallery-carousel" className="border rounded-xl px-4">
+                        <AccordionTrigger className="py-4">
+                          <div className="flex items-center gap-2">
+                            <ImageIcon className="w-5 h-5" />
+                            <span className="font-semibold">Galerie-Karussell</span>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="pb-4 space-y-4">
+                          <div className="grid sm:grid-cols-2 gap-4">
+                            <div>
+                              <Label className="text-xs">Untertitel</Label>
+                              <Input value={landingContent.gallery_carousel_subtitle || ''} onChange={(e) => handleLandingFieldChange('gallery_carousel_subtitle', e.target.value)} className="mt-1" placeholder="Einblicke in unseren Alltag" />
+                            </div>
+                            <div>
+                              <Label className="text-xs">Wechsel-Intervall (Sekunden)</Label>
+                              <Input type="number" value={landingContent.gallery_autoplay_interval || 10} onChange={(e) => handleLandingFieldChange('gallery_autoplay_interval', parseInt(e.target.value))} className="mt-1" min={3} max={30} />
+                            </div>
+                          </div>
+                          <div>
+                            <Label className="text-xs mb-2 block">Bilder auswählen (leer = alle Galerie-Bilder)</Label>
+                            <p className="text-xs text-muted-foreground mb-3">Klicke auf Bilder um sie für das Karussell auszuwählen.</p>
+                            <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 max-h-64 overflow-y-auto p-2 border rounded-lg">
+                              {gallery.map((img) => {
+                                const isSelected = (landingContent.gallery_carousel_images || []).includes(img.id);
+                                return (
+                                  <button
+                                    key={img.id}
+                                    onClick={() => {
+                                      const current = landingContent.gallery_carousel_images || [];
+                                      if (isSelected) {
+                                        handleLandingFieldChange('gallery_carousel_images', current.filter(id => id !== img.id));
+                                      } else {
+                                        handleLandingFieldChange('gallery_carousel_images', [...current, img.id]);
+                                      }
+                                    }}
+                                    className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${isSelected ? 'border-primary ring-2 ring-primary/30' : 'border-transparent hover:border-muted-foreground/30'}`}
+                                  >
+                                    <img src={img.url} alt={img.title} className="w-full h-full object-cover" />
+                                    {isSelected && (
+                                      <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
+                                        <Check className="w-6 h-6 text-primary" />
+                                      </div>
+                                    )}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                            {(landingContent.gallery_carousel_images || []).length > 0 && (
+                              <p className="text-xs text-muted-foreground mt-2">{(landingContent.gallery_carousel_images || []).length} Bilder ausgewählt</p>
+                            )}
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+
                       {/* CTA Settings */}
                       <AccordionItem value="cta" className="border rounded-xl px-4">
                         <AccordionTrigger className="py-4">
