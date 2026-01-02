@@ -59,17 +59,6 @@ export default function Blog() {
         backgroundType="default"
         overlay={0.5}
       />
-          >
-            <span className="text-sm font-medium text-primary uppercase tracking-wide">Blog</span>
-            <h1 className="text-4xl sm:text-5xl font-bold text-foreground mt-4 mb-6">
-              Geschichten & Erfahrungen
-            </h1>
-            <p className="text-lg text-muted-foreground leading-relaxed">
-              Hier teilen wir unsere Erlebnisse, Tipps und alles, was uns als Zwillingsfamilie bewegt.
-            </p>
-          </motion.div>
-        </div>
-      </section>
 
       {/* Filters */}
       <section className="py-6 border-b border-border sticky top-14 bg-background/95 backdrop-blur-sm z-30">
