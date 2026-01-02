@@ -991,6 +991,7 @@ export default function Admin() {
                             { key: 'news_enabled', label: 'News-Ticker/Aktuelles', title: 'news_title' },
                             { key: 'categories_enabled', label: 'Kategorien/Entdecken', title: 'categories_title' },
                             { key: 'blog_enabled', label: 'Blog-Vorschau', title: 'blog_title' },
+                            { key: 'gallery_carousel_enabled', label: 'Galerie-Karussell', title: 'gallery_carousel_title' },
                             { key: 'cta_enabled', label: 'Spenden CTA', title: 'cta_title' },
                           ].map((section) => (
                             <div key={section.key} className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg">
