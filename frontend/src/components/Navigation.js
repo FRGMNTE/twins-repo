@@ -202,7 +202,7 @@ export default function Navigation() {
 
         {/* Mobile Menu */}
         {isOpen && (
-          <div className="lg:hidden glass border-t border-border" data-testid="mobile-menu">
+          <div className="lg:hidden bg-background/90 backdrop-blur-md border-t border-border" data-testid="mobile-menu">
             <div className="container-width py-4 space-y-1">
               {navItems.map((item) => {
                 const enabledChildren = (item.children || []).filter(child => child.enabled);
