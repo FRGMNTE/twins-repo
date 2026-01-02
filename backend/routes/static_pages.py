@@ -126,3 +126,73 @@ async def update_static_page(page_id: str, content: dict, token: str):
         upsert=True
     )
     return {"success": True}
+
+@router.post("/admin/static-pages")
+async def create_static_page(content: dict, token: str):
+    """Create a new custom static page"""
+    if not await verify_admin_session(token):
+        raise HTTPException(status_code=401, detail="Nicht autorisiert")
+    
+    page_id = content.get("page_id")
+    if not page_id:
+        raise HTTPException(status_code=400, detail="page_id ist erforderlich")
+    
+    # Check if page already exists
+    existing = await db.static_pages.find_one({"page_id": page_id})
+    if existing or page_id in STATIC_PAGE_DEFAULTS:
+        raise HTTPException(status_code=400, detail="Seite existiert bereits")
+    
+    content["page_id"] = page_id
+    content["custom"] = True
+    content["created_at"] = datetime.now(timezone.utc).isoformat()
+    content["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    await db.static_pages.insert_one(content)
+    return {"success": True, "page_id": page_id}
+
+@router.delete("/admin/static-pages/{page_id}")
+async def delete_static_page(page_id: str, token: str):
+    """Delete a custom static page"""
+    if not await verify_admin_session(token):
+        raise HTTPException(status_code=401, detail="Nicht autorisiert")
+    
+    # Don't allow deleting default pages
+    if page_id in STATIC_PAGE_DEFAULTS:
+        raise HTTPException(status_code=400, detail="Standard-Seiten können nicht gelöscht werden")
+    
+    result = await db.static_pages.delete_one({"page_id": page_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Seite nicht gefunden")
+    
+    return {"success": True}
+
+@router.post("/admin/static-pages/{page_id}/duplicate")
+async def duplicate_static_page(page_id: str, token: str, new_page_id: str = None):
+    """Duplicate a static page"""
+    if not await verify_admin_session(token):
+        raise HTTPException(status_code=401, detail="Nicht autorisiert")
+    
+    # Get the source page
+    source = await db.static_pages.find_one({"page_id": page_id}, {"_id": 0})
+    if not source:
+        # Check if it's a default page
+        if page_id in STATIC_PAGE_DEFAULTS:
+            source = {"page_id": page_id, **STATIC_PAGE_DEFAULTS[page_id]}
+        else:
+            raise HTTPException(status_code=404, detail="Quell-Seite nicht gefunden")
+    
+    # Generate new page_id
+    import uuid
+    new_id = new_page_id or f"{page_id}-kopie-{str(uuid.uuid4())[:8]}"
+    
+    # Create duplicate
+    new_page = dict(source)
+    new_page["page_id"] = new_id
+    new_page["hero_title"] = f"{source.get('hero_title', 'Neue Seite')} (Kopie)"
+    new_page["custom"] = True
+    new_page["created_at"] = datetime.now(timezone.utc).isoformat()
+    new_page["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    await db.static_pages.insert_one(new_page)
+    return {"success": True, "page_id": new_id}
+
