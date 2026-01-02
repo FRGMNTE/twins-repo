@@ -27,9 +27,14 @@ const SOCIAL_NAMES = {
 export default function Footer() {
   const { settings } = useSiteSettings();
   
-  const footerLinks = (settings.footerLinks && settings.footerLinks.length > 0) 
+  // Ensure Cookies link is always present
+  const baseLinks = (settings.footerLinks && settings.footerLinks.length > 0) 
     ? settings.footerLinks.filter(link => link.enabled) 
     : DEFAULT_FOOTER_LINKS;
+  
+  // Add Cookies if not present
+  const hasCookies = baseLinks.some(link => link.path === '/cookies');
+  const footerLinks = hasCookies ? baseLinks : [...baseLinks, { id: '3', label: 'Cookies', path: '/cookies', enabled: true }];
 
   const enabledSocialLinks = (settings.socialLinks || []).filter(link => link.enabled && link.url);
   const footerEmail = settings.footerEmail || settings.socialEmail || '';
