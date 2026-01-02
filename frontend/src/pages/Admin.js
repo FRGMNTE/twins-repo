@@ -181,6 +181,9 @@ export default function Admin() {
   const [editingStaticPage, setEditingStaticPage] = useState(null);
   const [staticPageSourceMode, setStaticPageSourceMode] = useState(false);
   const [staticPageSource, setStaticPageSource] = useState('');
+  const [showNewStaticPageModal, setShowNewStaticPageModal] = useState(false);
+  const [newStaticPageId, setNewStaticPageId] = useState('');
+  const [newStaticPageTitle, setNewStaticPageTitle] = useState('');
   
   // Landing page content state
   const [landingContent, setLandingContent] = useState(null);
