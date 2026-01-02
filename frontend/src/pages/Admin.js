@@ -1657,6 +1657,56 @@ export default function Admin() {
                             </div>
                           </div>
                           
+                          {/* Background Settings */}
+                          <div className="p-4 rounded-xl border border-border bg-card space-y-4">
+                            <h3 className="font-semibold flex items-center gap-2"><Image className="w-4 h-4" /> Hintergrund-Einstellungen</h3>
+                            <div className="flex items-center gap-4">
+                              <label className="flex items-center gap-2 cursor-pointer">
+                                <input 
+                                  type="checkbox" 
+                                  checked={editingStaticPage.background_enabled !== false}
+                                  onChange={(e) => handleStaticPageFieldChange('background_enabled', e.target.checked)}
+                                  className="w-4 h-4 rounded border-gray-300"
+                                />
+                                <span className="text-sm">Hintergrund aktiviert</span>
+                              </label>
+                            </div>
+                            {editingStaticPage.background_enabled !== false && (
+                              <>
+                                <div>
+                                  <Label>Hintergrund-Typ</Label>
+                                  <Select 
+                                    value={editingStaticPage.background_type || 'default'} 
+                                    onValueChange={(val) => handleStaticPageFieldChange('background_type', val)}
+                                  >
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="default">Standard (Theme-Hintergrund)</SelectItem>
+                                      <SelectItem value="image">Eigenes Bild</SelectItem>
+                                      <SelectItem value="video">Video</SelectItem>
+                                      <SelectItem value="none">Kein Hintergrund</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                                {(editingStaticPage.background_type === 'image' || editingStaticPage.background_type === 'video') && (
+                                  <div>
+                                    <Label>{editingStaticPage.background_type === 'video' ? 'Video-URL' : 'Bild-URL'}</Label>
+                                    <Input 
+                                      value={editingStaticPage.background_url || ''} 
+                                      onChange={(e) => handleStaticPageFieldChange('background_url', e.target.value)} 
+                                      placeholder={editingStaticPage.background_type === 'video' ? 'https://...video.mp4' : 'https://...image.jpg'} 
+                                    />
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                      {editingStaticPage.background_type === 'video' 
+                                        ? 'MP4-Video wird automatisch abgespielt (stumm, Endlosschleife)'
+                                        : 'Empfohlen: mindestens 1920px breit für beste Qualität'}
+                                    </p>
+                                  </div>
+                                )}
+                              </>
+                            )}
+                          </div>
+                          
                           {/* Sections */}
                           <div className="p-4 rounded-xl border border-border bg-card space-y-4">
                             <div className="flex items-center justify-between">
