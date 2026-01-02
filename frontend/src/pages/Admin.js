@@ -429,6 +429,59 @@ export default function Admin() {
     }));
   };
   
+  const handleCreateStaticPage = async () => {
+    try {
+      if (!newStaticPageId || !newStaticPageTitle) {
+        alert('Bitte Seiten-ID und Titel eingeben');
+        return;
+      }
+      const pageId = newStaticPageId.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-');
+      await axios.post(`${API}/admin/static-pages?token=${token}`, {
+        page_id: pageId,
+        hero_title: newStaticPageTitle,
+        hero_label: newStaticPageTitle,
+        hero_description: '',
+        sections: [],
+        background_enabled: true,
+        background_type: 'default'
+      });
+      setShowNewStaticPageModal(false);
+      setNewStaticPageId('');
+      setNewStaticPageTitle('');
+      fetchAllData(token);
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus(''), 2000);
+    } catch (err) {
+      console.error('Error creating static page:', err);
+      alert(err.response?.data?.detail || 'Fehler beim Erstellen der Seite');
+    }
+  };
+  
+  const handleDuplicateStaticPage = async (pageId) => {
+    try {
+      await axios.post(`${API}/admin/static-pages/${pageId}/duplicate?token=${token}`);
+      fetchAllData(token);
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus(''), 2000);
+    } catch (err) {
+      console.error('Error duplicating static page:', err);
+      alert(err.response?.data?.detail || 'Fehler beim Duplizieren der Seite');
+    }
+  };
+  
+  const handleDeleteStaticPage = async (pageId) => {
+    try {
+      await axios.delete(`${API}/admin/static-pages/${pageId}?token=${token}`);
+      setDeleteConfirm(null);
+      fetchAllData(token);
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus(''), 2000);
+    } catch (err) {
+      console.error('Error deleting static page:', err);
+      alert(err.response?.data?.detail || 'Fehler beim Löschen der Seite');
+    }
+  };
+  
   // Landing page content handlers
   const handleSaveLandingContent = async () => {
     try {
