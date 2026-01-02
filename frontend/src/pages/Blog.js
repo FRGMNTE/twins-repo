@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Calendar, Clock, Search, Tag, ArrowRight } from 'lucide-react';
 import axios from 'axios';
 import { Input } from '../components/ui/input';
+import { PageHero } from '../components/PageBackground';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -50,14 +51,14 @@ export default function Blog() {
   }, [posts, activeCategory, searchQuery]);
 
   return (
-    <main id="main-content" className="min-h-screen pt-20">
-      {/* Hero */}
-      <section className="section-padding bg-gradient-to-b from-secondary/50 to-background">
-        <div className="container-width">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="max-w-3xl"
+    <main id="main-content" className="min-h-screen">
+      <PageHero
+        label="Blog"
+        title="Unsere Erfahrungen"
+        description="Ehrliche Einblicke und praktische Tipps aus unserem Alltag mit Zwillingen."
+        backgroundType="default"
+        overlay={0.5}
+      />
           >
             <span className="text-sm font-medium text-primary uppercase tracking-wide">Blog</span>
             <h1 className="text-4xl sm:text-5xl font-bold text-foreground mt-4 mb-6">
