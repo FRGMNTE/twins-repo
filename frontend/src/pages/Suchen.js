@@ -70,34 +70,11 @@ export default function Suchen() {
           )}
         </div>
       </PageHero>
-          >
-            <span className="text-sm font-medium text-primary uppercase tracking-wide">Suche</span>
-            <h1 className="text-4xl sm:text-5xl font-bold text-foreground mt-4 mb-6">
-              Was suchst du?
-            </h1>
             
-            {/* Search Input */}
-            <div className="relative">
-              <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="Suche nach Tipps, Beiträgen, Bildern..."
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                className="pl-12 pr-10 h-14 text-lg rounded-xl"
-                autoFocus
-              />
-              {query && (
-                <button
-                  onClick={() => setQuery('')}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-secondary rounded-full"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
-            </div>
-            
-            {query.trim().length === 1 && (
+      {/* Results Section */}
+      <section className="section-padding bg-background">
+        <div className="container-width">
+          {query.trim().length === 1 && (
               <p className="text-sm text-muted-foreground mt-4">
                 Bitte mindestens 2 Zeichen eingeben.
               </p>
