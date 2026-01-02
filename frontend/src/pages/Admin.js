@@ -1554,26 +1554,41 @@ export default function Admin() {
                       <h1 className="text-2xl font-semibold">Seiten-Inhalte</h1>
                       <p className="text-sm text-muted-foreground">Bearbeiten Sie Titel, Texte, Bilder und Links der Design-Seiten</p>
                     </div>
-                    {saveStatus && <Badge variant="secondary" className="gap-1"><Check className="w-3 h-3" /> Gespeichert</Badge>}
+                    <div className="flex items-center gap-2">
+                      {saveStatus && <Badge variant="secondary" className="gap-1"><Check className="w-3 h-3" /> Gespeichert</Badge>}
+                      <Button onClick={() => setShowNewStaticPageModal(true)}>
+                        <Plus className="w-4 h-4 mr-1" /> Neue Seite
+                      </Button>
+                    </div>
                   </div>
                   
                   {!editingStaticPage ? (
                     // Page list
                     <div className="grid gap-4">
+                      {/* Default pages */}
                       {[
-                        { id: 'schwangerschaft', name: 'Schwangerschaft', path: '/schwangerschaft' },
-                        { id: 'baby-alltag', name: 'Baby-Alltag', path: '/baby-alltag' },
-                        { id: 'tipps', name: 'Tipps & Tricks', path: '/tipps' },
-                        { id: 'reisen', name: 'Reisen', path: '/reisen' },
-                        { id: 'ueber-uns', name: 'Über uns', path: '/ueber-uns' },
-                        { id: 'spende', name: 'Spende', path: '/spende' },
-                        { id: 'suchen', name: 'Suchen', path: '/suchen' },
-                      ].map((page) => {
+                        { id: 'schwangerschaft', name: 'Schwangerschaft', path: '/schwangerschaft', isDefault: true },
+                        { id: 'baby-alltag', name: 'Baby-Alltag', path: '/baby-alltag', isDefault: true },
+                        { id: 'tipps', name: 'Tipps & Tricks', path: '/tipps', isDefault: true },
+                        { id: 'reisen', name: 'Reisen', path: '/reisen', isDefault: true },
+                        { id: 'ueber-uns', name: 'Über uns', path: '/ueber-uns', isDefault: true },
+                        { id: 'spende', name: 'Spende', path: '/spende', isDefault: true },
+                        { id: 'suchen', name: 'Suchen', path: '/suchen', isDefault: true },
+                      ].concat(
+                        // Custom pages from DB
+                        staticPages
+                          .filter(p => p.custom)
+                          .map(p => ({ id: p.page_id, name: p.hero_title || p.page_id, path: `/${p.page_id}`, isDefault: false, isCustom: true }))
+                      ).map((page) => {
                         const pageData = staticPages.find(p => p.page_id === page.id) || {};
                         return (
                           <div key={page.id} className="p-4 rounded-xl border border-border bg-card flex items-center justify-between">
                             <div className="flex-1">
-                              <h3 className="font-medium text-foreground">{page.name}</h3>
+                              <div className="flex items-center gap-2">
+                                <h3 className="font-medium text-foreground">{page.name}</h3>
+                                {page.isDefault && <Badge variant="outline" className="text-xs">Standard</Badge>}
+                                {page.isCustom && <Badge variant="secondary" className="text-xs">Eigene Seite</Badge>}
+                              </div>
                               <p className="text-sm text-muted-foreground">{pageData.hero_title || 'Standardinhalt'}</p>
                               <p className="text-xs text-muted-foreground mt-1">{page.path}</p>
                             </div>
@@ -1581,6 +1596,14 @@ export default function Admin() {
                               <a href={page.path} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-sm flex items-center gap-1">
                                 <ExternalLink className="w-3 h-3" /> Vorschau
                               </a>
+                              <Button size="sm" variant="outline" onClick={() => handleDuplicateStaticPage(page.id)}>
+                                <Copy className="w-4 h-4" />
+                              </Button>
+                              {page.isCustom && (
+                                <Button size="sm" variant="outline" onClick={() => setDeleteConfirm({ type: 'static-page', id: page.id, title: page.name })}>
+                                  <Trash2 className="w-4 h-4 text-destructive" />
+                                </Button>
+                              )}
                               <Button size="sm" onClick={() => handleEditStaticPage(page.id)}>
                                 <Pencil className="w-4 h-4 mr-1" /> Bearbeiten
                               </Button>
