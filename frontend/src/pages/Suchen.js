@@ -93,7 +93,7 @@ export default function Suchen() {
             </div>
           ) : totalResults === 0 && !loading ? (
             <div className="text-center py-12">
-              <p className="text-muted-foreground">Keine Ergebnisse für "{query}" gefunden.</p>
+              <p className="text-muted-foreground">Keine Ergebnisse für &quot;{query}&quot; gefunden.</p>
               <p className="text-sm text-muted-foreground mt-2">Versuche einen anderen Suchbegriff.</p>
             </div>
           ) : (
